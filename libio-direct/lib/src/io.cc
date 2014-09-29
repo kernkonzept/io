@@ -16,6 +16,7 @@
 #include <l4/sigma0/sigma0.h>
 #include <l4/re/namespace>
 #include <l4/re/dataspace>
+#include <l4/re/dma_space>
 #include <l4/re/rm>
 #include <l4/re/env>
 #include <l4/re/util/cap_alloc>
@@ -185,8 +186,23 @@ static int is_anon_ram(__internal_res *res)
   return res->flags == __INTRES_RAM;
 }
 
+static L4::Cap<L4Re::Dma_space> _dma_space;
+
 static int alloc_anon_ram_resources()
 {
+  _dma_space = L4Re::Util::cap_alloc.alloc<L4Re::Dma_space>();
+  if (!_dma_space)
+    return -L4_ENOMEM;
+
+  auto uf = L4Re::Env::env()->user_factory();
+
+  if (int r = l4_error(uf->create(_dma_space)))
+    return r;
+
+  if (int r = _dma_space->associate(L4::Ipc::Cap<L4::Task>(),
+                                    L4Re::Dma_space::Space_attrib::Phys_space))
+    return r;
+
   for (int i = 0; _devs[i].name; ++i)
     {
       __internal_res *r = _devs[i].intres;
@@ -210,7 +226,12 @@ static int alloc_anon_ram_resources()
                   return ret;
                 }
 
-              ret = d->phys(0, r->res.start, size);
+              // FIXME: possible truncation of DMA address
+              L4Re::Dma_space::Dma_addr a;
+
+              ret = _dma_space->map(d, 0, &size, L4Re::Dma_space::Attributes::None,
+                                    L4Re::Dma_space::Bidirectional, &a);
+
               if (ret
                   // check, note, r->res.end is still the size...
                   || r->res.end > size)
@@ -220,6 +241,7 @@ static int alloc_anon_ram_resources()
                   return ret;
                 }
 
+              r->res.start = a;
               r->res.end = r->res.start + size - 1;
               r->ram_cap = d.cap();
             }

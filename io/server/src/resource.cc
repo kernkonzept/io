@@ -8,6 +8,8 @@
  * Please see the COPYING-GPL-2 file for details.
  */
 #include <l4/re/mem_alloc>
+#include <l4/re/dma_space>
+#include <l4/sys/factory>
 #include <l4/re/util/cap_alloc>
 #include <l4/re/env>
 #include <l4/cxx/exceptions>
@@ -189,6 +191,18 @@ Resource_provider::_RS::alloc(Resource *parent, Device *pdev,
 
 void Mmio_data_space::alloc_ram(Size size, unsigned long alloc_flags)
 {
+  static L4::Cap<L4Re::Dma_space> dma_space;
+  if (L4_UNLIKELY(!dma_space))
+    {
+      auto uf = L4Re::Env::env()->user_factory();
+      L4Re::Util::Auto_cap<L4Re::Dma_space>::Cap d;
+      d = L4Re::chkcap(L4Re::Util::cap_alloc.alloc<L4Re::Dma_space>());
+      L4Re::chksys(uf->create(d.get()));
+      L4Re::chksys(d->associate(L4::Ipc::Cap<L4::Task>(),
+                                L4Re::Dma_space::Space_attrib::Phys_space),
+                   "assoiciating DMA space for CPU physical");
+      dma_space = d.release();
+    }
   long ma_flags = L4Re::Mem_alloc::Continuous;
 
   ma_flags |= alloc_flags ? L4Re::Mem_alloc::Super_pages : 0;
@@ -201,8 +215,11 @@ void Mmio_data_space::alloc_ram(Size size, unsigned long alloc_flags)
                                                     ma_flags));
 
   l4_size_t ds_size = size;
-  l4_addr_t phys_start;
-  L4Re::chksys(_ds_ram->phys(0, phys_start, ds_size));
+  L4Re::Dma_space::Dma_addr phys_start;
+  L4Re::chksys(dma_space->map(_ds_ram.get(), 0, &ds_size,
+               L4Re::Dma_space::Attributes::None,
+               L4Re::Dma_space::Bidirectional,
+               &phys_start));
   if (size > ds_size)
     throw(L4::Out_of_memory("not really"));
 
