@@ -5,7 +5,7 @@
 -- This BUS is registered in io's name space under the name 'bus'.
 --
 
-local hw = Io.system_bus()
+local hw = Io.hw_bus
 
 Io.add_vbus("bus", Io.Vi.System_bus
 {

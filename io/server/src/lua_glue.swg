@@ -244,7 +244,7 @@ Io.Dt = {}
 
 function Io.Dt.add_child(parent, name, dev, idx)
   parent:add_child(dev)
-  if dev.plugin and (parent:parent() or swig_equals(parent, Io.system_bus())) then
+  if dev.plugin and (parent:parent() or swig_equals(parent, Io.hw_bus)) then
     dev:plugin()
   end
   if type(name) == "string" then
@@ -591,6 +591,7 @@ end
 local set_dev_data = Io.Dt.add_device_data
 local add_children = Io.Dt.add_children
 
+Io.hw_bus = Io.system_bus()
 Io.Hw = {}
 
 setmetatable(Io.Hw, { __index = function (self, t)
@@ -604,7 +605,7 @@ setmetatable(Io.Hw, { __index = function (self, t)
 end})
 
 function Io.hw_add_devices(data)
-  local sb = Io.system_bus()
+  local sb = Io.hw_bus
   local dtype = type(data)
   if dtype == 'function' then
     Io.Dt.add_children(sb, data)
