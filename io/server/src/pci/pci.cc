@@ -708,10 +708,11 @@ Dev::discover_resources(Hw::Device *host)
 void
 Dev::setup(Hw::Device *)
 {
+  unsigned decoders_to_enable = 0;
   for (unsigned i = 0; i < sizeof(_bars)/sizeof(_bars[0]); ++i)
     {
       Resource *r = bar(i);
-      if (!r || r->type() == Resource::Io_res)
+      if (!r)
 	continue;
 
       if (r->empty())
@@ -731,10 +732,28 @@ Dev::setup(Hw::Device *)
 
       l4_uint32_t v;
       cfg_read(reg, &v, Cfg_long);
-      if (l4_uint32_t(v & ~0x7f) != l4_uint32_t(s & 0xffffffff))
-	d_printf(DBG_ERR, "ERROR: could not set PCI BAR %d\n", i);
+      if (l4_uint32_t(v & ~0xf) == l4_uint32_t(s & 0xffffffff))
+        decoders_to_enable |= (r->type() == Resource::Io_res) ? 1 : 2;
+      else
+        {
+          decoders_to_enable &= ~ (r->type() == Resource::Io_res) ? 1 : 2;
+          d_printf(DBG_ERR, "ERROR: could not set PCI BAR %d\n", i);
+        }
 
-      // printf("%08x: set BAR[%d] to %08x\n", adr(), i, v);
+      if (0)
+        printf("%02x:%02x.%x: set BAR[%d] to %08x\n",
+               bus_nr(), device_nr(), function_nr(), i, v);
+    }
+
+  if (decoders_to_enable)
+    {
+      l4_uint16_t v = 0;
+      cfg_read(Config::Command, &v);
+      if ((v & decoders_to_enable) != decoders_to_enable)
+        {
+          v = (v & ~3) | decoders_to_enable;
+          cfg_write(Config::Command, v);
+        }
     }
 }
 
