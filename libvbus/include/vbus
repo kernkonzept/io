@@ -115,9 +115,12 @@ public:
   }
 
   /**
-   * \brief Find next child following \a child.
+   * \brief Find next child following `child`.
    *
-   * \param      child        Device to start looking for child devices
+   * \param[in, out] child    Handle of the device that precedes the device
+   *                          that shall be found. To start from the beginning
+   *                          `child` must be initialized using the default
+   *                          (#L4VBUS_NULL).
    * \param      depth        Depth to look for
    * \param[out] devinfo      device information (might be NULL)
    *
