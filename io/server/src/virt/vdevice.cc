@@ -80,8 +80,8 @@ Device::get_by_hid(L4::Ipc::Iostream &ios)
   if (0)
     printf("look for '%s' in %p\n", hid, this);
 
-  if (!hid || !sz)
-    return -L4_ENOENT;
+  if (!hid || sz <= 1)
+    return -L4_EINVAL;
 
   iterator c;
   if (!child)
@@ -90,7 +90,7 @@ Device::get_by_hid(L4::Ipc::Iostream &ios)
     ++c;
 
   if (c == end())
-    return -L4_ENODEV;
+    return -L4_ENOENT;
 
 
   Match_hid mh;
