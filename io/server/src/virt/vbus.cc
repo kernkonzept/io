@@ -476,8 +476,14 @@ System_bus::op_dispatch(l4_utcb_t *utcb, l4_msgtag_t tag, L4vbus::Vbus::Rights o
   ios.Istream::tag() = tag;
 
   l4vbus_device_handle_t devid;
+  if (L4_UNLIKELY(!ios.get(devid)))
+    return l4_msgtag(-L4_EMSGTOOSHORT, 0, 0, 0);
+
   l4_uint32_t func;
-  ios >> devid >> func;
+
+  if (L4_UNLIKELY(!ios.get(func)))
+    return l4_msgtag(-L4_EMSGTOOSHORT, 0, 0, 0);
+
   Device *dev = get_dev_by_id(devid);
   if (!dev)
     return l4_msgtag(-L4_ENODEV, 0, 0, 0);

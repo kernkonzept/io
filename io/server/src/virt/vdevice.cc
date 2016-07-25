@@ -70,12 +70,17 @@ int
 Device::get_by_hid(L4::Ipc::Iostream &ios)
 {
   l4vbus_device_handle_t child;
+  if (L4_UNLIKELY(!ios.get(child)))
+    return -L4_EMSGTOOSHORT;
+
+  int depth;
+  if (L4_UNLIKELY(!ios.get(depth)))
+    return -L4_EMSGTOOSHORT;
+
   unsigned long sz;
   char const *hid = 0;
 
-  int depth;
-
-  ios >> child >> depth >> L4::Ipc::buf_in(hid, sz);
+  ios >> L4::Ipc::buf_in(hid, sz);
 
   if (0)
     printf("look for '%s' in %p\n", hid, this);
@@ -171,8 +176,12 @@ Device::vdevice_dispatch(l4_umword_t obj, l4_uint32_t func, L4::Ipc::Iostream &i
 	case L4vbus_vdevice_get_next:
 	    {
 	      l4vbus_device_handle_t child;
+	      if (L4_UNLIKELY(!ios.get(child)))
+		return -L4_EMSGTOOSHORT;
+
 	      int depth;
-	      ios >> child >> depth;
+	      if (L4_UNLIKELY(!ios.get(depth)))
+		return -L4_EMSGTOOSHORT;
 
 	      iterator c;
 	      if (!child)
@@ -189,7 +198,9 @@ Device::vdevice_dispatch(l4_umword_t obj, l4_uint32_t func, L4::Ipc::Iostream &i
 	case L4vbus_vdevice_get_resource:
 	    {
 	      int res_idx;
-	      ios >> res_idx;
+	      if (L4_UNLIKELY(!ios.get(res_idx)))
+		return -L4_EMSGTOOSHORT;
+
               if (res_idx < 0 || (unsigned)res_idx >= resources()->size())
 		return -L4_ENOENT;
 
@@ -210,6 +221,8 @@ Device::vdevice_dispatch(l4_umword_t obj, l4_uint32_t func, L4::Ipc::Iostream &i
               unsigned long sz;
               char const *cid = 0;
               ios >> L4::Ipc::buf_in(cid, sz);
+              if (sz == 0)
+                return -L4_EMSGTOOSHORT;
               return match_cid(cxx::String(cid, strnlen(cid, sz))) ? 1 : 0;
             }
 
