@@ -128,7 +128,7 @@ public:
   virtual unsigned multi_get(unsigned offset) = 0;
 
 
-  void ouput(unsigned pin, int value)
+  void output(unsigned pin, int value)
   { setup(pin, Output, value); }
 
   void input(unsigned pin)
