@@ -18,7 +18,7 @@ public:
   enum Fix_mode
   {
     Input  = L4VBUS_GPIO_SETUP_INPUT,  ///< Configure as input pin
-    Output = L4VBUS_GPIO_SETUP_OUTPUT, ///< Configure ad output pin
+    Output = L4VBUS_GPIO_SETUP_OUTPUT, ///< Configure as output pin
     Irq    = L4VBUS_GPIO_SETUP_IRQ,    ///< Configure as IRQ source
   };
 
