@@ -5,7 +5,6 @@ TARGET  = io
 SUBDIRS       = drivers
 
 SRC_CC_ACPI   = acpi.cc acpi_sci.cc acpi_osl.cc pci-acpi.cc
-SRC_CC_PCI    = pci.cc pci_iomem_root_bridge.cc msi.cc pm.cc
 
 SRC_CC := main.cc res.cc phys_space.cc resource.cc hw_device.cc \
           hw_root_bus.cc device.cc hw_irqs.cc \
