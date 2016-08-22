@@ -11,11 +11,11 @@
  * initialised. Available I/O resource can also be configured via
  * configuration scripts.
  *
- * Io uses configuration can be considered as two parts:
+ * Io's configuration consists of two parts:
  *  - the description of the real hardware
  *  - the description of virtual buses
  *
- * Both descriptions represent hierarchical (tree) structure of device nodes.
+ * Both descriptions represent a hierarchical (tree) structure of device nodes.
  * Where each device has a set of resources attached to it. And a device that
  * has child devices can be considered a bus.
  *
