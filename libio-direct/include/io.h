@@ -195,11 +195,13 @@ l4io_lookup_resource(l4io_device_handle_t devhandle,
  * \brief Request IO memory.
  * \ingroup api_l4io
  *
- * \param  devhandle Device handle.
- * \retval reshandle Resource handle, input and output, return next resource
- *                   handle
+ * \param         devhandle  Device handle.
+ * \param[in,out] reshandle  Resource handle from which IO memory should be
+ *                           requested. Upon successfull completion 'reshandle'
+ *                           points to the device's next resource.
  *
- * \return 0 on error, virtual address otherwise
+ * \retval 0   An error occured. The value of 'reshandle' is undefined.
+ * \retval >0  The virtual address of the IO memory mapping.
  */
 L4_CV l4_addr_t
 l4io_request_resource_iomem(l4io_device_handle_t devhandle,
