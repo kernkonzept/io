@@ -208,7 +208,7 @@ l4io_lookup_resource(l4io_device_handle_t devhandle,
  * \ingroup api_l4io
  *
  * \param  devhandle Device handle.
- * \retval reshandle Resource handle, input and ouput, return next resource
+ * \retval reshandle Resource handle, input and output, return next resource
  *                   handle
  *
  * \return 0 on error, virtual address otherwise

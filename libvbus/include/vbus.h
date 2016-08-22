@@ -80,7 +80,7 @@ l4vbus_is_compatible(l4_cap_idx_t vbus, l4vbus_device_handle_t dev,
                      char const *cid);
 
 /**
- * \brief Get the HID (hardware identifier) if a device
+ * \brief Get the HID (hardware identifier) of a device
  *
  * \param  vbus         Capability of the system bus
  * \param  dev          Handle of the device
