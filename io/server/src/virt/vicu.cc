@@ -124,7 +124,7 @@ Sw_icu::bind_irq(unsigned irqn, L4::Ipc::Snd_fpage const &irqc)
 
   int err = irq->bind(server_iface()->get_rcv_cap(0));
   if (err < 0)
-    d_printf(DBG_ERR, "ERROR: binding irq %x, result is %d (%s)\n", irqn, err, l4sys_errtostr(err));
+    d_printf(DBG_ERR, "ERROR: binding irq %u, result is %d (%s)\n", irqn, err, l4sys_errtostr(err));
 
   return err;
 }
