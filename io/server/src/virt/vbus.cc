@@ -201,43 +201,50 @@ System_bus::~System_bus() noexcept
 bool
 System_bus::add_resource_to_bus(Resource *r)
 {
-  auto x = _resources.find(r);
-  if (x == _resources.end())
+  if (_resources.count(r) == 0)
     {
       _resources.insert(r);
       return true;
     }
 
-  // overlapping resource entry already found
-  if (typeid (*r) != typeid (**x))
+  // at least one overlapping resource entry found
+  auto lower = _resources.lower_bound(r);
+  if (typeid (*r) != typeid (**lower))
     {
       if (dlevel(DBG_ERR))
         {
           printf("error: overlapping incompatible resources for vbus\n");
           printf("       new:   "); r->dump(); puts(" conflicts with");
-          printf("       found: "); (*x)->dump(); puts("");
+          printf("       found: "); (*lower)->dump(); puts("");
         }
       return false;
     }
 
-  if ((*x)->contains(*r))
+  if ((*lower)->contains(*r))
     // already fully included
     return true;
 
-  if (r->contains(**x))
+  auto upper = _resources.upper_bound(r);
+  for (auto it = lower; it != upper; ++it)
     {
-      _resources.erase(x);
-      _resources.insert(r);
-      return true;
+      bool same_type = typeid (*r) == typeid (**it);
+      if (!same_type || !r->contains(**it))
+        {
+          if (dlevel(DBG_ERR))
+            {
+              printf("error: %s resources for vbus\n",
+                     same_type ? "oddly overlapping" : "overlapping incompatible");
+              printf("       new:   "); r->dump(); puts(" conflicts with");
+              printf("       found: "); (*it)->dump(); puts("");
+            }
+          return false;
+        }
     }
 
-  if (dlevel(DBG_ERR))
-    {
-      printf("error: oddly overlapping resources for vbus\n");
-      printf("       new:   "); r->dump(); puts(" conflicts with");
-      printf("       found: "); (*x)->dump(); puts("");
-    }
-  return false;
+  // r is a superset of [lower, upper); replace existing elements with r
+  _resources.erase(lower, upper);
+  _resources.insert(r);
+  return true;
 }
 
 bool
