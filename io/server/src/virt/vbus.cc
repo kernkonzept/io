@@ -288,7 +288,8 @@ int
 System_bus::request_resource(L4::Ipc::Iostream &ios)
 {
   l4vbus_resource_t res;
-  ios.get(res);
+  if (!ios.get(res))
+    return -L4_EMSGTOOSHORT;
 
   Resource ires(res.type, res.start, res.end);
   if (dlevel(DBG_DEBUG2))
