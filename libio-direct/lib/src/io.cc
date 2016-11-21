@@ -222,7 +222,7 @@ static int alloc_anon_ram_resources()
               ret = L4Re::Env::env()->mem_alloc()->alloc(size, d, r->res.start | L4Re::Mem_alloc::Continuous);
               if (ret)
                 {
-                  L4Re::Util::cap_alloc.free(d);
+                  L4Re::Util::cap_alloc.free(d, L4Re::This_task);
                   return ret;
                 }
 
@@ -236,8 +236,7 @@ static int alloc_anon_ram_resources()
                   // check, note, r->res.end is still the size...
                   || r->res.end > size)
                 {
-                  L4Re::Env::env()->mem_alloc()->free(d);
-                  L4Re::Util::cap_alloc.free(d);
+                  L4Re::Util::cap_alloc.free(d, L4Re::This_task);
                   return ret;
                 }
 
@@ -495,8 +494,7 @@ handle_anonram(__internal_res *res, l4_addr_t *virt,
                                              L4::Ipc::make_cap_rw(d), 0, shift);
           if (r)
             {
-              L4Re::Env::env()->mem_alloc()->free(d);
-              L4Re::Util::cap_alloc.free(d);
+              L4Re::Util::cap_alloc.free(d, L4Re::This_task);
               return r;
             }
         }
@@ -512,8 +510,7 @@ handle_anonram(__internal_res *res, l4_addr_t *virt,
   r = L4Re::Env::env()->rm()->attach(&v, size, flags, L4::Ipc::make_cap_rw(d), 0, shift);
   if (r)
     {
-      L4Re::Env::env()->mem_alloc()->free(d);
-      L4Re::Util::cap_alloc.free(d);
+      L4Re::Util::cap_alloc.free(d, L4Re::This_task);
       return r;
     }
 
