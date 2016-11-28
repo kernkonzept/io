@@ -48,49 +48,49 @@ Io.hw_add_devices(function()
   end);
 
   gpio1 = Io.Hw.Device(function()
-    compatible = {"fsl,imx6q-gpio", "fsl,imx35-gpio"};
+    compatible = {"fsl,imx6q-gpio,1", "fsl,imx6q-gpio", "fsl,imx35-gpio"};
     Resource.reg0 = Res.mmio(0x209c000, 0x209ffff);
     Resource.irq0 = Res.irq(98, Io.Resource.Irq_type_level_high);
     Resource.irq1 = Res.irq(99, Io.Resource.Irq_type_level_high);
   end);
 
   gpio2 = Io.Hw.Device(function()
-    compatible = {"fsl,imx6q-gpio", "fsl,imx35-gpio"};
+    compatible = {"fsl,imx6q-gpio,2", "fsl,imx6q-gpio", "fsl,imx35-gpio"};
     Resource.reg0 = Res.mmio(0x20a0000, 0x20a3fff);
     Resource.irq0 = Res.irq(100, Io.Resource.Irq_type_level_high);
     Resource.irq1 = Res.irq(101, Io.Resource.Irq_type_level_high);
   end);
 
   gpio3 = Io.Hw.Device(function()
-    compatible = {"fsl,imx6q-gpio", "fsl,imx35-gpio"};
+    compatible = {"fsl,imx6q-gpio,3", "fsl,imx6q-gpio", "fsl,imx35-gpio"};
     Resource.reg0 = Res.mmio(0x20a4000, 0x20a7fff);
     Resource.irq0 = Res.irq(102, Io.Resource.Irq_type_level_high);
     Resource.irq1 = Res.irq(103, Io.Resource.Irq_type_level_high);
   end);
 
   gpio4 = Io.Hw.Device(function()
-    compatible = {"fsl,imx6q-gpio", "fsl,imx35-gpio"};
+    compatible = {"fsl,imx6q-gpio,4", "fsl,imx6q-gpio", "fsl,imx35-gpio"};
     Resource.reg0 = Res.mmio(0x20a8000, 0x20abfff);
     Resource.irq0 = Res.irq(104, Io.Resource.Irq_type_level_high);
     Resource.irq1 = Res.irq(105, Io.Resource.Irq_type_level_high);
   end);
 
   gpio5 = Io.Hw.Device(function()
-    compatible = {"fsl,imx6q-gpio", "fsl,imx35-gpio"};
+    compatible = {"fsl,imx6q-gpio,5", "fsl,imx6q-gpio", "fsl,imx35-gpio"};
     Resource.reg0 = Res.mmio(0x20ac000, 0x20affff);
     Resource.irq0 = Res.irq(106, Io.Resource.Irq_type_level_high);
     Resource.irq1 = Res.irq(107, Io.Resource.Irq_type_level_high);
   end);
 
   gpio6 = Io.Hw.Device(function()
-    compatible = {"fsl,imx6q-gpio", "fsl,imx35-gpio"};
+    compatible = {"fsl,imx6q-gpio,6", "fsl,imx6q-gpio", "fsl,imx35-gpio"};
     Resource.reg0 = Res.mmio(0x20b0000, 0x20b3fff);
     Resource.irq0 = Res.irq(108, Io.Resource.Irq_type_level_high);
     Resource.irq1 = Res.irq(109, Io.Resource.Irq_type_level_high);
   end);
 
 --  gpio7 = Io.Hw.Device(function()
---    compatible = {"fsl,imx6q-gpio", "fsl,imx35-gpio"};
+--    compatible = {"fsl,imx6q-gpio,7", "fsl,imx6q-gpio", "fsl,imx35-gpio"};
 --    Resource.reg0 = Res.mmio(0x20bc000, 0x20bffff);
 --    Resource.irq0 = Res.irq(110, Io.Resource.Irq_type_level_high);
 --    Resource.irq1 = Res.irq(111, Io.Resource.Irq_type_level_high);
@@ -141,6 +141,14 @@ Io.hw_add_devices(function()
     compatible = {"fsl,imx6q-i2c", "fsl,imx21-i2c"};
     Resource.reg0 = Res.mmio(0x21a8000, 0x21abfff);
     Resource.irq0 = Res.irq(70, Io.Resource.Irq_type_level_high);
+  end);
+
+  ethernet = Io.Hw.Device(function()
+    compatible = {"fsl,imx6q-fec"};
+    Resource.reg0 = Res.mmio(0x2188000, 0x218bfff);
+    Resource.irq0 = Res.irq(150, Io.Resource.Irq_type_level_high);
+    Resource.irq1 = Res.irq(151, Io.Resource.Irq_type_level_high);
+    Property.flags = Io.Hw_device_DF_dma_supported;
   end);
 
 end)
