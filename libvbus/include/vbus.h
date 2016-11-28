@@ -27,6 +27,19 @@ enum {
 /**
  * \defgroup l4vbus_module L4 V-BUS functions
  * \{
+ * C interface of the Vbus API.
+ *
+ * The virtual bus (Vbus) is a hierarchical (tree) structure of device nodes
+ * where each device has a set of resources attached to it. Each virtual bus
+ * provides an Icu (\ref l4_icu_api) for interrupt handling.
+ *
+ * The Vbus interface allows a client to find and query devices present on his
+ * virtual bus. After obtaining a device handle for a specific device the
+ * client can enumerate its resources.
+ *
+ * \includefile{l4/vbus/vbus.h}
+ *
+ * Refer to \ref L4vbus for the C++ API.
  */
 
 __BEGIN_DECLS
