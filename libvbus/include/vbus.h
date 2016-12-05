@@ -73,8 +73,10 @@ l4vbus_get_next_device(l4_cap_idx_t vbus, l4vbus_device_handle_t parent,
 
 /**
  * \copybrief L4vbus::Device::get_resource()
- * \param  vbus         Capability of the system bus
- * \param  dev          Handle of the device
+ * \param vbus  Capability of the vbus to which the device is connected.
+ * \param dev   Device handle of the device on the vbus. The device handle can
+ *              be obtained by using the l4vbus_get_device_by_hid() and
+ *              l4vbus_get_next_device() functions.
  * \copydetails L4vbus::Device::get_resource()
  */
 int L4_CV

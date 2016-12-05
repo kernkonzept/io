@@ -136,13 +136,21 @@ public:
   }
 
   /**
-   * \brief Iterate over the resources of a device
+   * Obtain the resource description of an individual device resource.
    *
-   * \param      res_idx  Index of the resource, the number of resources is
-   *                      available in the devinfo from get device functions.
-   * \param[out] res      Descriptor of the resource
+   * \param      res_idx  Index of the resource for which the resource
+   *                      description should be returned. The total number of
+   *                      resources for a device is available in the
+   *                      l4vbus_device_t structure that is returned by
+   *                      L4vbus::Device::device_by_hid() and
+   *                      L4vbus::Device::next_device().
+   * \param[out] res      Descriptor of the resource.
    *
-   * \return 0 on success, else failure
+   * This function returns the resource descriptor of an individual device
+   * resource selected by the `res_idx` parameter.
+   *
+   * \retval 0           Success.
+   * \retval -L4_ENOENT  Invalid resource index `res_idx`.
    */
   int get_resource(int res_idx, l4vbus_resource_t *res) const
   {
