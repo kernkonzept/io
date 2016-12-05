@@ -18,15 +18,26 @@
 #include <l4/re/inhibitor>
 
 /**
- * \ingroup l4vbus_module
- * \{ */
+ * C++ interface of the Vbus API.
+ *
+ * The virtual bus (Vbus) is a hierarchical (tree) structure of device nodes
+ * where each device has a set of resources attached to it. Each virtual bus
+ * provides an Icu (\ref l4_icu_api) for interrupt handling.
+ *
+ * The Vbus interface allows a client to find and query devices present on his
+ * virtual bus. After obtaining a device handle for a specific device the
+ * client can enumerate its resources.
+ *
+ * \includefile{l4/vbus/vbus}
+ *
+ * Refer to \ref l4vbus_module for the C API.
+ */
 namespace L4vbus {
 
 class Vbus;
 
 /**
- * \ingroup l4vbus_module
- * \brief Power-management API mixin.
+ * Power-management API mixin.
  */
 template<typename DEC>
 class Pm
@@ -36,13 +47,13 @@ private:
   DEC *self() { return static_cast<DEC *>(this); }
 public:
   /**
-   * \brief Suspend the module.
+   * Suspend the module.
    */
   int pm_suspend() const
   { return l4vbus_pm_suspend(self()->bus_cap().cap(), self()->dev_handle()); }
 
   /**
-   * \brief Resume the module.
+   * Resume the module.
    */
   int pm_resume() const
   { return l4vbus_pm_resume(self()->bus_cap().cap(), self()->dev_handle()); }
@@ -50,8 +61,7 @@ public:
 
 
 /**
- * \ingroup l4vbus_module
- * \brief Device on a virtual bus (V-BUS)
+ * Device on a virtual bus (V-BUS)
  */
 class Device : public Pm<Device>
 {
@@ -62,13 +72,13 @@ public:
   : _bus(bus), _dev(dev) {}
 
   /**
-   * \brief access the V-BUS capability of the underlying virtual bus.
+   * Access the V-BUS capability of the underlying virtual bus.
    * \return the capability to the underlying V-BUS.
    */
   L4::Cap<Vbus> bus_cap() const { return _bus; }
 
   /**
-   * \brief access the device handle of this device.
+   * Access the device handle of this device.
    * \return the device handle for this device.
    *
    * The device handle is used to directly address the device on its virtual
@@ -78,7 +88,7 @@ public:
 
 
   /**
-   * \brief Find a device by the HID.
+   * Find a device by the HID.
    *
    * This function searches the vbus for a device with the given HID and
    * returns a handle to the first matching device. The HID usually conforms to
@@ -116,7 +126,7 @@ public:
   }
 
   /**
-   * \brief Find next child following `child`.
+   * Find next child following `child`.
    *
    * \param[in, out] child    Handle of the device that precedes the device
    *                          that shall be found. To start from the beginning
@@ -158,7 +168,7 @@ public:
   }
 
   /**
-   * \brief Check if the given device has a compatibility ID (CID) or HID that
+   * Check if the given device has a compatibility ID (CID) or HID that
    *        matches \a cid.
    *
    * \param  cid  the compatibility ID to test
@@ -170,7 +180,7 @@ public:
   { return l4vbus_is_compatible(_bus.cap(), _dev, cid); }
 
   /**
-   * \brief Test if two devices are the same V-BUS device.
+   * Test if two devices are the same V-BUS device.
    * \return true if the two devices are the same, false else.
    */
   bool operator == (Device const &o) const
@@ -179,7 +189,7 @@ public:
   }
 
   /**
-   * \brief Test if two devices are not the same.
+   * Test if two devices are not the same.
    * \return true if the two devices are different, false else.
    */
   bool operator != (Device const &o) const
@@ -194,8 +204,7 @@ protected:
 };
 
 /**
- * \ingroup l4vbus_module
- * \brief V-BUS Interrupt controller API (ICU)
+ * V-BUS Interrupt controller API (ICU)
  *
  * Allows to access the underlying L4Re::Icu capability managing IRQs for
  * the V-BUS.
@@ -204,7 +213,7 @@ class Icu : public Device
 {
 public:
   /**
-   * \brief Request the L4Re::Icu capability for this V-BUS ICU.
+   * Request the L4Re::Icu capability for this V-BUS ICU.
    */
   int vicu(L4::Cap<L4::Icu> icu) const
   {
@@ -213,15 +222,14 @@ public:
 };
 
 /**
- * \ingroup l4vbus_module
- * \brief The virtual BUS.
+ * The virtual BUS.
  */
 class Vbus : public L4::Kobject_3t<Vbus, L4Re::Dataspace, L4Re::Inhibitor, L4Re::Event>
 {
 public:
 
   /**
-   * \brief Request the given resource from the bus.
+   * Request the given resource from the bus.
    * \param res The resource that shall be requested from the bus.
    * \param flags The flags for the request.
    * \return >=0 on success, <0 on error.
@@ -232,7 +240,7 @@ public:
   }
 
   /**
-   * \brief Release the given resource from the bus.
+   * Release the given resource from the bus.
    * \param res The resource that shall be requested from the bus.
    * \return >=0 on success, <0 on error.
    */
@@ -242,7 +250,7 @@ public:
   }
 
   /**
-   * \brief Get the root device of the device tree of this bus.
+   * Get the root device of the device tree of this bus.
    * \return A V-BUS device representing the root of the device tree.
    */
   Device root() const
@@ -253,6 +261,4 @@ public:
   typedef L4::Typeid::Raw_ipc<Vbus> Rpcs;
 };
 
-}
-
-/** \} */
+} // namespace L4vbus
