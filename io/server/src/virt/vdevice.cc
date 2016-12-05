@@ -195,6 +195,9 @@ Device::vdevice_dispatch(l4_umword_t obj, l4_uint32_t func, L4::Ipc::Iostream &i
 	      return dynamic_cast<Device*>(*c)->vbus_get_device(ios);
 	    }
 
+        case L4vbus_vdevice_get:
+            return vbus_get_device(ios);
+
 	case L4vbus_vdevice_get_resource:
 	    {
 	      int res_idx;

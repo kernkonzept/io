@@ -72,6 +72,24 @@ l4vbus_get_next_device(l4_cap_idx_t vbus, l4vbus_device_handle_t parent,
                        l4vbus_device_t *devinfo);
 
 /**
+ * \copybrief L4vbus::Device::device()
+ * \param vbus          Capability of the vbus to which the device is
+ *                      connected.
+ * \param dev           Device handle of the device from which to retrieve the
+ *                      details.
+ * \param[out] devinfo  Information structure which contains details about
+ *                      the device. The pointer might be NULL after a
+ *                      successfull call.
+ *
+ * \retval 0           Success.
+ * \retval -L4_ENODEV  No device with the given device handle `dev` could be
+ *                     found.
+ */
+int L4_CV
+l4vbus_get_device(l4_cap_idx_t vbus, l4vbus_device_handle_t dev,
+                  l4vbus_device_t *devinfo);
+
+/**
  * \copybrief L4vbus::Device::get_resource()
  * \param vbus  Capability of the vbus to which the device is connected.
  * \param dev   Device handle of the device on the vbus. The device handle can

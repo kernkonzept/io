@@ -146,6 +146,20 @@ public:
   }
 
   /**
+   * Obtain detailed information about a vbus device.
+   *
+   * \param[out] devinfo  Information structure which contains details about
+   *                      the device. The pointer might be NULL after a
+   *                      successfull call.
+   *
+   * \retval 0           Success.
+   * \retval -L4_ENODEV  No device with the given device handle `dev` could be
+   *                     found.
+   */
+  int device(l4vbus_device_t *devinfo) const
+  { return l4vbus_get_device(_bus.cap(), _dev, devinfo); }
+
+  /**
    * Obtain the resource description of an individual device resource.
    *
    * \param      res_idx  Index of the resource for which the resource

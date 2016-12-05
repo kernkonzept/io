@@ -56,6 +56,24 @@ l4vbus_get_next_device(l4_cap_idx_t vbus, l4vbus_device_handle_t parent,
 }
 
 int
+l4vbus_get_device(l4_cap_idx_t vbus, l4vbus_device_handle_t dev,
+                  l4vbus_device_t *devinfo)
+{
+  L4::Ipc::Iostream s(l4_utcb());
+  s << dev << l4_uint32_t(L4vbus_vdevice_get);
+  int err = l4_error(s.call(vbus, L4vbus::Vbus::Protocol));
+  if (err < 0)
+    return err;
+
+  s >> dev;
+
+  if (devinfo)
+    s.get(*devinfo);
+
+  return err;
+}
+
+int
 l4vbus_get_resource(l4_cap_idx_t vbus, l4vbus_device_handle_t dev,
                     int res_idx, l4vbus_resource_t *res)
 {
