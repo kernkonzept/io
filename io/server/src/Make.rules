@@ -57,7 +57,7 @@ $(SUBDIR_OBJS): $(OBJ_DIR)/%/OBJ-$(SYSTEM)/builtin.thin.a: %
 	$(VERBOSE)$(MAKE) $(MAKECMDGOALS) OBJ_BASE=$(OBJ_BASE)\
 	                  -C $(SRC_DIR)/$* $(MKFLAGS)
 
-OBJS_io        += $(SUBDIR_OBJS)
+OBJS_io        += --whole-archive $(SUBDIR_OBJS) --no-whole-archive
 
 # regenerate shipped files
 ifneq ($(REGEN_FILES),)
