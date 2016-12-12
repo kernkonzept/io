@@ -547,22 +547,6 @@ local function handle_device_member(dev, val, name)
       handle_device_member(dev, v, name .. '[' .. i .. ']')
     end
     return
-  else -- handle deprecated format, will be removed in a future release
-    print("WARNING: deprecated property definition " .. tostring(name) ..
-          "=\"".. tostring(val) .. "\"")
-    print("         please use 'Property." .. tostring(name) ..
-          "=\"".. tostring(val) .."\" instead. Note: you also need to use")
-    print("         the '(function() ... end)' syntax to define the device")
-    print("         refer to io's documentation for further details")
-    local r
-    if vtype ~= "table" then
-      set_device_property(dev, name, -1, val)
-    else
-      for i,j in pairs(val) do
-        set_device_property(dev, name, i, j)
-      end
-    end
-    return
   end
   error("cannot handle device member: " .. tostring(name) .. ": " .. tostring(val), 2)
 end
@@ -600,11 +584,6 @@ setmetatable(Io.Hw, { __index = function (self, t)
     local b = check_device(Io.Hw_dev_factory_create(t), 3, "could not create device: " .. t)
     if type(data) == "function" then
       add_children(b, data)
-    elseif type(data) == "table" then
-      print("WARNING: deprecated device definition")
-      print("         use the '(function() ... end)' syntax to define the device")
-      print("         refer to io's documentation for further details")
-      set_dev_data(b, data)
     end
     return b
   end
@@ -615,17 +594,6 @@ function Io.hw_add_devices(data)
   local dtype = type(data)
   if dtype == 'function' then
     Io.Dt.add_children(sb, data)
-  elseif dtype == 'table' then
-    print("WARNING: deprecated method to add devices to the device tree")
-    print("         use the '(function() ... end)' syntax to add devices")
-    print("         refer to io's documentation for further details")
-    for n, dev in pairs(data) do
-      if type(n) == "string" then
-        dev:set_name(n)
-      end
-      sb:add_child(dev)
-      dev:plugin()
-    end
   end
   return data
 end
