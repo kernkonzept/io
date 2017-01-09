@@ -502,15 +502,13 @@ public:
       child->dump();
 
 
-      {
-        unsigned e = r->end();
-        unsigned s = r->start();
-        unsigned n = vgpio->nr_pins();
-        if (e >= n) e = n - 1;
-        if (s >= n) s = n - 1;
-        vgpio->enable_range(s, e);
-        r->set_handle(l4vbus_device_handle_t(vgpio));
-      }
+    unsigned e = r->end();
+    unsigned s = r->start();
+    unsigned n = vgpio->nr_pins();
+    if (e >= n) e = n - 1;
+    if (s >= n) s = n - 1;
+    vgpio->enable_range(s, e);
+    r->set_handle(l4vbus_device_handle_t(vgpio));
 
     return true;
   }
