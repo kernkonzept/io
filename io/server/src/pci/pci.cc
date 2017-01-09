@@ -607,18 +607,16 @@ Dev::discover_expansion_rom()
     if ((x >> s) & 1)
       break;
 
-    {
-      unsigned flags = Resource::Mmio_res | Resource::F_size_aligned
-                       | Resource::F_rom | Resource::F_prefetchable
-                       | Resource::F_can_move;
-      Resource *res = new Resource(flags);
-      res->set_id("ROM");
+  unsigned flags = Resource::Mmio_res | Resource::F_size_aligned
+                   | Resource::F_rom | Resource::F_prefetchable
+                   | Resource::F_can_move;
+  Resource *res = new Resource(flags);
+  res->set_id("ROM");
 
-      _rom = res;
-      res->start_size(v & ~3, 1 << s);
-      res->validate();
-      _host->add_resource_rq(res);
-    }
+  _rom = res;
+  res->start_size(v & ~3, 1 << s);
+  res->validate();
+  _host->add_resource_rq(res);
 }
 
 void
