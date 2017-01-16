@@ -158,7 +158,7 @@ enum L4vbus_dma_domain_assign_flags
   L4VBUS_DMAD_BIND   = 1,
   /** The given DMA space is an L4Re::Dma_space */
   L4VBUS_DMAD_L4RE_DMA_SPACE = 0,
-  /** The goven DMA space is a kernel DMA space (L4::Task) */
+  /** The given DMA space is a kernel DMA space (L4::Task) */
   L4VBUS_DMAD_KERNEL_DMA_SPACE = 2,
 };
 
