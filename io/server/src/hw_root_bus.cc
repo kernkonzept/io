@@ -14,6 +14,7 @@
 #include "phys_space.h"
 #include "resource.h"
 #include "pm.h"
+#include <l4/sys/platform_control>
 #include "server.h"
 
 namespace {
@@ -109,10 +110,53 @@ Root_mmio_rs::alloc(Resource *parent, Device *, Resource *child, Device *,
 // --- End Root address space for MMIO --------------------------------------
 }
 
+namespace {
+
+struct Generic_pm : Hw::Root_bus::Pm
+{
+  L4::Cap<L4::Platform_control> pfc;
+
+  Generic_pm() : pfc(L4Re::Env::env()->get_cap<L4::Platform_control>("icu"))
+  {}
+
+  int suspend()
+  {
+    if (pfc)
+      return l4_error(pfc->system_suspend(0));
+
+    d_printf(DBG_WARN,
+             "warning: no platform control capability, cannot suspend\n");
+    return 0;
+  }
+
+  int shutdown()
+  {
+    if (pfc)
+      return l4_error(pfc->system_shutdown(0));
+
+    d_printf(DBG_WARN,
+             "warning: no platform control capability, cannot shutdown\n");
+    return 0;
+  }
+
+  int reboot()
+  {
+    if (pfc)
+      return l4_error(pfc->system_shutdown(1));
+
+    d_printf(DBG_WARN,
+             "warning: no platform control capability, cannot reboot\n");
+    return 0;
+  }
+
+};
+
+}
+
 namespace Hw {
 
 Root_bus::Root_bus(char const *name)
-: Hw::Device(), _pm(0)
+: Hw::Device(), _pm(new Generic_pm)
 {
   set_name(name);
 
