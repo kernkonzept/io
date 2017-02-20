@@ -18,9 +18,9 @@ Io.Dt.add_children(Io.system_bus(), function()
 
     -- note: names for resources are truncated to 4 letters and a client
     -- can determine the name from the ID field of a l4vbus_resource_t
-    -- add two resources 'int' and 'regs' to the device
-    Resource.int  = Io.Res.irq(17);
-    Resource.regs = Io.Res.mmio(0x6f000000, 0x6f007fff);
+    -- add two resources 'irq0' and 'reg0' to the device
+    Resource.irq0 = Io.Res.irq(17);
+    Resource.reg0 = Io.Res.mmio(0x6f000000, 0x6f007fff);
   end);
 
   -- create a new hardware device called "BARDEVICE"
@@ -42,10 +42,10 @@ Io.Dt.add_children(Io.system_bus(), function()
 
     -- note: names for resources are truncated to 4 letters and a client
     -- can determine the name from the ID field of a l4vbus_resource_t
-    -- add three resources 'intA', 'intB', and 'regs' to the device
-    Resource.intA = Io.Res.irq(19);
-    Resource.intB = Io.Res.irq(20);
-    Resource.regs = Io.Res.mmio(0x6f100000, 0x6f100fff);
+    -- add three resources 'irq0', 'irq1', and 'reg0' to the device
+    Resource.irq0 = Io.Res.irq(19);
+    Resource.irq1 = Io.Res.irq(20);
+    Resource.reg0 = Io.Res.mmio(0x6f100000, 0x6f100fff);
   end);
 end);
 
