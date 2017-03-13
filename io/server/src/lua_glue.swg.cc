@@ -2681,20 +2681,18 @@ SWIG_Lua_dostring(lua_State *L, const char *str) {
 #define SWIGTYPE_p_Gpio_resource swig_types[3]
 #define SWIGTYPE_p_Hw__Device swig_types[4]
 #define SWIGTYPE_p_Hw__Device_factory swig_types[5]
-#define SWIGTYPE_p_L4Re__Rm__Auto_regionT_l4_addr_t_t swig_types[6]
-#define SWIGTYPE_p_Mmio_data_space swig_types[7]
-#define SWIGTYPE_p_Property swig_types[8]
-#define SWIGTYPE_p_Resource swig_types[9]
-#define SWIGTYPE_p_Resource_provider swig_types[10]
-#define SWIGTYPE_p_Resource_space swig_types[11]
-#define SWIGTYPE_p_Root_resource swig_types[12]
-#define SWIGTYPE_p_Size swig_types[13]
-#define SWIGTYPE_p_Vi__Dev_factory swig_types[14]
-#define SWIGTYPE_p_Vi__Device swig_types[15]
-#define SWIGTYPE_p_l4vbus_device_handle_t swig_types[16]
-#define SWIGTYPE_p_std__string swig_types[17]
-static swig_type_info *swig_types[19];
-static swig_module_info swig_module = {swig_types, 18, 0, 0, 0, 0};
+#define SWIGTYPE_p_Mmio_data_space swig_types[6]
+#define SWIGTYPE_p_Property swig_types[7]
+#define SWIGTYPE_p_Resource swig_types[8]
+#define SWIGTYPE_p_Resource_provider swig_types[9]
+#define SWIGTYPE_p_Resource_space swig_types[10]
+#define SWIGTYPE_p_Root_resource swig_types[11]
+#define SWIGTYPE_p_Size swig_types[12]
+#define SWIGTYPE_p_Vi__Dev_factory swig_types[13]
+#define SWIGTYPE_p_Vi__Device swig_types[14]
+#define SWIGTYPE_p_std__string swig_types[15]
+static swig_type_info *swig_types[17];
+static swig_module_info swig_module = {swig_types, 16, 0, 0, 0, 0};
 #define SWIG_TypeQuery(name) SWIG_TypeQueryModule(&swig_module, &swig_module, name)
 #define SWIG_MangledTypeQuery(name) SWIG_MangledTypeQueryModule(&swig_module, &swig_module, name)
 
@@ -3211,16 +3209,6 @@ static int _wrap_Resource_type(lua_State* L) { int SWIG_arg = 0; Resource *arg1 
     SWIG_fail_ptr("Resource_type",1,SWIGTYPE_p_Resource); }  result = (unsigned int)((Resource const *)arg1)->type();
   lua_pushinteger(L, (lua_Integer)(result)); SWIG_arg++;   return SWIG_arg; if(0) SWIG_fail; fail: lua_error(L);
   return SWIG_arg; }
-static int _wrap_Resource_lt_compare(lua_State* L) { int SWIG_arg = 0; Resource *arg1 = (Resource *) 0 ;
-  Resource *arg2 = (Resource *) 0 ; bool result; SWIG_check_num_args("Resource::lt_compare",2,2)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Resource::lt_compare",1,"Resource const *");
-  if(!SWIG_isptrtype(L,2)) SWIG_fail_arg("Resource::lt_compare",2,"Resource const *");
-  if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_Resource,0))){
-    SWIG_fail_ptr("Resource_lt_compare",1,SWIGTYPE_p_Resource); } 
-  if (!SWIG_IsOK(SWIG_ConvertPtr(L,2,(void**)&arg2,SWIGTYPE_p_Resource,0))){
-    SWIG_fail_ptr("Resource_lt_compare",2,SWIGTYPE_p_Resource); } 
-  result = (bool)((Resource const *)arg1)->lt_compare((Resource const *)arg2); lua_pushboolean(L,(int)(result!=0)); SWIG_arg++;
-  return SWIG_arg; if(0) SWIG_fail; fail: lua_error(L); return SWIG_arg; }
 static int _wrap_Resource_str_to_id(lua_State* L) { int SWIG_arg = 0; char *arg1 = (char *) 0 ; l4_uint32_t result;
   SWIG_check_num_args("Resource::str_to_id",1,1)
   if(!SWIG_lua_isnilstring(L,1)) SWIG_fail_arg("Resource::str_to_id",1,"char const *"); arg1 = (char *)lua_tostring(L, 1);
@@ -3254,12 +3242,6 @@ static int _wrap_Resource_id(lua_State* L) { int SWIG_arg = 0; Resource *arg1 = 
     SWIG_fail_ptr("Resource_id",1,SWIGTYPE_p_Resource); }  result = ((Resource const *)arg1)->id();
   lua_pushinteger(L, (lua_Integer)(result)); SWIG_arg++;   return SWIG_arg; if(0) SWIG_fail; fail: lua_error(L);
   return SWIG_arg; }
-static int _wrap_Resource_set_empty__SWIG_0(lua_State* L) { int SWIG_arg = 0; Resource *arg1 = (Resource *) 0 ; bool arg2 ;
-  SWIG_check_num_args("Resource::set_empty",2,2) if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Resource::set_empty",1,"Resource *");
-  if(!lua_isboolean(L,2)) SWIG_fail_arg("Resource::set_empty",2,"bool");
-  if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_Resource,0))){
-    SWIG_fail_ptr("Resource_set_empty",1,SWIGTYPE_p_Resource); }  arg2 = (lua_toboolean(L, 2)!=0); (arg1)->set_empty(arg2);
-  return SWIG_arg; if(0) SWIG_fail; fail: lua_error(L); return SWIG_arg; }
 static int _wrap_Resource_disable(lua_State* L) { int SWIG_arg = 0; Resource *arg1 = (Resource *) 0 ;
   SWIG_check_num_args("Resource::disable",1,1) if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Resource::disable",1,"Resource *");
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_Resource,0))){
@@ -3369,19 +3351,6 @@ static int _wrap_Resource_parent(lua_State* L) { int argc; int argv[3]={ 1,2,3} 
          else { _v = 1; }  }  if (_v) { return _wrap_Resource_parent__SWIG_1(L);}  }  } 
   SWIG_Lua_pusherrstring(L,"Wrong arguments for overloaded function 'Resource_parent'\n" "  Possible C/C++ prototypes are:\n"
   "    Resource::parent() const\n" "    Resource::parent(Resource *)\n"); lua_error(L);return 0; }
-static int _wrap_Resource_set_empty__SWIG_1(lua_State* L) { int SWIG_arg = 0; Resource *arg1 = (Resource *) 0 ;
-  SWIG_check_num_args("Resource::set_empty",1,1) if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Resource::set_empty",1,"Resource *");
-  if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_Resource,0))){
-    SWIG_fail_ptr("Resource_set_empty",1,SWIGTYPE_p_Resource); }  (arg1)->set_empty(); return SWIG_arg; if(0) SWIG_fail; fail:
-  lua_error(L); return SWIG_arg; }
-static int _wrap_Resource_set_empty(lua_State* L) { int argc; int argv[3]={ 1,2,3} ; argc = lua_gettop(L); if (argc == 1) {
-    int _v; { void *ptr;
-      if (SWIG_isptrtype(L,argv[0])==0 || SWIG_ConvertPtr(L,argv[0], (void **) &ptr, SWIGTYPE_p_Resource, 0)) { _v = 0; }
-       else { _v = 1; }  }  if (_v) { return _wrap_Resource_set_empty__SWIG_1(L);}  }  if (argc == 2) { int _v; { void *ptr;
-      if (SWIG_isptrtype(L,argv[0])==0 || SWIG_ConvertPtr(L,argv[0], (void **) &ptr, SWIGTYPE_p_Resource, 0)) { _v = 0; }
-       else { _v = 1; }  }  if (_v) { { _v = lua_isboolean(L,argv[1]); }  if (_v) { return _wrap_Resource_set_empty__SWIG_0(L);}
-       }  }  SWIG_Lua_pusherrstring(L,"Wrong arguments for overloaded function 'Resource_set_empty'\n"
-  "  Possible C/C++ prototypes are:\n" "    Resource::set_empty(bool)\n" "    Resource::set_empty()\n"); lua_error(L);return 0; }
 static int _wrap_Resource_alignment__SWIG_0(lua_State* L) { int SWIG_arg = 0; Resource *arg1 = (Resource *) 0 ;
   Resource::Size arg2 ; SWIG_check_num_args("Resource::alignment",2,2)
   if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Resource::alignment",1,"Resource *");
@@ -3394,23 +3363,11 @@ static int _wrap_Resource_valid(lua_State* L) { int SWIG_arg = 0; Resource *arg1
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_Resource,0))){
     SWIG_fail_ptr("Resource_valid",1,SWIGTYPE_p_Resource); }  result = (bool)((Resource const *)arg1)->valid();
   lua_pushboolean(L,(int)(result!=0)); SWIG_arg++; return SWIG_arg; if(0) SWIG_fail; fail: lua_error(L); return SWIG_arg; }
-static int _wrap_Resource_validate(lua_State* L) { int SWIG_arg = 0; Resource *arg1 = (Resource *) 0 ;
-  SWIG_check_num_args("Resource::validate",1,1) if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Resource::validate",1,"Resource *");
-  if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_Resource,0))){
-    SWIG_fail_ptr("Resource_validate",1,SWIGTYPE_p_Resource); }  (arg1)->validate(); return SWIG_arg; if(0) SWIG_fail; fail:
-  lua_error(L); return SWIG_arg; }
 static int _wrap_Resource_start__SWIG_0(lua_State* L) { int SWIG_arg = 0; Resource *arg1 = (Resource *) 0 ;
   Resource::Addr result; SWIG_check_num_args("Resource::start",1,1)
   if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Resource::start",1,"Resource const *");
   if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_Resource,0))){
     SWIG_fail_ptr("Resource_start",1,SWIGTYPE_p_Resource); }  result = ((Resource const *)arg1)->start();
-  lua_pushinteger(L, (lua_Integer)(result)); SWIG_arg++;   return SWIG_arg; if(0) SWIG_fail; fail: lua_error(L);
-  return SWIG_arg; }
-static int _wrap_Resource_c_end__SWIG_0(lua_State* L) { int SWIG_arg = 0; Resource *arg1 = (Resource *) 0 ;
-  Resource::Addr result; SWIG_check_num_args("Resource::end",1,1)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Resource::end",1,"Resource const *");
-  if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_Resource,0))){
-    SWIG_fail_ptr("Resource_c_end",1,SWIGTYPE_p_Resource); }  result = ((Resource const *)arg1)->end();
   lua_pushinteger(L, (lua_Integer)(result)); SWIG_arg++;   return SWIG_arg; if(0) SWIG_fail; fail: lua_error(L);
   return SWIG_arg; }
 static int _wrap_Resource_size__SWIG_0(lua_State* L) { int SWIG_arg = 0; Resource *arg1 = (Resource *) 0 ;
@@ -3420,16 +3377,6 @@ static int _wrap_Resource_size__SWIG_0(lua_State* L) { int SWIG_arg = 0; Resourc
     SWIG_fail_ptr("Resource_size",1,SWIGTYPE_p_Resource); }  result = ((Resource const *)arg1)->size();
   lua_pushinteger(L, (lua_Integer)(result)); SWIG_arg++;   return SWIG_arg; if(0) SWIG_fail; fail: lua_error(L);
   return SWIG_arg; }
-static int _wrap_Resource_contains(lua_State* L) { int SWIG_arg = 0; Resource *arg1 = (Resource *) 0 ; Resource *arg2 = 0 ;
-  bool result; SWIG_check_num_args("Resource::contains",2,2)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Resource::contains",1,"Resource const *");
-  if(!lua_isuserdata(L,2)) SWIG_fail_arg("Resource::contains",2,"Resource const &");
-  if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_Resource,0))){
-    SWIG_fail_ptr("Resource_contains",1,SWIGTYPE_p_Resource); } 
-  if (!SWIG_IsOK(SWIG_ConvertPtr(L,2,(void**)&arg2,SWIGTYPE_p_Resource,0))){
-    SWIG_fail_ptr("Resource_contains",2,SWIGTYPE_p_Resource); } 
-  result = (bool)((Resource const *)arg1)->contains((Resource const &)*arg2); lua_pushboolean(L,(int)(result!=0)); SWIG_arg++;
-  return SWIG_arg; if(0) SWIG_fail; fail: lua_error(L); return SWIG_arg; }
 static int _wrap_Resource_start__SWIG_1(lua_State* L) { int SWIG_arg = 0; Resource *arg1 = (Resource *) 0 ;
   Resource::Addr arg2 ; SWIG_check_num_args("Resource::start",2,2)
   if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Resource::start",1,"Resource *");
@@ -3445,21 +3392,6 @@ static int _wrap_Resource_start(lua_State* L) { int argc; int argv[3]={ 1,2,3} ;
         return _wrap_Resource_start__SWIG_1(L);}  }  } 
   SWIG_Lua_pusherrstring(L,"Wrong arguments for overloaded function 'Resource_start'\n" "  Possible C/C++ prototypes are:\n"
   "    Resource::start() const\n" "    Resource::start(Resource::Addr)\n"); lua_error(L);return 0; }
-static int _wrap_Resource_c_end__SWIG_1(lua_State* L) { int SWIG_arg = 0; Resource *arg1 = (Resource *) 0 ;
-  Resource::Addr arg2 ; SWIG_check_num_args("Resource::end",2,2)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Resource::end",1,"Resource *");
-  if(!lua_isinteger(L,2)) SWIG_fail_arg("Resource::end",2,"Resource::Addr");
-  if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_Resource,0))){
-    SWIG_fail_ptr("Resource_c_end",1,SWIGTYPE_p_Resource); }  arg2 = (Resource::Addr)lua_tointeger(L, 2);  (arg1)->end(arg2);
-  return SWIG_arg; if(0) SWIG_fail; fail: lua_error(L); return SWIG_arg; }
-static int _wrap_Resource_c_end(lua_State* L) { int argc; int argv[3]={ 1,2,3} ; argc = lua_gettop(L); if (argc == 1) { int _v;
-    { void *ptr; if (SWIG_isptrtype(L,argv[0])==0 || SWIG_ConvertPtr(L,argv[0], (void **) &ptr, SWIGTYPE_p_Resource, 0)) {
-        _v = 0; }  else { _v = 1; }  }  if (_v) { return _wrap_Resource_c_end__SWIG_0(L);}  }  if (argc == 2) { int _v; {
-      void *ptr; if (SWIG_isptrtype(L,argv[0])==0 || SWIG_ConvertPtr(L,argv[0], (void **) &ptr, SWIGTYPE_p_Resource, 0)) {
-        _v = 0; }  else { _v = 1; }  }  if (_v) { { _v = lua_isinteger(L, argv[1]);}  if (_v) {
-        return _wrap_Resource_c_end__SWIG_1(L);}  }  } 
-  SWIG_Lua_pusherrstring(L,"Wrong arguments for overloaded function 'Resource_c_end'\n" "  Possible C/C++ prototypes are:\n"
-  "    Resource::end() const\n" "    Resource::end(Resource::Addr)\n"); lua_error(L);return 0; }
 static int _wrap_Resource_size__SWIG_1(lua_State* L) { int SWIG_arg = 0; Resource *arg1 = (Resource *) 0 ; Resource::Size arg2 ;
   SWIG_check_num_args("Resource::size",2,2) if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Resource::size",1,"Resource *");
   if(!lua_isinteger(L,2)) SWIG_fail_arg("Resource::size",2,"Resource::Size");
@@ -3474,24 +3406,6 @@ static int _wrap_Resource_size(lua_State* L) { int argc; int argv[3]={ 1,2,3} ; 
         return _wrap_Resource_size__SWIG_1(L);}  }  } 
   SWIG_Lua_pusherrstring(L,"Wrong arguments for overloaded function 'Resource_size'\n" "  Possible C/C++ prototypes are:\n"
   "    Resource::size() const\n" "    Resource::size(Resource::Size)\n"); lua_error(L);return 0; }
-static int _wrap_Resource_start_end(lua_State* L) { int SWIG_arg = 0; Resource *arg1 = (Resource *) 0 ; Resource::Addr arg2 ;
-  Resource::Addr arg3 ; SWIG_check_num_args("Resource::start_end",3,3)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Resource::start_end",1,"Resource *");
-  if(!lua_isinteger(L,2)) SWIG_fail_arg("Resource::start_end",2,"Resource::Addr");
-  if(!lua_isinteger(L,3)) SWIG_fail_arg("Resource::start_end",3,"Resource::Addr");
-  if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_Resource,0))){
-    SWIG_fail_ptr("Resource_start_end",1,SWIGTYPE_p_Resource); }  arg2 = (Resource::Addr)lua_tointeger(L, 2); 
-  arg3 = (Resource::Addr)lua_tointeger(L, 3);  (arg1)->start_end(arg2,arg3); return SWIG_arg; if(0) SWIG_fail; fail:
-  lua_error(L); return SWIG_arg; }
-static int _wrap_Resource_start_size(lua_State* L) { int SWIG_arg = 0; Resource *arg1 = (Resource *) 0 ; Resource::Addr arg2 ;
-  Resource::Size arg3 ; SWIG_check_num_args("Resource::start_size",3,3)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Resource::start_size",1,"Resource *");
-  if(!lua_isinteger(L,2)) SWIG_fail_arg("Resource::start_size",2,"Resource::Addr");
-  if(!lua_isinteger(L,3)) SWIG_fail_arg("Resource::start_size",3,"Resource::Size");
-  if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_Resource,0))){
-    SWIG_fail_ptr("Resource_start_size",1,SWIGTYPE_p_Resource); }  arg2 = (Resource::Addr)lua_tointeger(L, 2); 
-  arg3 = (Resource::Size)lua_tointeger(L, 3);  (arg1)->start_size(arg2,arg3); return SWIG_arg; if(0) SWIG_fail; fail:
-  lua_error(L); return SWIG_arg; }
 static int _wrap_Resource_is_64bit(lua_State* L) { int SWIG_arg = 0; Resource *arg1 = (Resource *) 0 ; bool result;
   SWIG_check_num_args("Resource::is_64bit",1,1)
   if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Resource::is_64bit",1,"Resource const *");
@@ -3514,22 +3428,6 @@ static int _wrap_Resource_alignment(lua_State* L) { int argc; int argv[3]={ 1,2,
        }  }  SWIG_Lua_pusherrstring(L,"Wrong arguments for overloaded function 'Resource_alignment'\n"
   "  Possible C/C++ prototypes are:\n" "    Resource::alignment(Resource::Size)\n" "    Resource::alignment() const\n");
   lua_error(L);return 0; }
-static int _wrap_Resource_map_iomem(lua_State* L) { int SWIG_arg = 0; Resource *arg1 = (Resource *) 0 ; l4_addr_t result;
-  SWIG_check_num_args("Resource::map_iomem",1,1)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Resource::map_iomem",1,"Resource const *");
-  if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_Resource,0))){
-    SWIG_fail_ptr("Resource_map_iomem",1,SWIGTYPE_p_Resource); }  result = ((Resource const *)arg1)->map_iomem();
-  lua_pushinteger(L, (lua_Integer)(result)); SWIG_arg++;   return SWIG_arg; if(0) SWIG_fail; fail: lua_error(L);
-  return SWIG_arg; }
-static int _wrap_Resource_provider_device_handle(lua_State* L) { int SWIG_arg = 0; Resource *arg1 = (Resource *) 0 ;
-  l4vbus_device_handle_t result; SWIG_check_num_args("Resource::provider_device_handle",1,1)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Resource::provider_device_handle",1,"Resource const *");
-  if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_Resource,0))){
-    SWIG_fail_ptr("Resource_provider_device_handle",1,SWIGTYPE_p_Resource); } 
-  result = ((Resource const *)arg1)->provider_device_handle(); {
-    l4vbus_device_handle_t * resultptr = new l4vbus_device_handle_t((const l4vbus_device_handle_t &) result);
-    SWIG_NewPointerObj(L,(void *) resultptr,SWIGTYPE_p_l4vbus_device_handle_t,1); SWIG_arg++; }  return SWIG_arg;
-  if(0) SWIG_fail; fail: lua_error(L); return SWIG_arg; }
 static void swig_delete_Resource(void *obj) {
 Resource *arg1 = (Resource *) obj;
 delete arg1;
@@ -3559,7 +3457,6 @@ static swig_lua_method swig_Resource_methods[]= {
     { "fixed_size", _wrap_Resource_fixed_size},
     { "relative", _wrap_Resource_relative},
     { "type", _wrap_Resource_type},
-    { "lt_compare", _wrap_Resource_lt_compare},
     { "set_id", _wrap_Resource_set_id},
     { "id", _wrap_Resource_id},
     { "disable", _wrap_Resource_disable},
@@ -3568,19 +3465,11 @@ static swig_lua_method swig_Resource_methods[]= {
     { "dump", _wrap_Resource_dump},
     { "compatible", _wrap_Resource_compatible},
     { "parent", _wrap_Resource_parent},
-    { "set_empty", _wrap_Resource_set_empty},
     { "valid", _wrap_Resource_valid},
-    { "validate", _wrap_Resource_validate},
-    { "contains", _wrap_Resource_contains},
     { "start", _wrap_Resource_start},
-    { "c_end", _wrap_Resource_c_end},
     { "size", _wrap_Resource_size},
-    { "start_end", _wrap_Resource_start_end},
-    { "start_size", _wrap_Resource_start_size},
     { "is_64bit", _wrap_Resource_is_64bit},
     { "alignment", _wrap_Resource_alignment},
-    { "map_iomem", _wrap_Resource_map_iomem},
-    { "provider_device_handle", _wrap_Resource_provider_device_handle},
     {0,0}
 };
 static swig_lua_method swig_Resource_meta[] = {
@@ -3639,24 +3528,6 @@ static swig_lua_class *swig_Resource_bases[] = {0};
 static const char *swig_Resource_base_names[] = {0};
 static swig_lua_class _wrap_class_Resource = { "Resource", "Resource", &SWIGTYPE_p_Resource,_proxy__wrap_new_Resource, swig_delete_Resource, swig_Resource_methods, swig_Resource_attributes, &swig_Resource_Sf_SwigStatic, swig_Resource_meta, swig_Resource_bases, swig_Resource_base_names };
 
-static int _wrap_Mmio_data_space__r_set(lua_State* L) { int SWIG_arg = 0; Mmio_data_space *arg1 = (Mmio_data_space *) 0 ;
-  L4Re::Rm::Auto_region< l4_addr_t > arg2 ; L4Re::Rm::Auto_region< l4_addr_t > *argp2 ;
-  SWIG_check_num_args("Mmio_data_space::_r",2,2)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Mmio_data_space::_r",1,"Mmio_data_space *");
-  if(!lua_isuserdata(L,2)) SWIG_fail_arg("Mmio_data_space::_r",2,"L4Re::Rm::Auto_region< l4_addr_t >");
-  if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_Mmio_data_space,0))){
-    SWIG_fail_ptr("Mmio_data_space__r_set",1,SWIGTYPE_p_Mmio_data_space); } 
-  if (!SWIG_IsOK(SWIG_ConvertPtr(L,2,(void**)&argp2,SWIGTYPE_p_L4Re__Rm__Auto_regionT_l4_addr_t_t,0))){
-    SWIG_fail_ptr("Mmio_data_space__r_set",2,SWIGTYPE_p_L4Re__Rm__Auto_regionT_l4_addr_t_t); }  arg2 = *argp2;
-  if (arg1) (arg1)->_r = arg2; return SWIG_arg; if(0) SWIG_fail; fail: lua_error(L); return SWIG_arg; }
-static int _wrap_Mmio_data_space__r_get(lua_State* L) { int SWIG_arg = 0; Mmio_data_space *arg1 = (Mmio_data_space *) 0 ;
-  L4Re::Rm::Auto_region< l4_addr_t > result; SWIG_check_num_args("Mmio_data_space::_r",1,1)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Mmio_data_space::_r",1,"Mmio_data_space *");
-  if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_Mmio_data_space,0))){
-    SWIG_fail_ptr("Mmio_data_space__r_get",1,SWIGTYPE_p_Mmio_data_space); }  result =  ((arg1)->_r); {
-    L4Re::Rm::Auto_region< l4_addr_t > * resultptr = new L4Re::Rm::Auto_region< l4_addr_t >((const L4Re::Rm::Auto_region< l4_addr_t > &) result);
-    SWIG_NewPointerObj(L,(void *) resultptr,SWIGTYPE_p_L4Re__Rm__Auto_regionT_l4_addr_t_t,1); SWIG_arg++; }  return SWIG_arg;
-  if(0) SWIG_fail; fail: lua_error(L); return SWIG_arg; }
 static int _wrap_new_Mmio_data_space__SWIG_0(lua_State* L) { int SWIG_arg = 0; Resource::Size arg1 ; unsigned long arg2 ;
   Mmio_data_space *result = 0 ; SWIG_check_num_args("Mmio_data_space::Mmio_data_space",2,2)
   if(!lua_isinteger(L,1)) SWIG_fail_arg("Mmio_data_space::Mmio_data_space",1,"Resource::Size");
@@ -3678,15 +3549,6 @@ static int _wrap_new_Mmio_data_space(lua_State* L) { int argc; int argv[3]={ 1,2
   SWIG_Lua_pusherrstring(L,"Wrong arguments for overloaded function 'new_Mmio_data_space'\n"
   "  Possible C/C++ prototypes are:\n" "    Mmio_data_space::Mmio_data_space(Resource::Size,unsigned long)\n"
   "    Mmio_data_space::Mmio_data_space(Resource::Size)\n"); lua_error(L);return 0; }
-static int _wrap_Mmio_data_space_alloc_ram(lua_State* L) { int SWIG_arg = 0; Mmio_data_space *arg1 = (Mmio_data_space *) 0 ;
-  Resource::Size arg2 ; unsigned long arg3 ; SWIG_check_num_args("Mmio_data_space::alloc_ram",3,3)
-  if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Mmio_data_space::alloc_ram",1,"Mmio_data_space *");
-  if(!lua_isinteger(L,2)) SWIG_fail_arg("Mmio_data_space::alloc_ram",2,"Resource::Size");
-  if(!lua_isinteger(L,3)) SWIG_fail_arg("Mmio_data_space::alloc_ram",3,"unsigned long");
-  if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_Mmio_data_space,0))){
-    SWIG_fail_ptr("Mmio_data_space_alloc_ram",1,SWIGTYPE_p_Mmio_data_space); }  arg2 = (Resource::Size)lua_tointeger(L, 2); 
-  arg3 = (unsigned long)lua_tointeger(L, 3);  (arg1)->alloc_ram(arg2,arg3); return SWIG_arg; if(0) SWIG_fail; fail:
-  lua_error(L); return SWIG_arg; }
 static void swig_delete_Mmio_data_space(void *obj) {
 Mmio_data_space *arg1 = (Mmio_data_space *) obj;
 delete arg1;
@@ -3700,11 +3562,9 @@ static int _proxy__wrap_new_Mmio_data_space(lua_State *L) {
     return 1;
 }
 static swig_lua_attribute swig_Mmio_data_space_attributes[] = {
-    { "_r", _wrap_Mmio_data_space__r_get, _wrap_Mmio_data_space__r_set },
     {0,0,0}
 };
 static swig_lua_method swig_Mmio_data_space_methods[]= {
-    { "alloc_ram", _wrap_Mmio_data_space_alloc_ram},
     {0,0}
 };
 static swig_lua_method swig_Mmio_data_space_meta[] = {
@@ -4610,7 +4470,6 @@ static swig_type_info _swigt__p_Generic_device = {"_p_Generic_device", "Generic_
 static swig_type_info _swigt__p_Gpio_resource = {"_p_Gpio_resource", "Gpio_resource *", 0, 0, (void*)&_wrap_class_Gpio_resource, 0};
 static swig_type_info _swigt__p_Hw__Device = {"_p_Hw__Device", "Device *|Hw::Device *", 0, 0, (void*)&_wrap_class_Hw_device, 0};
 static swig_type_info _swigt__p_Hw__Device_factory = {"_p_Hw__Device_factory", "Hw::Device_factory *", 0, 0, (void*)&_wrap_class_Hw_dev_factory, 0};
-static swig_type_info _swigt__p_L4Re__Rm__Auto_regionT_l4_addr_t_t = {"_p_L4Re__Rm__Auto_regionT_l4_addr_t_t", "L4Re::Rm::Auto_region< l4_addr_t > *", 0, 0, (void*)0, 0};
 static swig_type_info _swigt__p_Mmio_data_space = {"_p_Mmio_data_space", "Mmio_data_space *", 0, 0, (void*)&_wrap_class_Mmio_data_space, 0};
 static swig_type_info _swigt__p_Property = {"_p_Property", "Property *", 0, 0, (void*)&_wrap_class_Property, 0};
 static swig_type_info _swigt__p_Resource = {"_p_Resource", "Resource *", 0, 0, (void*)&_wrap_class_Resource, 0};
@@ -4620,7 +4479,6 @@ static swig_type_info _swigt__p_Resource_space = {"_p_Resource_space", "Resource
 static swig_type_info _swigt__p_Size = {"_p_Size", "Size *", 0, 0, (void*)0, 0};
 static swig_type_info _swigt__p_Vi__Dev_factory = {"_p_Vi__Dev_factory", "Vi::Dev_factory *", 0, 0, (void*)&_wrap_class_Vi_dev_factory, 0};
 static swig_type_info _swigt__p_Vi__Device = {"_p_Vi__Device", "Device *|Vi::Device *", 0, 0, (void*)&_wrap_class_Vi_device, 0};
-static swig_type_info _swigt__p_l4vbus_device_handle_t = {"_p_l4vbus_device_handle_t", "l4vbus_device_handle_t *", 0, 0, (void*)0, 0};
 static swig_type_info _swigt__p_std__string = {"_p_std__string", "std::string *", 0, 0, (void*)&_wrap_class_string, 0};
 
 static swig_type_info *swig_type_initial[] = {
@@ -4630,7 +4488,6 @@ static swig_type_info *swig_type_initial[] = {
   &_swigt__p_Gpio_resource,
   &_swigt__p_Hw__Device,
   &_swigt__p_Hw__Device_factory,
-  &_swigt__p_L4Re__Rm__Auto_regionT_l4_addr_t_t,
   &_swigt__p_Mmio_data_space,
   &_swigt__p_Property,
   &_swigt__p_Resource,
@@ -4640,7 +4497,6 @@ static swig_type_info *swig_type_initial[] = {
   &_swigt__p_Size,
   &_swigt__p_Vi__Dev_factory,
   &_swigt__p_Vi__Device,
-  &_swigt__p_l4vbus_device_handle_t,
   &_swigt__p_std__string,
 };
 
@@ -4650,7 +4506,6 @@ static swig_cast_info _swigc__p_Generic_device[] = {  {&_swigt__p_Generic_device
 static swig_cast_info _swigc__p_Gpio_resource[] = {  {&_swigt__p_Gpio_resource, 0, 0, 0},{0, 0, 0, 0}};
 static swig_cast_info _swigc__p_Hw__Device[] = {  {&_swigt__p_Hw__Device, 0, 0, 0},{0, 0, 0, 0}};
 static swig_cast_info _swigc__p_Hw__Device_factory[] = {  {&_swigt__p_Hw__Device_factory, 0, 0, 0},{0, 0, 0, 0}};
-static swig_cast_info _swigc__p_L4Re__Rm__Auto_regionT_l4_addr_t_t[] = {  {&_swigt__p_L4Re__Rm__Auto_regionT_l4_addr_t_t, 0, 0, 0},{0, 0, 0, 0}};
 static swig_cast_info _swigc__p_Mmio_data_space[] = {  {&_swigt__p_Mmio_data_space, 0, 0, 0},{0, 0, 0, 0}};
 static swig_cast_info _swigc__p_Property[] = {  {&_swigt__p_Property, 0, 0, 0},{0, 0, 0, 0}};
 static swig_cast_info _swigc__p_Root_resource[] = {{&_swigt__p_Root_resource, 0, 0, 0},{0, 0, 0, 0}};
@@ -4660,7 +4515,6 @@ static swig_cast_info _swigc__p_Resource_space[] = {  {&_swigt__p_Resource_space
 static swig_cast_info _swigc__p_Size[] = {  {&_swigt__p_Size, 0, 0, 0},{0, 0, 0, 0}};
 static swig_cast_info _swigc__p_Vi__Dev_factory[] = {  {&_swigt__p_Vi__Dev_factory, 0, 0, 0},{0, 0, 0, 0}};
 static swig_cast_info _swigc__p_Vi__Device[] = {  {&_swigt__p_Vi__Device, 0, 0, 0},{0, 0, 0, 0}};
-static swig_cast_info _swigc__p_l4vbus_device_handle_t[] = {  {&_swigt__p_l4vbus_device_handle_t, 0, 0, 0},{0, 0, 0, 0}};
 static swig_cast_info _swigc__p_std__string[] = {  {&_swigt__p_std__string, 0, 0, 0},{0, 0, 0, 0}};
 
 static swig_cast_info *swig_cast_initial[] = {
@@ -4670,7 +4524,6 @@ static swig_cast_info *swig_cast_initial[] = {
   _swigc__p_Gpio_resource,
   _swigc__p_Hw__Device,
   _swigc__p_Hw__Device_factory,
-  _swigc__p_L4Re__Rm__Auto_regionT_l4_addr_t_t,
   _swigc__p_Mmio_data_space,
   _swigc__p_Property,
   _swigc__p_Resource,
@@ -4680,7 +4533,6 @@ static swig_cast_info *swig_cast_initial[] = {
   _swigc__p_Size,
   _swigc__p_Vi__Dev_factory,
   _swigc__p_Vi__Device,
-  _swigc__p_l4vbus_device_handle_t,
   _swigc__p_std__string,
 };
 

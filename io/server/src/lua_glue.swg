@@ -24,6 +24,19 @@ void dump_devs(Device *d);
 %ignore Root_resource;
 %ignore Vi::Dev_feature;
 %ignore Hw::Dev_feature;
+%ignore Mmio_data_space::_r;
+%ignore Resource::map_iomem;
+%ignore Resource::validate;
+%ignore Resource::contains;
+%ignore Resource::provider_device_handle;
+%ignore Resource::provider_device_handle;
+%ignore Resource::start_end;
+%ignore Resource::start_size;
+%ignore Resource::end;
+%ignore Resource::set_empty;
+%ignore Resource::lt_compare;
+%ignore Mmio_data_space::alloc_ram;
+
 
 %include "resource.h"
 
