@@ -19,6 +19,15 @@ __END_DECLS
 #include "pci.h"
 #include "res.h"
 
+ACPI_STATUS
+AcpiOsEnterSleep (
+    UINT8                   SleepState,
+    UINT32                  RegaValue,
+    UINT32                  RegbValue)
+{
+  d_printf(DBG_ERR, "error: AcpiOsEnterSleep must never be used in our case...\n");
+}
+
 #if defined(ARCH_amd64) || defined(ARCH_x86)
 
 #include <l4/util/port_io.h>
