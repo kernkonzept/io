@@ -5,6 +5,7 @@ TARGET  = io
 SUBDIRS       = drivers
 
 SRC_CC_ACPI   = acpi.cc acpi_sci.cc acpi_osl.cc pci-acpi.cc
+$(foreach i,$(SRC_CC_ACPI),$(eval CXXFLAGS_acpi/$(i:.cc=.o) = -DL4_ACPICA))
 
 SRC_CC := main.cc res.cc phys_space.cc resource.cc hw_device.cc \
           hw_root_bus.cc device.cc hw_irqs.cc \
