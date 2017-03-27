@@ -51,6 +51,12 @@ SUBDIRS += $(SUBDIRS_$(ARCH)) $(SUBDIRS_$(OSYSTEM))
 SUBDIR_TARGETS := $(addsuffix /OBJ-$(SYSTEM)/builtin.thin.a,$(SUBDIRS))
 SUBDIR_OBJS     = $(addprefix $(OBJ_DIR)/,$(SUBDIR_TARGETS))
 
+# ACPI contrib code has many unused parameters
+CPPFLAGS_acpi/acpi.o     += -Wno-unused-parameter
+CPPFLAGS_acpi/acpi_sci.o += -Wno-unused-parameter
+CPPFLAGS_acpi/acpi_osl.o += -Wno-unused-parameter
+CPPFLAGS_acpi/pci-acpi.o += -Wno-unused-parameter
+
 all::
 
 $(SUBDIR_OBJS): $(OBJ_DIR)/%/OBJ-$(SYSTEM)/builtin.thin.a: %

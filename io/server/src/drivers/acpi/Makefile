@@ -8,4 +8,6 @@ SRC_CC  := pci-root.cc \
 
 REQUIRES_LIBS = acpica
 
+CPPFLAGS += -Wno-unused-parameter
+
 include $(PKGDIR)/server/src/lib_subdir.mk
