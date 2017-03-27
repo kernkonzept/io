@@ -601,7 +601,7 @@ public:
         unsigned phantomfn = _dev->phantomfn_bits();
         unsigned devfn     = _dev->devfn();
         devfn &= (7 >> phantomfn) | 0xf8;
-        for (unsigned i = 0; i < (1 << phantomfn); ++i)
+        for (unsigned i = 0; i < (1u << phantomfn); ++i)
           {
             iommu_bind(iommu, 0x40000
                               | (_bus->num << 8)
