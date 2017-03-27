@@ -114,7 +114,9 @@ struct Acpi_ec : Acpi_dev
 
     // if we are already initialized (may be via ECDT) we must skip the rest
     if (_data)
-      return;
+      {
+        return;
+      }
 
       {
         // handle the _GPE object
