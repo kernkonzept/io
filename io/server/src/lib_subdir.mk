@@ -21,4 +21,12 @@ $(SUBDIR_OBJS): $(OBJ_DIR)/%/OBJ-$(SYSTEM)/$(TARGET): %
                           -C $(SRC_DIR)/$* $(MKFLAGS)
 endif
 
+all::
+
+clean-subdir-%:
+	$(VERBOSE)$(MAKE) clean OBJ_BASE=$(OBJ_BASE) \
+                          -C $(SRC_DIR)/$* $(MKFLAGS)
+
+clean:: $(addprefix clean-subdir-,$(SUBDIRS))
+
 include $(L4DIR)/mk/lib.mk
