@@ -64,6 +64,10 @@ Kernel_irq_pin::set_mode(unsigned mode)
 int
 Kernel_irq_pin::_msi_info(l4_uint64_t src, l4_icu_msi_info_t *info)
 {
+  // Avoid warning of usage of potentially uninitialized members,
+  // just for the debug printf
+  info->msi_addr = 0;
+  info->msi_data = 0;
   int res = l4_error(system_icu()->icu->msi_info(_idx, src, info));
   d_printf(DBG_ALL,
            "MSI info for hw IRQ: %x (src=0x%llx). res=%d (addr=%llx data=%x)\n",
