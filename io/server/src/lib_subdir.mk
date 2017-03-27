@@ -1,6 +1,4 @@
 ifneq ($(SYSTEM),)
-# Io is C++11
-SRC_CC_IS_CXX11    := c++0x
 PRIVATE_INCDIR     += $(PKGDIR)/server/src
 
 # do not generate PC files for this lib
