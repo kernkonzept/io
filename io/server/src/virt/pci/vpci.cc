@@ -498,9 +498,11 @@ Pci_proxy_dev::dump() const
   printf("       %04x:%02x:%02x.%x:\n",
          0, p->bus_nr(), _hwf->device_nr(), _hwf->function_nr());
 #if 0
+#ifdef OPT_L4IO_PCIID_DB
   char buf[130];
   libpciids_name_device(buf, sizeof(buf), _dev->vendor(), _dev->device());
   printf("              %s\n", buf);
+#endif
 #endif
 }
 

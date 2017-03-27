@@ -1091,10 +1091,12 @@ Dev::dump(int indent) const
          0, (int)_bus->num, _host->adr() >> 16, _host->adr() & 0xffff,
          classname, (int)hdr_type);
 
-  char buf[130];
   printf("%*.s              0x%04x 0x%04x\n", indent, " ", vendor(), device());
+#ifdef OPT_L4IO_PCIID_DB
+  char buf[130];
   libpciids_name_device(buf, sizeof(buf), vendor(), device());
   printf("%*.s              %s\n", indent, " ", buf);
+#endif
 #if 0
   if (verbose_lvl)
     dump_res_rec(resources(), 0);
