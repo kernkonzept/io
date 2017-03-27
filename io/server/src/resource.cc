@@ -220,7 +220,7 @@ void Mmio_data_space::alloc_ram(Size size, unsigned long alloc_flags)
                L4Re::Dma_space::Attributes::None,
                L4Re::Dma_space::Bidirectional,
                &phys_start));
-  if (size > ds_size)
+  if (size > (Size)ds_size)
     throw(L4::Out_of_memory("not really"));
 
   start(phys_start);
