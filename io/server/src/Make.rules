@@ -2,15 +2,28 @@
 #MODE   := shared
 TARGET  = io
 
-OPT_L4IO_PCIID_DB = y
+$(GENERAL_D_LOC): $(PKGDIR)/server/src/Makefile.config
 
-DEFINES-$(OPT_L4IO_PCIID_DB) += -DOPT_L4IO_PCIID_DB
-DEFINES                      += $(DEFINES-y)
+include $(PKGDIR)/server/src/Makefile.config
 
-SUBDIRS       = drivers
+DEFINES-$(CONFIG_L4IO_PCIID_DB) += -DCONFIG_L4IO_PCIID_DB
+DEFINES                         += $(DEFINES-y)
 
-SRC_CC_ACPI   = acpi.cc acpi_sci.cc acpi_osl.cc pci-acpi.cc
+SUBDIRS      = drivers
+
+SRC_CC_ACPI  = acpi.cc acpi_sci.cc acpi_osl.cc pci-acpi.cc
+
 $(foreach i,$(SRC_CC_ACPI),$(eval CXXFLAGS_acpi/$(i:.cc=.o) = -DL4_ACPICA))
+
+SRC_CC-$(CONFIG_L4IO_ACPI) += $(addprefix acpi/,$(SRC_CC_ACPI))
+
+SRC_CC-$(CONFIG_L4IO_PCI)  += virt/pci/vpci.cc \
+                              virt/pci/vpci_virtual_root.cc \
+                              virt/pci/vpci_pci_bridge.cc \
+                              pci/pci.cc \
+                              pci/pci_iomem_root_bridge.cc \
+                              pci/msi.cc \
+                              pci/pm.cc
 
 SRC_CC := main.cc res.cc phys_space.cc resource.cc hw_device.cc \
           hw_root_bus.cc device.cc hw_irqs.cc \
@@ -26,30 +39,23 @@ SRC_CC := main.cc res.cc phys_space.cc resource.cc hw_device.cc \
           virt/vbus.cc \
           virt/vproxy_dev.cc \
           virt/vbus_factory.cc \
-          virt/pci/vpci.cc \
-          virt/pci/vpci_virtual_root.cc \
-          virt/pci/vpci_pci_bridge.cc \
           virt/gpio/vgpio.cc \
-          pci/pci.cc \
-          pci/pci_iomem_root_bridge.cc \
-          pci/msi.cc \
-          pci/pm.cc \
           inhibitor_mux.cc \
           platform_control.cc \
+          $(SRC_CC-y)
 
 
-SRC_CC_x86    = ux.cc $(addprefix acpi/,$(SRC_CC_ACPI))
-SRC_CC_amd64  = ux.cc $(addprefix acpi/,$(SRC_CC_ACPI))
+SRC_CC_x86    = ux.cc
+SRC_CC_amd64  = ux.cc
 
 SRC_CC       += $(SRC_CC_$(ARCH))
 SRC_CC_IS_CXX11 = c++0x
 OPTS         := -g -O3
 
-REQUIRES_LIBS                       = libsigma0 libstdc++ lua++ libpthread
-REQUIRES_LIBS-$(OPT_L4IO_PCIID_DB) += libpciids
-REQUIRES_LIBS                      += $(REQUIRES_LIBS-y)
-REQUIRES_LIBS_x86 = acpica
-REQUIRES_LIBS_amd64 = acpica
+REQUIRES_LIBS                          = libsigma0 libstdc++ lua++ libpthread
+REQUIRES_LIBS-$(CONFIG_L4IO_PCIID_DB) += libpciids
+REQUIRES_LIBS-$(CONFIG_L4IO_ACPI)     += acpica
+REQUIRES_LIBS                         += $(REQUIRES_LIBS-y)
 
 REQUIRES_CFLAGS = libio-vbus libio-io
 PRIVATE_INCDIR += $(SRC_DIR)

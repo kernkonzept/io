@@ -1092,7 +1092,7 @@ Dev::dump(int indent) const
          classname, (int)hdr_type);
 
   printf("%*.s              0x%04x 0x%04x\n", indent, " ", vendor(), device());
-#ifdef OPT_L4IO_PCIID_DB
+#ifdef CONFIG_L4IO_PCIID_DB
   char buf[130];
   libpciids_name_device(buf, sizeof(buf), vendor(), device());
   printf("%*.s              %s\n", indent, " ", buf);
