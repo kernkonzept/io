@@ -167,7 +167,8 @@ enum L4vbus_dma_domain_assign_flags
  * DMA domain.
  * \param vbus       Capability of the system bus
  * \param domain_id  DMA domain ID (resource address of DMA domain found on
- *                   the vBUS).
+ *                   the vBUS). If the value is ~0U the DMA space of the whole
+ *                   vBUS is used.
  * \param flags      A combination of #L4vbus_dma_domain_assign_flags.
  * \param dma_space  The DMA space capability to bind or unbind, this must
  *                   either be an L4Re::Dma_space or a kernel DMA space
