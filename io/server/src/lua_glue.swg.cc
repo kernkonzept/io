@@ -4349,6 +4349,7 @@ static swig_lua_attribute swig_Hw_device_Sf_SwigStatic_attributes[] = {
 };
 static swig_lua_const_info swig_Hw_device_Sf_SwigStatic_constants[]= {
     {SWIG_LUA_CONSTTAB_INT("DF_dma_supported", Hw::Device::DF_dma_supported)},
+    {SWIG_LUA_CONSTTAB_INT("DF_multi_vbus", Hw::Device::DF_multi_vbus)},
     {0,0,0,0,0,0}
 };
 static swig_lua_method swig_Hw_device_Sf_SwigStatic_methods[]= {
@@ -4530,6 +4531,7 @@ static swig_lua_const_info swig_SwigModule_constants[]= {
     {SWIG_LUA_CONSTTAB_INT("Resource_Irq_type_falling_edge", Resource::Irq_type_falling_edge)},
     {SWIG_LUA_CONSTTAB_INT("Resource_Irq_type_both_edges", Resource::Irq_type_both_edges)},
     {SWIG_LUA_CONSTTAB_INT("Hw_device_DF_dma_supported", Hw::Device::DF_dma_supported)},
+    {SWIG_LUA_CONSTTAB_INT("Hw_device_DF_multi_vbus", Hw::Device::DF_multi_vbus)},
     {0,0,0,0,0,0}
 };
 static swig_lua_method swig_SwigModule_methods[]= {

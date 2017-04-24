@@ -106,6 +106,7 @@ public:
   enum Device_flags
   {
     DF_dma_supported = 1 << 0,
+    DF_multi_vbus    = 1 << 1,
   };
 
   unsigned long ref_count() const { return _ref_cnt; }
@@ -252,6 +253,8 @@ public:
    */
   Dma_domain *downstream_dma_domain() const
   { return _downstream_dma_domain; }
+
+  bool is_multi_vbus_dev() const { return _flags & DF_multi_vbus; }
 
 private:
   typedef std::vector<std::string> Cid_list;

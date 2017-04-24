@@ -116,8 +116,9 @@ public:
   Device *do_match(Hw::Device *dev)
   {
     if (dev->ref_count())
-      printf("WARNING: device '%s' already assigned to another virtual bus.\n",
-             dev->name());
+      if (!dev->is_multi_vbus_dev())
+        printf("WARNING: device '%s' already assigned to another virtual bus.\n",
+               dev->name());
 
     if (!dynamic_cast<HW_DEV const*>(dev))
       return 0;

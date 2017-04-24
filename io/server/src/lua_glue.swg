@@ -115,6 +115,7 @@ public:
   enum Device_flags
   {
     DF_dma_supported = 1 << 0,
+    DF_multi_vbus    = 1 << 1,
   };
 
   Property *property(char const *name);
