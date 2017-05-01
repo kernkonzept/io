@@ -189,10 +189,27 @@ AcpiOsReadPciConfiguration (
   //printf("%s: ...\n", __func__);
   Hw::Pci::Root_bridge *rb = Hw::Pci::root_bridge(PciId->Segment);
   if (!rb)
-    return AE_BAD_PARAMETER;
+    {
+      if (Register < 0x100)
+        {
+          d_printf(DBG_ERR, "error: PCI config space register out of range\n");
+          return AE_BAD_PARAMETER;
+        }
+
+      Hw::Pci::Port_root_bridge prb(0, 0, Hw::Pci::Bus::Pci_bus, 0);
+      int r = prb.cfg_read(Hw::Pci::Cfg_addr(PciId->Bus, PciId->Device,
+                                             PciId->Function, Register),
+                           (l4_uint32_t *)Value, Hw::Pci::cfg_w_to_o(Width));
+
+      if (r < 0)
+        return AE_BAD_PARAMETER;
+
+      return AE_OK;
+    }
 
   int r = rb->cfg_read(PciId->Bus, (PciId->Device << 16) | PciId->Function,
-      Register, (l4_uint32_t *)Value, Hw::Pci::cfg_w_to_o(Width));
+                       Register, (l4_uint32_t *)Value,
+                       Hw::Pci::cfg_w_to_o(Width));
 
   if (r < 0)
     return AE_BAD_PARAMETER;
@@ -226,10 +243,26 @@ AcpiOsWritePciConfiguration (
   //printf("%s: ...\n", __func__);
   Hw::Pci::Root_bridge *rb = Hw::Pci::root_bridge(PciId->Segment);
   if (!rb)
-    return AE_BAD_PARAMETER;
+    {
+      if (Register < 0x100)
+        {
+          d_printf(DBG_ERR, "error: PCI config space register out of range\n");
+          return AE_BAD_PARAMETER;
+        }
+
+      Hw::Pci::Port_root_bridge prb(0, 0, Hw::Pci::Bus::Pci_bus, 0);
+      int r = prb.cfg_write(Hw::Pci::Cfg_addr(PciId->Bus, PciId->Device,
+                                              PciId->Function, Register),
+                            Value, Hw::Pci::cfg_w_to_o(Width));
+
+      if (r < 0)
+        return AE_BAD_PARAMETER;
+
+      return AE_OK;
+    }
 
   int r = rb->cfg_write(PciId->Bus, (PciId->Device << 16) | PciId->Function,
-      Register, Value, Hw::Pci::cfg_w_to_o(Width));
+                        Register, Value, Hw::Pci::cfg_w_to_o(Width));
 
   if (r < 0)
     return AE_BAD_PARAMETER;
