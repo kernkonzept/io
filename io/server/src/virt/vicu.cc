@@ -105,7 +105,7 @@ Sw_icu::bind_irq(unsigned irqn, L4::Ipc::Snd_fpage const &irqc)
   if (!irqc.cap_received())
     return -L4_EINVAL;
 
-  d_printf(DBG_ALL, "%s[%p]: bind_irq(%x, ...)\n", name(), this, irqn);
+  d_printf(DBG_ALL, "%s[%p]: bind_irq(%u, ...)\n", name(), this, irqn);
 
   Sw_irq_pin *irq;
   if (irqn & L4::Icu::F_msi)
@@ -132,7 +132,7 @@ Sw_icu::bind_irq(unsigned irqn, L4::Ipc::Snd_fpage const &irqc)
 int
 Sw_icu::unbind_irq(unsigned irqn, L4::Ipc::Snd_fpage const &/*irqc*/)
 {
-  d_printf(DBG_ALL, "%s[%p]: unbind_irq(%x, ...)\n", name(), this, irqn);
+  d_printf(DBG_ALL, "%s[%p]: unbind_irq(%u, ...)\n", name(), this, irqn);
 
   Irq_set::Iterator i;
   if (irqn & L4::Icu::F_msi)
