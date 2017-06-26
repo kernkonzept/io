@@ -196,6 +196,19 @@ Device::dump(int indent) const
 {
   printf("%*.s%s: %s%s\n", indent, " ", name(),
          hid() ? "hid=" : "", hid() ? hid() : "");
+
+  if (!_cid.empty())
+    {
+      bool first = true;
+      printf("%*.s  compatible= { ", indent, " ");
+      for (auto const &i : _cid)
+        {
+          printf("%s\"%s\"", first ? "" : ", ", i.c_str());
+          first = false;
+        }
+      puts(" }");
+    }
+
   if (Io_config::cfg->verbose() > 2)
     {
       for (Feature_list::const_iterator i = _features.begin();
