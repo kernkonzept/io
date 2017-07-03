@@ -216,7 +216,7 @@ void Mmio_data_space::alloc_ram(Size size, unsigned long alloc_flags)
 
   l4_size_t ds_size = size;
   L4Re::Dma_space::Dma_addr phys_start;
-  L4Re::chksys(dma_space->map(_ds_ram.get(), 0, &ds_size,
+  L4Re::chksys(dma_space->map(L4::Ipc::make_cap_rw(_ds_ram.get()), 0, &ds_size,
                L4Re::Dma_space::Attributes::None,
                L4Re::Dma_space::Bidirectional,
                &phys_start));
