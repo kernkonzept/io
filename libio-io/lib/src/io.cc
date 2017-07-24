@@ -141,6 +141,7 @@ __map_iomem(l4_addr_t phys, l4_addr_t* virt, unsigned long size, int flags)
 {
   Cap<L4Re::Dataspace> iomem = L4::cap_cast<L4Re::Dataspace>(vbus());
   unsigned char align = L4_PAGESHIFT;
+  l4_addr_t offset = phys & ~L4_PAGEMASK;
 
   if (!iomem.is_valid())
     return -L4_ENOENT;
@@ -158,10 +159,20 @@ __map_iomem(l4_addr_t phys, l4_addr_t* virt, unsigned long size, int flags)
 
   if (!*virt)
     rmflags |= L4Re::Rm::Search_addr;
+  else
+    {
+      /* Check for reasonable caller behavior:
+       * Offsets into a page should be the same. */
+      if ((*virt & ~L4_PAGEMASK) != offset)
+        return -L4_EINVAL;
+      *virt &= L4_PAGEMASK;
+    }
 
-  return L4Re::Env::env()->rm()->attach(virt, size, rmflags,
-                                        L4::Ipc::make_cap_rw(iomem),
-                                        phys, align);
+  long r = L4Re::Env::env()->rm()->attach(virt, size, rmflags,
+                                          L4::Ipc::make_cap_rw(iomem),
+                                          phys & L4_PAGEMASK, align);
+  *virt += offset;
+  return r;
 }
 
 long
