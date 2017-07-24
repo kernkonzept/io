@@ -34,7 +34,6 @@
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
-//#include <pthread.h>
 
 using L4Re::chksys;
 using L4Re::Util::Auto_cap;
