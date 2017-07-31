@@ -401,7 +401,7 @@ System_bus::assign_dma_domain(L4::Ipc::Iostream &ios)
 
 int
 System_bus::op_map(L4Re::Dataspace::Rights, long unsigned offset,
-                   l4_addr_t spot, unsigned long,
+                   l4_addr_t spot, unsigned long flags,
                    L4::Ipc::Snd_fpage &fp)
 {
 
@@ -434,11 +434,18 @@ System_bus::op_map(L4Re::Dataspace::Rights, long unsigned offset,
     = l4_fpage_max_order(L4_PAGESHIFT,
         addr, addr, addr + (*r)->size(), spot);
 
-  // we also might want to do WB instead of UNCACHED...
+  L4::Ipc::Snd_fpage::Cacheopt f = L4::Ipc::Snd_fpage::Uncached;
+  if ((*r)->prefetchable())
+    f = L4::Ipc::Snd_fpage::Buffered;
+
+  using L4Re::Dataspace;
+  if ((flags & Dataspace::Map_caching_mask) == Dataspace::Map_uncacheable)
+    f = L4::Ipc::Snd_fpage::Uncached;
+
   fp = L4::Ipc::Snd_fpage::mem(l4_trunc_size(addr, order), order,
                                L4_FPAGE_RWX, l4_trunc_page(spot),
                                L4::Ipc::Snd_fpage::Map,
-                               L4::Ipc::Snd_fpage::Uncached);
+                               f);
   return L4_EOK;
 };
 
