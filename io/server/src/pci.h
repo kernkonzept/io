@@ -585,8 +585,8 @@ public:
     return l4_addr_t(_bars[b]) == 1;
   }
 
-  explicit Dev(Hw::Device *host, Bus *bus)
-  : _host(host), _bus(bus), vendor_device(0), cls_rev(0),
+  explicit Dev(Hw::Device *host, Bus *bus, l4_uint8_t hdr_type)
+  : _host(host), _bus(bus), vendor_device(0), cls_rev(0), hdr_type(hdr_type),
     _rom(0), _pm_cap(0)
   {
     for (unsigned i = 0; i < sizeof(_bars)/sizeof(_bars[0]); ++i)
@@ -711,7 +711,15 @@ public:
   using Bus::cfg_write;
   using Bus::cfg_read;
 
-  Pci_pci_bridge_basic(Hw::Device *host, Bus *bus);
+  /**
+   * Constructor to create a new Pci_pci_bridge_basic object
+   *
+   * \param[in] host      Parent device
+   * \param[in] bus       PCI bus
+   * \param     hdr_type  Header type that defines the layout of the PCI config
+   *                      header.
+   */
+  Pci_pci_bridge_basic(Hw::Device *host, Bus *bus, l4_uint8_t hdr_type);
 
   void increase_subordinate(int x)
   {
@@ -751,8 +759,8 @@ public:
   Resource *pref_mmio;
   Resource *io;
 
-  explicit Pci_pci_bridge(Hw::Device *host, Bus *bus)
-  : Pci_pci_bridge_basic(host, bus), mmio(0), pref_mmio(0), io(0)
+  explicit Pci_pci_bridge(Hw::Device *host, Bus *bus, l4_uint8_t hdr_type)
+  : Pci_pci_bridge_basic(host, bus, hdr_type), mmio(0), pref_mmio(0), io(0)
   {}
 
   void setup_children(Hw::Device *host);

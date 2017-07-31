@@ -35,8 +35,8 @@ static std::vector<Root_bridge *> __pci_root_bridge;
 class Pci_cardbus_bridge : public Pci_pci_bridge_basic
 {
 public:
-  Pci_cardbus_bridge(Hw::Device *host, Bus *bus)
-  : Pci_pci_bridge_basic(host, bus)
+  Pci_cardbus_bridge(Hw::Device *host, Bus *bus, l4_uint8_t hdr_type)
+  : Pci_pci_bridge_basic(host, bus, hdr_type)
   {}
 
   void discover_resources(Hw::Device *host);
@@ -224,9 +224,9 @@ Bus::discover_bus(Hw::Device *host)
 	    {
 	      Pci_pci_bridge_basic *b = 0;
 	      if ((hdr_type & 0x7f) == 1)
-		b = new Pci_pci_bridge(child, this);
+		b = new Pci_pci_bridge(child, this, hdr_type);
 	      else if((hdr_type & 0x7f) == 2)
-		b = new Pci_cardbus_bridge(child, this);
+		b = new Pci_cardbus_bridge(child, this, hdr_type);
 
 	      l4_uint32_t buses;
 	      bool reassign_buses = false;
@@ -262,13 +262,12 @@ Bus::discover_bus(Hw::Device *host)
 	      d = b;
 	    }
 	  else
-	    d = new Dev(child, this);
+	    d = new Dev(child, this, hdr_type);
 
 	  child->add_feature(d);
 
 	  d->vendor_device = vendor;
 	  d->cls_rev = _class;
-	  d->hdr_type = hdr_type;
 
           // discover the resources of the new PCI device
           // NOTE: we do this here to have all child resources discovered and
@@ -463,8 +462,25 @@ Dev::restore_decoders(unsigned cmd)
 Cap
 Dev::find_pci_cap(unsigned char id)
 {
+  l4_uint32_t cap_ptr;
+
+  switch (hdr_type & 0x7f)
+    {
+    case 0:
+    case 1:
+      cap_ptr = Config::Capability_ptr;
+      break;
+    case 2:
+      cap_ptr = Config::Cb_capability_ptr;
+      break;
+    default:
+      d_printf(DBG_WARN, "warning: %s: unknown hdr_type: %u\n",
+                         __func__, hdr_type);
+      return Cap();
+    }
+
   l4_uint8_t o;
-  cfg_read(Config::Capability_ptr, &o);
+  cfg_read(cap_ptr, &o);
   if (o == 0)
     return Cap();
 
@@ -899,8 +915,9 @@ Dev::match_cid(cxx::String const &_cid) const
   return true;
 }
 
-Pci_pci_bridge_basic::Pci_pci_bridge_basic(Hw::Device *host, Bus *bus)
-: Bus(0, Pci_bus), Dev(host, bus), pri(0)
+Pci_pci_bridge_basic::Pci_pci_bridge_basic(Hw::Device *host, Bus *bus,
+                                           l4_uint8_t hdr_type)
+: Bus(0, Pci_bus), Dev(host, bus, hdr_type), pri(0)
 {
   if (bus->bus_type == Pci_express_bus)
     {
