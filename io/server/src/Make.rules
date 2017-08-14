@@ -89,27 +89,29 @@ clean:: $(addprefix clean-subdir-,$(SUBDIRS))
 ifneq ($(REGEN_FILES),)
 all:: $(SRC_DIR)/lua_glue.swg.h $(SRC_DIR)/lua_glue.swg.cc
 
+main.o: $(SRC_DIR)/lua_glue.swg.h
+
+-include .lua_glue.swg.c_cc.d
+
 SWIG_RM_EXT_C ?= $(L4DIR)/tool/bin/swig-rm-extern-c.pl
 SWIG          ?= swig
+SWIG_INCDIR   := -I$(SRC_DIR) -I$(SRC_DIR)/../../include -I$(L4DIR)/pkg
 
 %.swg:
 
-$(SRC_DIR)/%.swg.cc: $(SRC_DIR)/%.swg.c_cc $(SRC_DIR)/Makefile
+$(SRC_DIR)/%.swg.cc: %.swg.c_cc $(SRC_DIR)/Make.rules $(SRC_DIR)/Makefile
 	@$(GEN_MESSAGE)
 	$(VERBOSE)$(SWIG_RM_EXT_C) $< >$@
 
-$(SRC_DIR)/%.swg.h: $(SRC_DIR)/%.swg.c_h
+$(SRC_DIR)/%.swg.h: %.swg.c_h $(SRC_DIR)/Make.rules $(SRC_DIR)/Makefile
 	@$(GEN_MESSAGE)
 	$(VERBOSE)$(SWIG_RM_EXT_C) $< >$@
 
-SWIG_INCDIR:=-I$(SRC_DIR) -I$(SRC_DIR)/../../include -I$(L4DIR)/pkg
-
-$(SRC_DIR)/%.swg.c_cc: $(SRC_DIR)/%.swg $(SRC_DIR)/Makefile
+%.swg.c_cc: $(SRC_DIR)/%.swg $(SRC_DIR)/Make.rules $(SRC_DIR)/Makefile
 	@$(GEN_MESSAGE)
-	$(VERBOSE)$(SWIG) $(SWIG_INCDIR) -c++ -small -lua -o $@ $<
+	$(VERBOSE)$(SWIG) $(SWIG_INCDIR) -MD -MF .$*.swg.c_cc.d -c++ -small -lua -o $@ $<
 
-$(SRC_DIR)/%.swg.c_h:
+%.swg.c_h: $(SRC_DIR)/Make.rules $(SRC_DIR)/Makefile
 	@$(GEN_MESSAGE)
 	$(VERBOSE)$(SWIG) $(SWIG_INCDIR) -c++ -small -lua -external-runtime $@
-
 endif
