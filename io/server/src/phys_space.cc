@@ -28,15 +28,12 @@ Phys_space::Phys_space()
   int err = _set.insert(Phys_region(0, Phys_region::Addr(~0))).second;
   assert (err >= 0);
 
-  L4::Kip::Mem_desc *md = L4::Kip::Mem_desc::first(l4re_kip());
-  L4::Kip::Mem_desc *mde = md + L4::Kip::Mem_desc::count(l4re_kip());
-
-  for (; md < mde; ++md)
+  for (auto const &md: L4::Kip::Mem_desc::all(l4re_kip()))
     {
-      if (md->is_virtual())
+      if (md.is_virtual())
 	continue;
 
-      switch (md->type())
+      switch (md.type())
 	{
 	case L4::Kip::Mem_desc::Arch:
 	case L4::Kip::Mem_desc::Conventional:
@@ -45,11 +42,11 @@ Phys_space::Phys_space()
 	case L4::Kip::Mem_desc::Shared:
 	case L4::Kip::Mem_desc::Bootloader:
 	    {
-	      Phys_region re(l4_trunc_page(md->start()),
-	                     l4_round_page(md->end())-1);
+	      Phys_region re(l4_trunc_page(md.start()),
+	                     l4_round_page(md.end())-1);
 	      bool r = reserve(re);
 	      d_printf(DBG_INFO, "  reserve phys memory space %014lx-%014lx (%s)\n",
-                       md->start(), md->end(), r ? "ok" : "failed");
+                       md.start(), md.end(), r ? "ok" : "failed");
 	      (void)r;
 	    }
 	  break;
