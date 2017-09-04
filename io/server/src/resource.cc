@@ -200,7 +200,7 @@ void Mmio_data_space::alloc_ram(Size size, unsigned long alloc_flags)
       L4Re::chksys(uf->create(d.get()));
       L4Re::chksys(d->associate(L4::Ipc::Cap<L4::Task>(),
                                 L4Re::Dma_space::Space_attrib::Phys_space),
-                   "assoiciating DMA space for CPU physical");
+                   "associating DMA space for CPU physical");
       dma_space = d.release();
     }
   long ma_flags = L4Re::Mem_alloc::Continuous;
