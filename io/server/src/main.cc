@@ -300,7 +300,7 @@ arg_init(int argc, char * const *argv, Io_config_x *cfg)
           cfg->inc_verbosity();
           break;
         case OPT_TRANSPARENT_MSI:
-	  d_printf(DBG_INFO, "Enabling transparent MSIs\n");
+	  printf("Enabling transparent MSIs\n");
           cfg->set_transparent_msi(true);
           break;
         case OPT_TRACE:
