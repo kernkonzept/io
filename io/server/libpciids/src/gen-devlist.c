@@ -15,6 +15,8 @@ pq(FILE *f, const char *c)
 	while (*c) {
 		if (*c == '"')
 			fprintf(f, "\\\"");
+		else if (*c == '\\')
+			fprintf(f, "\\\\"); // escape backslash
 		else {
 			fputc(*c, f);
 			if (*c == '?' && c[1] == '?') {
