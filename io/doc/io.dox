@@ -54,7 +54,7 @@
  *
  * To allow clients access to a available devices, a virtual system bus needs
  * to be created that lists the devices and their resources that should be
- * available to that client. The names of the busses correspond to the
+ * available to that client. The names of the buses correspond to the
  * capabilities given to Io in its launch configuration.
  *
  * A very simple configuration for Io could look like this:
@@ -98,9 +98,9 @@
  * - `rr` is the hexadecimal representation of the revision byte
  * - `xxxx:xx:xx.x` is the bus address in PCI nomenclature
  *
- * As a special extension io supports replacing the ID string with a
+ * As a special extension Io supports replacing the ID string with a
  * human-readable common PCI class name. The following table gives an overview
- * of the names known to io and their respective PCI class and subclass.
+ * of the names known to Io and their respective PCI class and subclass.
  *
  * Common Name          | Description                        | PCI ID string
  * ---------------------|------------------------------------|--------------
@@ -155,7 +155,7 @@
  * com_modem            | Modem                              | CC_0703
  * com_gpib             | GPIB controller                    | CC_0704
  * com_smart_card       | Smart card controller              | CC_0705
- * - | -
+ * - | - | -
  * serial_bus           | Serial bus controller              | CC_0c
  * firewire             | FireWire (IEEE 1394)               | CC_0c00
  * access_bus           | ACCESS bus                         | CC_0c01
