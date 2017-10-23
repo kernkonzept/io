@@ -750,7 +750,7 @@ Dev::setup(Hw::Device *)
         decoders_to_enable |= (r->type() == Resource::Io_res) ? 1 : 2;
       else
         {
-          decoders_to_enable &= ~ (r->type() == Resource::Io_res) ? 1 : 2;
+          decoders_to_enable &= ~((r->type() == Resource::Io_res) ? 1 : 2);
           d_printf(DBG_ERR, "ERROR: could not set PCI BAR %d\n", i);
         }
 
