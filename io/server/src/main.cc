@@ -392,6 +392,25 @@ run(int argc, char * const *argv)
 
   luaopen_Io(lua);
 
+  extern char const _binary_io_lua_start[];
+  extern char const _binary_io_lua_end[];
+
+  if (luaL_loadbuffer(lua, _binary_io_lua_start,
+                      _binary_io_lua_end - _binary_io_lua_start,
+                      "@io.lua"))
+    {
+      d_printf(DBG_ERR, "INTERNAL: lua error: %s.\n", lua_tostring(lua, -1));
+      lua_pop(lua, lua_gettop(lua));
+      return 1;
+    }
+
+  if (lua_pcall(lua, 0, 1, 0))
+    {
+      d_printf(DBG_ERR, "INTERNAL: lua error: %s.\n", lua_tostring(lua, -1));
+      lua_pop(lua, lua_gettop(lua));
+      return 1;
+    }
+
   for (; argfileidx < argc; ++argfileidx)
     read_config(argv[argfileidx], lua);
 

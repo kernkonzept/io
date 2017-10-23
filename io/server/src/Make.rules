@@ -44,6 +44,7 @@ SRC_CC := main.cc res.cc phys_space.cc resource.cc hw_device.cc \
           platform_control.cc \
           $(SRC_CC-y)
 
+SRC_DATA     := io.lua
 
 SRC_CC_x86    = ux.cc
 SRC_CC_amd64  = ux.cc
