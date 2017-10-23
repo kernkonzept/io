@@ -262,9 +262,7 @@ Sw_icu::Sw_irq_pin::trigger() const
 unsigned
 Sw_icu::Sw_irq_pin::l4_type() const
 {
-  unsigned m = type();
-  unsigned r = (m & S_irq_type_mask) / Resource::Irq_type_base;
-  return r;
+  return (type() & S_irq_type_mask) / Resource::Irq_type_base;
 }
 
 int
