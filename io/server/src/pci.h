@@ -12,6 +12,7 @@
 #include "hw_device.h"
 #include <l4/sys/cxx/types>
 #include <l4/cxx/bitfield>
+#include <l4/cxx/type_traits>
 #include "irqs.h"
 
 #include <pthread.h>
@@ -688,6 +689,9 @@ protected:
   mutable Irq_rs _rs;
 
 public:
+  template< typename ...ARGS >
+  Irq_router_res(ARGS && ...args) : _rs(cxx::forward<ARGS>(args)...) {}
+
   RES_SPACE *provided() const { return &_rs; }
 };
 
