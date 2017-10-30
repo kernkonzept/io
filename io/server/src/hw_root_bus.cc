@@ -32,6 +32,17 @@ public:
 
   bool alloc(Resource *, Device *, Resource *, Device *, bool)
   { return false; }
+
+  void assign(Resource *, Resource *)
+  {
+    d_printf(DBG_ERR, "internal error: cannot assign to root Root_irq_rs\n");
+  }
+
+  bool adjust_children(Resource *)
+  {
+    d_printf(DBG_ERR, "internal error: cannot adjust root Root_irq_rs\n");
+    return false;
+  }
 };
 
 // --- Root address space for IO-Ports --------------------------------------
@@ -51,6 +62,17 @@ public:
 
     return true;
   }
+
+  void assign(Resource *, Resource *)
+  {
+    d_printf(DBG_ERR, "internal error: cannot assign to root Root_io_rs\n");
+  }
+
+  bool adjust_children(Resource *)
+  {
+    d_printf(DBG_ERR, "internal error: cannot adjust root Root_io_rs\n");
+    return false;
+  }
 };
 
 
@@ -60,6 +82,16 @@ class Root_mmio_rs : public Resource_space
 public:
   bool request(Resource *parent, Device *, Resource *child, Device *);
   bool alloc(Resource *parent, Device *, Resource *child, Device *, bool);
+  void assign(Resource *, Resource *)
+  {
+    d_printf(DBG_ERR, "internal error: cannot assign to root Root_mmio_rs\n");
+  }
+
+  bool adjust_children(Resource *)
+  {
+    d_printf(DBG_ERR, "internal error: cannot adjust root Root_mmio_rs\n");
+    return false;
+  }
 };
 
 bool

@@ -110,6 +110,17 @@ public:
 
     return _bus->add_resource_to_bus(msi);
   }
+
+  void assign(Resource *, Resource *)
+  {
+    d_printf(DBG_ERR, "internal error: cannot assign to root Root_irq_rs\n");
+  }
+
+  bool adjust_children(Resource *)
+  {
+    d_printf(DBG_ERR, "internal error: cannot adjust root Root_irq_rs\n");
+    return false;
+  }
 };
 
 class Root_x_rs : public Resource_space
@@ -138,6 +149,17 @@ public:
 
   bool alloc(Resource *, Device *, Resource *, Device *, bool)
   { return false; }
+
+  void assign(Resource *, Resource *)
+  {
+    d_printf(DBG_ERR, "internal error: cannot assign to root Root_x_rs\n");
+  }
+
+  bool adjust_children(Resource *)
+  {
+    d_printf(DBG_ERR, "internal error: cannot adjust root Root_x_rs\n");
+    return false;
+  }
 };
 
 class Root_dma_domain_rs : public Resource_space
@@ -160,6 +182,17 @@ public:
 
   bool alloc(Resource *, Device *, Resource *, Device *, bool)
   { return false; }
+
+  void assign(Resource *, Resource *)
+  {
+    d_printf(DBG_ERR, "internal error: cannot assign to root Root_dma_domain_rs\n");
+  }
+
+  bool adjust_children(Resource *)
+  {
+    d_printf(DBG_ERR, "internal error: cannot adjust root Root_dma_domain_rs\n");
+    return false;
+  }
 };
 }
 

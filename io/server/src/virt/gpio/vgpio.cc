@@ -524,6 +524,16 @@ public:
     return false;
   }
 
+  void assign(Resource *, Resource *)
+  {
+    d_printf(DBG_ERR, "internal error: cannot assign to root Root_gpio_rs\n");
+  }
+
+  bool adjust_children(Resource *)
+  {
+    d_printf(DBG_ERR, "internal error: cannot adjust root Root_gpio_rs\n");
+    return false;
+  }
 
 private:
   Root_gpio_rs(Root_gpio_rs const &);

@@ -44,7 +44,14 @@ Generic_device::alloc_child_resource(Resource *r, Device *cld)
 
       found_as = true;
 
-      if ((*br)->provided()->alloc(*br, this, r, cld, parent() && !parent()->resource_allocated(*br)))
+      if (parent() && !parent()->resource_allocated(*br))
+        {
+          (*br)->provided()->assign(*br, r);
+          d_printf(DBG_ALL, "assigned resource: ");
+          if (dlevel(DBG_ALL))
+            r->dump();
+        }
+      else if ((*br)->provided()->alloc(*br, this, r, cld, false))
 	{
 	  r->enable();
 	  d_printf(DBG_ALL, "allocated resource: ");

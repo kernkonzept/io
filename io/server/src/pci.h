@@ -702,6 +702,17 @@ public:
   bool request(Resource *parent, ::Device *, Resource *child, ::Device *cdev);
   bool alloc(Resource *, ::Device *, Resource *, ::Device *, bool)
   { return false; }
+
+  void assign(Resource *, Resource *)
+  {
+    d_printf(DBG_ERR, "internal error: cannot assign to root Pci_pci_bridge_irq_router_rs\n");
+  }
+
+  bool adjust_children(Resource *)
+  {
+    d_printf(DBG_ERR, "internal error: cannot adjust root Pci_pci_bridge_irq_router_rs\n");
+    return false;
+  }
 };
 
 

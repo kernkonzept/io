@@ -49,8 +49,10 @@ class Resource_space
 public:
   virtual bool request(Resource *parent, Device *pdev,
                        Resource *child, Device *cdev) = 0;
+  virtual void assign(Resource *parent, Resource *child) = 0;
   virtual bool alloc(Resource *parent, Device *pdev,
                      Resource *child, Device *cdev, bool resize) = 0;
+  virtual bool adjust_children(Resource *self) = 0;
   virtual ~Resource_space() noexcept = 0;
 };
 
@@ -275,6 +277,8 @@ private:
     bool request(Resource *parent, Device *pdev, Resource *child, Device *cdev);
     bool alloc(Resource *parent, Device *pdev, Resource *child, Device *cdev,
                bool resize);
+    void assign(Resource *parent, Resource *child);
+    bool adjust_children(Resource *self);
   };
 
   mutable _RS _rs;

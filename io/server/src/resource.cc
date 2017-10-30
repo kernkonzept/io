@@ -136,6 +136,36 @@ Resource_provider::_RS::request(Resource *parent, Device *,
     }
 }
 
+void
+Resource_provider::_RS::assign(Resource *parent, Resource *child)
+{
+  auto p = _rl.begin();
+  for ( ; p != _rl.end(); ++p)
+    {
+      if ((*p)->alignment() <= child->alignment())
+        break;
+    }
+
+  _rl.insert(p, child);
+  child->parent(parent);
+
+  auto f = _rl.front();
+  if (f->alignment() > parent->alignment())
+    parent->alignment(f->alignment());
+
+  Size sz = 0;
+  Size min_align = L4_PAGESIZE - 1;
+
+  for (auto r: _rl)
+    {
+      Size a = cxx::max<Size>(r->alignment(), min_align);
+      sz = (sz + a) & ~a;
+      sz += r->size();
+    }
+
+  if (sz > parent->size())
+    parent->size(sz);
+}
 
 bool
 Resource_provider::_RS::alloc(Resource *parent, Device *pdev,
@@ -186,7 +216,48 @@ Resource_provider::_RS::alloc(Resource *parent, Device *pdev,
       start = (*p)->end() + 1;
       ++p;
     }
+
+  if (child->provided())
+    child->provided()->adjust_children(child);
+
   return request(parent, pdev, child, cdev);
+}
+
+bool
+Resource_provider::_RS::adjust_children(Resource *self)
+{
+  Addr start = self->start();
+  Size min_align = L4_PAGESIZE - 1;
+
+  for (auto c: _rl)
+    {
+      if (c->fixed_addr() || c->relative() || c->empty())
+        {
+          d_printf(DBG_WARN,
+                   "internal warning: skipped unallocated fixed / relative resource\n");
+          continue;
+        }
+
+      Size a = cxx::max<Size>(c->alignment(), min_align);
+      start = (start + a) & ~a;
+      c->start(start);
+
+      start += c->size();
+
+      if (!self->contains(*c))
+        {
+          d_printf(DBG_ERR, "error: resource setting failed: ");
+          c->dump();
+          d_printf(DBG_ERR, "  in ");
+          self->dump();
+        }
+
+      c->enable();
+
+      if (c->provided())
+        c->provided()->adjust_children(c);
+    }
+  return true;
 }
 
 void Mmio_data_space::alloc_ram(Size size, unsigned long alloc_flags)
