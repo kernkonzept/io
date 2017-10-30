@@ -35,6 +35,8 @@ extern "C" {
 #include <l4/cxx/list>
 #include <l4/sys/platform_control>
 #include <l4/re/env>
+#include <l4/re/util/unique_cap>
+#include <l4/re/util/cap_alloc>
 
 #define _COMPONENT		ACPI_BUS_COMPONENT
 ACPI_MODULE_NAME("l4main");
@@ -617,8 +619,7 @@ public:
   {
     assert (!_kern_dma_space);
 
-    L4Re::Util::Auto_cap<L4::Task>::Cap dma;
-    dma = L4Re::chkcap(L4Re::Util::cap_alloc.alloc<L4::Task>());
+    auto dma = L4Re::chkcap(L4Re::Util::make_unique_cap<L4::Task>());
     L4Re::chksys(L4Re::Env::env()->factory()->create(dma.get(), L4_PROTO_DMA_SPACE));
 
     set_managed_kern_dma_space(dma.release());

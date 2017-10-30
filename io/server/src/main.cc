@@ -87,8 +87,6 @@ static const luaL_Reg libs[] =
   { NULL, NULL }
 };
 
-using L4Re::Util::Auto_cap;
-
 class Io_config_x : public Io_config
 {
 public:

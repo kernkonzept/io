@@ -29,7 +29,6 @@
 #include <cstring>
 
 using L4::Cap;
-using L4Re::Util::Auto_cap;
 
 namespace {
 

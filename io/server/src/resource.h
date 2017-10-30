@@ -16,6 +16,7 @@
 
 #include <l4/re/dataspace>
 #include <l4/re/util/cap_alloc>
+#include <l4/re/util/unique_cap>
 #include <l4/re/rm>
 
 #include "res.h"
@@ -306,10 +307,10 @@ public:
 class Mmio_data_space : public Resource
 {
 private:
-  L4Re::Util::Auto_cap<L4Re::Dataspace>::Cap _ds_ram;
+  L4Re::Util::Unique_cap<L4Re::Dataspace> _ds_ram;
 
 public:
-  L4Re::Rm::Auto_region<l4_addr_t> _r;
+  L4Re::Rm::Unique_region<l4_addr_t> _r;
 
   Mmio_data_space(Size size, unsigned long alloc_flags = 0)
   : Resource(Mmio_res, 0, size - 1)

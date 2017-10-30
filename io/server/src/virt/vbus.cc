@@ -522,12 +522,11 @@ System_bus::dispatch(l4_umword_t, l4_uint32_t func, L4::Ipc::Iostream &ios)
 
 Vbus_event_source::Vbus_event_source()
 {
-  using L4Re::Util::Auto_cap;
+  using L4Re::Util::Unique_cap;
   using L4Re::chkcap;
   using L4Re::chksys;
 
-  Auto_cap<L4Re::Dataspace>::Cap buffer_ds
-    = chkcap(L4Re::Util::cap_alloc.alloc<L4Re::Dataspace>(),
+  auto buffer_ds = chkcap(L4Re::Util::make_unique_cap<L4Re::Dataspace>(),
              "allocate event-buffer data-space capability");
 
   chksys(L4Re::Env::env()->mem_alloc()->alloc(L4_PAGESIZE, buffer_ds.get()),

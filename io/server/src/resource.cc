@@ -195,8 +195,7 @@ void Mmio_data_space::alloc_ram(Size size, unsigned long alloc_flags)
   if (L4_UNLIKELY(!dma_space))
     {
       auto uf = L4Re::Env::env()->user_factory();
-      L4Re::Util::Auto_cap<L4Re::Dma_space>::Cap d;
-      d = L4Re::chkcap(L4Re::Util::cap_alloc.alloc<L4Re::Dma_space>());
+      auto d = L4Re::chkcap(L4Re::Util::make_unique_cap<L4Re::Dma_space>());
       L4Re::chksys(uf->create(d.get()));
       L4Re::chksys(d->associate(L4::Ipc::Cap<L4::Task>(),
                                 L4Re::Dma_space::Space_attrib::Phys_space),
@@ -207,7 +206,7 @@ void Mmio_data_space::alloc_ram(Size size, unsigned long alloc_flags)
 
   ma_flags |= alloc_flags ? L4Re::Mem_alloc::Super_pages : 0;
 
-  _ds_ram = L4Re::Util::cap_alloc.alloc<L4Re::Dataspace>();
+  _ds_ram = L4Re::Util::make_unique_cap<L4Re::Dataspace>();
   if (!_ds_ram.is_valid())
     throw(L4::Out_of_memory(""));
 
