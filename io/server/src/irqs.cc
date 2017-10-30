@@ -27,7 +27,7 @@ Kernel_irq_pin::bind(Triggerable const &irq, unsigned mode)
 
   if (mode != L4_IRQ_F_NONE)
     {
-      //printf(" IRQ[%x]: mode=%x ... ", n, mode);
+      //printf(" IRQ[%x]: mode=%x ... ", _idx, mode);
       int err = l4_error(system_icu()->icu->set_mode(_idx, mode));
       //printf("result=%d\n", err);
 
