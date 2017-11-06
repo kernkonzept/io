@@ -376,7 +376,7 @@ System_bus::assign_dma_domain(L4::Ipc::Iostream &ios)
       if (i == _resources.end() || !(*i)->contains(ires))
         return -L4_ENOENT;
 
-      Dma_domain_if *d = dynamic_cast<Dma_domain_if *>(*i);
+      d = dynamic_cast<Dma_domain_if *>(*i);
       if (!d)
         {
           d_printf(DBG_ERR, "%s:%d: error: internal IO error,"
