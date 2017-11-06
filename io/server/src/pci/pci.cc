@@ -277,7 +277,7 @@ Bus::discover_bus(Hw::Device *host)
           d->discover_resources(child);
 
           // go down the PCI hierarchy recursively,
-          // to assign bus numbers (if not yet assigned) the rights way
+          // to assign bus numbers (if not yet assigned) the right way
           d->discover_bus(child);
 	}
     }
