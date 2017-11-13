@@ -151,4 +151,18 @@ Io.hw_add_devices(function()
     Property.flags = Io.Hw_device_DF_dma_supported;
   end);
 
+  apbhdma = Io.Hw.Device(function()
+    compatible = {"fsl,imx6q-dma-apbh", "fsl,imx28-dma-apbh"};
+    Resource.reg0 = Res.mmio(0x110000, 0x111fff);
+    Resource.irq0 = Res.irq(45, Io.Resource.Irq_type_level_high);
+  end);
+
+  gpmi = Io.Hw.Device(function()
+    compatible = {"fsl,imx6q-gpmi-nand"};
+    Resource.reg0 = Res.mmio(0x112000, 0x113fff);
+    Resource.reg1 = Res.mmio(0x114000, 0x117fff);
+    Resource.irq0 = Res.irq(47, Io.Resource.Irq_type_level_high);
+    Property.flags = Io.Hw_device_DF_dma_supported;
+  end);
+
 end)
