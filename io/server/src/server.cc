@@ -60,7 +60,7 @@ L4Re::Util::Object_registry *irq_queue()
 
   pthread_t irq_server_thread;
   int e = pthread_create(&irq_server_thread, NULL, NULL, NULL);
-  if (e < 0)
+  if (e != 0)
     {
       d_printf(DBG_ERR, "fatal: could not create IRQ handler thread: %d\n",
                -errno);

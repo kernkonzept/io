@@ -340,7 +340,7 @@ public:
     pthread_mutex_unlock(&_l);
     work->_q = this;
     int r = pthread_create(&t, NULL, _exec, work);
-    if (r < 0)
+    if (r != 0)
       {
         bool signal = false;
         pthread_mutex_lock(&_l);
