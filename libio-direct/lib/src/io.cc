@@ -35,9 +35,6 @@
 #include <cstdlib>
 #include <cstring>
 
-using L4Re::chksys;
-using L4Re::Util::Auto_cap;
-
 namespace {
 
 /***********************************************************************
