@@ -14,6 +14,7 @@
 #include <l4/sys/icu>
 
 #include <l4/re/dataspace>
+#include <l4/re/dma_space>
 #include <l4/re/event>
 #include <l4/re/inhibitor>
 
@@ -270,6 +271,55 @@ public:
   Device root() const
   {
     return Device(L4::Cap<Vbus>(cap()), L4VBUS_ROOT_BUS);
+  }
+
+  /**
+   * Assign an L4Re::Dma_space to a DMA domain.
+   * \param domain_id  DMA domain ID (resource address of DMA domain found on
+   *                   the vBUS). If the value is ~0U the DMA space of the whole
+   *                   vBUS is used.
+   * \param flags      A combination of #L4vbus_dma_domain_assign_flags.
+   * \param dma_space  The DMA space capability to bind or unbind, this must
+   *                   be an L4Re::Dma_space
+   *
+   * \retval 0           Operation completed successfully.
+   * \retval -L4_ENOENT  The vbus does not support a global DMA domain or no DMA
+   *                     domain could be found.
+   * \retval -L4_EINVAL  Invalid argument used.
+   * \retval -L4_EBUSY   DMA domain is already active, this means another DMA
+   *                     space is already assigned.
+   */
+  int assign_dma_domain(unsigned domain_id, unsigned flags,
+                        L4::Cap<L4Re::Dma_space> dma_space) const
+  {
+    flags |= L4VBUS_DMAD_L4RE_DMA_SPACE;
+    flags &= ~L4VBUS_DMAD_KERNEL_DMA_SPACE;
+    return l4vbus_assign_dma_domain(cap(), domain_id, flags, dma_space.cap());
+  }
+
+  /**
+   * Assign a kernel DMA space to a DMA domain.
+   * \param domain_id  DMA domain ID (resource address of DMA domain found on
+   *                   the vBUS). If the value is ~0U the DMA space of the whole
+   *                   vBUS is used.
+   * \param flags      A combination of #L4vbus_dma_domain_assign_flags.
+   * \param dma_space  The DMA space capability to bind or unbind, this must be
+   *                   a kernel DMA space (L4::Task created with
+   *                   L4_PROTO_DMA_SPACE)
+   *
+   * \retval 0           Operation completed successfully.
+   * \retval -L4_ENOENT  The vbus does not support a global DMA domain or no DMA
+   *                     domain could be found.
+   * \retval -L4_EINVAL  Invalid argument used.
+   * \retval -L4_EBUSY   DMA domain is already active, this means another DMA
+   *                     space is already assigned.
+   */
+  int assign_dma_domain(unsigned domain_id, unsigned flags,
+                        L4::Cap<L4::Task> dma_space) const
+  {
+    flags |= L4VBUS_DMAD_KERNEL_DMA_SPACE;
+    flags &= ~L4VBUS_DMAD_L4RE_DMA_SPACE;
+    return l4vbus_assign_dma_domain(cap(), domain_id, flags, dma_space.cap());
   }
 
   typedef L4::Typeid::Raw_ipc<Vbus> Rpcs;
