@@ -117,7 +117,7 @@ Device::vbus_get_device(L4::Ipc::Iostream &ios)
   inf.num_resources = resources()->size();
   if (hid())
     {
-      strncpy(inf.name, name(), sizeof(inf.name));
+      strncpy(inf.name, name(), sizeof(inf.name) - 1);
       inf.name[sizeof(inf.name) - 1] = 0;
     }
   else
