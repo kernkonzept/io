@@ -541,6 +541,7 @@ public:
     case REGS::Clr_data_out:
     case REGS::Set_data_out:
       _regs[reg].modify(_pin_bit(pin), value ? _pin_bit(pin) : 0);
+      break;
 
     default:
       // cannot allow the following registers, they have security implications
