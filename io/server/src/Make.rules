@@ -50,7 +50,6 @@ SRC_CC_x86    = ux.cc
 SRC_CC_amd64  = ux.cc
 
 SRC_CC       += $(SRC_CC_$(ARCH))
-SRC_CC_IS_CXX11 = c++0x
 OPTS         := -g -O3
 
 REQUIRES_LIBS                          = libsigma0 libstdc++ lua++ libpthread
