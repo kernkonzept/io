@@ -666,10 +666,11 @@ Dev::discover_pci_caps()
           parse_msi_cap(cfg_addr(cap_ptr));
           break;
         case Hw::Pci::Cap::Pcie:
-            {
-              l4_uint32_t v = cfg_read<l4_uint32_t>(cap_ptr + 4);
-              _phantomfn_bits = (v >> 3) & 3;
-            }
+          {
+            l4_uint32_t v = cfg_read<l4_uint32_t>(cap_ptr + 4);
+            _phantomfn_bits = (v >> 3) & 3;
+            break;
+          }
         default:
           break;
         }
