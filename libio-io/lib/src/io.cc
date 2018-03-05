@@ -182,7 +182,7 @@ __map_iomem(l4_addr_t phys, l4_addr_t* virt, unsigned long size, int flags)
 
   long r = L4Re::Env::env()->rm()->attach(virt, size, rmflags,
                                           L4::Ipc::make_cap_rw(iomem),
-                                          phys & L4_PAGEMASK, align);
+                                          phys, align);
   *virt += offset;
   return r;
 }
