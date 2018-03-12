@@ -345,7 +345,7 @@ static int acpi_enter_sleep(int sleepstate = 3 /* s3 */)
 
   status = AcpiHwEnableAllWakeupGpes();
   if (ACPI_FAILURE(status))
-    d_printf(DBG_WARN, "waring: cannot enable all wakeup GPEs\n");
+    d_printf(DBG_WARN, "warning: cannot enable all wakeup GPEs\n");
 
   d_printf(DBG_DEBUG2, "call platform control object for suspend\n");
   int err = 0;
