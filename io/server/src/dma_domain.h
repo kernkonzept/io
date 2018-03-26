@@ -102,8 +102,7 @@ private:
   }
 
 public:
-  int set_dma_task(bool, L4::Cap<L4::Task>) override
-  { return -L4_EINVAL; }
+  int set_dma_task(bool, L4::Cap<L4::Task>) override;
 
   int create_managed_kern_dma_space() override;
 };
