@@ -977,6 +977,10 @@ Acpi_dev::discover_crs(Hw::Device *host)
 	                              d->Irq.Interrupts[c]));
 	  break;
 
+        case ACPI_RESOURCE_TYPE_DMA:
+          // ignore this legacy type to avoid warnings about unknown types
+          break;
+
 	case ACPI_RESOURCE_TYPE_EXTENDED_IRQ:
 	  flags = Resource::Irq_res | Resource::Irq_type_base;
 	  flags |= (!d->ExtendedIrq.Triggering) * Resource::Irq_type_base * L4_IRQ_F_LEVEL;
