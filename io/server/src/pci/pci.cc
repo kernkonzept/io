@@ -747,7 +747,8 @@ Dev::setup(Hw::Device *)
 
       l4_uint32_t v;
       cfg_read(reg, &v, Cfg_long);
-      if (l4_uint32_t(v & ~0xf) == l4_uint32_t(s & 0xffffffff))
+      l4_uint32_t mask = (r->type() == Resource::Io_res) ? ~0x3 : ~0xf;
+      if (l4_uint32_t(v & mask) == l4_uint32_t(s & 0xffffffff))
         decoders_to_enable |= (r->type() == Resource::Io_res) ? 1 : 2;
       else
         {
