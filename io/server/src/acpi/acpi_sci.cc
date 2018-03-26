@@ -62,7 +62,7 @@ AcpiOsInstallInterruptHandler (
   L4::Cap<L4::Irq> irq = irq_queue()->register_irq_obj(sci);
   if (!irq.is_valid())
     {
-      d_printf(DBG_ERR, "error. could not registering ACPI event server\n");
+      d_printf(DBG_ERR, "error: could not register ACPI event server\n");
       return AE_BAD_PARAMETER;
     }
 
