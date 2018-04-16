@@ -471,9 +471,21 @@ System_bus::op_map(L4Re::Dataspace::Rights, long unsigned offset,
   if ((*r)->prefetchable())
     f = L4::Ipc::Snd_fpage::Buffered;
 
+  if ((*r)->cached_mem())
+    f = L4::Ipc::Snd_fpage::Cached;
+
   using L4Re::Dataspace;
   if ((flags & Dataspace::Map_caching_mask) == Dataspace::Map_uncacheable)
-    f = L4::Ipc::Snd_fpage::Uncached;
+    {
+      if ((*r)->cached_mem())
+        {
+          d_printf(DBG_ERR,
+                   "MMIO resource at 0x%lx requested uncached but marked as cachable only.\n",
+                   offset);
+          return -L4_EINVAL;
+        }
+      f = L4::Ipc::Snd_fpage::Uncached;
+    }
 
   fp = L4::Ipc::Snd_fpage::mem(l4_trunc_size(addr, order), order,
                                L4_FPAGE_RWX, l4_trunc_page(spot),

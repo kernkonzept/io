@@ -93,6 +93,7 @@ public:
     F_can_move     = 0x8000,
 
     F_width_64bit   = 0x010000,
+    F_cached_mem    = 0x020000,
     F_relative      = 0x040000,
 
     Irq_type_base         = 0x100000,
@@ -133,6 +134,7 @@ public:
   bool hierarchical() const { return _f & F_hierarchical; }
   bool disabled() const { return _f & F_disabled; }
   bool prefetchable() const { return _f & F_prefetchable; }
+  bool cached_mem() const { return _f & F_cached_mem; }
   bool empty() const { return _f & F_empty; }
   bool fixed_addr() const { return !(_f & F_can_move); }
   bool fixed_size() const { return !(_f & F_can_resize); }
