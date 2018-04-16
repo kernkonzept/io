@@ -49,8 +49,8 @@ SRC_DATA     := io.lua
 SRC_CC_x86    = ux.cc
 SRC_CC_amd64  = ux.cc
 
-SRC_CC_arm    += arm_dma_domain.cc arm_dma_device.cc
-SRC_CC_arm64  += arm_dma_domain.cc arm_dma_device.cc
+SRC_CC_arm    += arm_dma_domain.cc arm_dma_device.cc optee.cc
+SRC_CC_arm64  += arm_dma_domain.cc arm_dma_device.cc optee.cc
 
 SRC_CC       += $(SRC_CC_$(ARCH))
 OPTS         := -g -O3
