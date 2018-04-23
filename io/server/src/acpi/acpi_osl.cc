@@ -190,7 +190,7 @@ AcpiOsReadPciConfiguration (
   Hw::Pci::Root_bridge *rb = Hw::Pci::root_bridge(PciId->Segment);
   if (!rb)
     {
-      if (Register < 0x100)
+      if (Register >= 0x100)
         {
           d_printf(DBG_ERR, "error: PCI config space register out of range\n");
           return AE_BAD_PARAMETER;
@@ -244,7 +244,7 @@ AcpiOsWritePciConfiguration (
   Hw::Pci::Root_bridge *rb = Hw::Pci::root_bridge(PciId->Segment);
   if (!rb)
     {
-      if (Register < 0x100)
+      if (Register >= 0x100)
         {
           d_printf(DBG_ERR, "error: PCI config space register out of range\n");
           return AE_BAD_PARAMETER;
