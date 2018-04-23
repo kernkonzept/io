@@ -458,7 +458,7 @@ struct Register_block_impl;
   { return static_cast<BASE const *>(this)->template read<l4_uint##sz##_t>(reg); } \
   \
   void do_write_##sz(l4_uint##sz##_t value, l4_addr_t reg) \
-  { return static_cast<BASE*>(this)->template write<l4_uint##sz##_t>(value, reg); }
+  { static_cast<BASE*>(this)->template write<l4_uint##sz##_t>(value, reg); }
 
 
 template< typename BASE >
