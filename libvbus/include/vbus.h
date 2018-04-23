@@ -25,7 +25,7 @@ enum {
 };
 
 /**
- * \defgroup l4vbus_module L4 V-BUS functions
+ * \defgroup l4vbus_module L4 Vbus functions
  * \{
  * C interface of the Vbus API.
  *

@@ -19,6 +19,8 @@
 #include <l4/re/inhibitor>
 
 /**
+ * \defgroup api_l4re_vbus Vbus API
+ * \ingroup api_l4re
  * C++ interface of the Vbus API.
  *
  * The virtual bus (Vbus) is a hierarchical (tree) structure of device nodes
@@ -38,6 +40,7 @@ namespace L4vbus {
 class Vbus;
 
 /**
+ * \ingroup api_l4re_vbus
  * Power-management API mixin.
  */
 template<typename DEC>
@@ -62,7 +65,8 @@ public:
 
 
 /**
- * Device on a virtual bus (V-BUS)
+ * \ingroup api_l4re_vbus
+ * Device on a L4vbus::Vbus
  */
 class Device : public Pm<Device>
 {
@@ -73,8 +77,8 @@ public:
   : _bus(bus), _dev(dev) {}
 
   /**
-   * Access the V-BUS capability of the underlying virtual bus.
-   * \return the capability to the underlying V-BUS.
+   * Access the Vbus capability of the underlying virtual bus.
+   * \return the capability to the underlying Vbus.
    */
   L4::Cap<Vbus> bus_cap() const { return _bus; }
 
@@ -89,11 +93,11 @@ public:
 
 
   /**
-   * Find a device by the HID.
+   * Find a device by the human interface identifier (HID).
    *
    * This function searches the vbus for a device with the given HID and
    * returns a handle to the first matching device. The HID usually conforms to
-   * an ACPI HID or a Linux device tree compatible ID.
+   * an ACPI HID or a Linux device tree compatible identifier.
    *
    * It is possible to have multiple devices with the same HID on a vbus. In
    * order to find all matching devices this function has to be called
@@ -147,7 +151,7 @@ public:
   }
 
   /**
-   * Obtain detailed information about a vbus device.
+   * Obtain detailed information about a Vbus device.
    *
    * \param[out] devinfo  Information structure which contains details about
    *                      the device. The pointer might be NULL after a
@@ -195,7 +199,7 @@ public:
   { return l4vbus_is_compatible(_bus.cap(), _dev, cid); }
 
   /**
-   * Test if two devices are the same V-BUS device.
+   * Test if two devices are the same Vbus device.
    * \return true if the two devices are the same, false else.
    */
   bool operator == (Device const &o) const
@@ -213,22 +217,25 @@ public:
   }
 
 protected:
-  L4::Cap<Vbus> _bus;          /*!< The V-BUS capability (where this device is
+  L4::Cap<Vbus> _bus;          /*!< The Vbus capability (where this device is
                                     located on). */
   l4vbus_device_handle_t _dev; ///< The device handle for this device.
 };
 
 /**
- * V-BUS Interrupt controller API (ICU)
+ * \ingroup api_l4re_vbus
+ * Vbus Interrupt controller API.
  *
- * Allows to access the underlying L4Re::Icu capability managing IRQs for
- * the V-BUS.
+ * Allows to access the underlying L4::Icu capability managing IRQs for
+ * the L4vbus::Vbus.
+ *
+ * \see L4::Icu
  */
 class Icu : public Device
 {
 public:
   /**
-   * Request the L4Re::Icu capability for this V-BUS ICU.
+   * Request the L4::Icu capability for this Vbus ICU.
    */
   int vicu(L4::Cap<L4::Icu> icu) const
   {
@@ -237,7 +244,11 @@ public:
 };
 
 /**
- * The virtual BUS.
+ * The virtual bus (Vbus) interface.
+ *
+ * \ingroup api_l4re_vbus
+ *
+ * \see \link api_l4re_vbus L4Re Vbus API \endlink
  */
 class Vbus : public L4::Kobject_3t<Vbus, L4Re::Dataspace, L4Re::Inhibitor, L4Re::Event>
 {
@@ -266,7 +277,7 @@ public:
 
   /**
    * Get the root device of the device tree of this bus.
-   * \return A V-BUS device representing the root of the device tree.
+   * \return A Vbus device representing the root of the device tree.
    */
   Device root() const
   {
