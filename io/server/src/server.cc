@@ -76,7 +76,7 @@ L4Re::Util::Object_registry *irq_queue()
     {
       delete irq_server;
       irq_server = 0;
-      d_printf(DBG_ERR, "fatal: could not create IRQ handler thread: %d\n",
+      d_printf(DBG_ERR, "fatal: could not start IRQ handler thread: %d\n",
                e);
       return 0;
     }
