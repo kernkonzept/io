@@ -96,7 +96,7 @@ public:
                                p[1] + p[2] - 1);
     add_resource(r);
 
-    d_printf(DBG_DEBUG, "OP-TEE module initialized successfully.");
+    d_printf(DBG_DEBUG, "OP-TEE module initialized successfully.\n");
   }
 
 private:
