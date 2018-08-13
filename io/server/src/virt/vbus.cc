@@ -467,24 +467,37 @@ System_bus::op_map(L4Re::Dataspace::Rights, long unsigned offset,
     = l4_fpage_max_order(L4_PAGESHIFT,
         addr, addr, addr + (*r)->size(), spot);
 
-  L4::Ipc::Snd_fpage::Cacheopt f = L4::Ipc::Snd_fpage::Uncached;
-  if ((*r)->prefetchable())
-    f = L4::Ipc::Snd_fpage::Buffered;
+  L4::Ipc::Snd_fpage::Cacheopt f;
 
-  if ((*r)->cached_mem())
-    f = L4::Ipc::Snd_fpage::Cached;
-
+  // if cached_mem():  Cached
+  // else:             client gets what it requests, the default is Uncached
   using L4Re::Dataspace;
-  if ((flags & Dataspace::Map_caching_mask) == Dataspace::Map_uncacheable)
+  if ((*r)->cached_mem())
     {
-      if ((*r)->cached_mem())
+      if ((flags & Dataspace::Map_caching_mask) != Dataspace::Map_cacheable)
         {
           d_printf(DBG_ERR,
-                   "MMIO resource at 0x%lx requested uncached but marked as cachable only.\n",
+                   "MMIO resource at 0x%lx requested as 'uncached' or 'bufferable' "
+                   "but marked as cachable only.\n",
                    offset);
           return -L4_EINVAL;
         }
-      f = L4::Ipc::Snd_fpage::Uncached;
+      f = L4::Ipc::Snd_fpage::Cached;
+    }
+  else
+    {
+      switch (flags & Dataspace::Map_caching_mask)
+        {
+        case Dataspace::Map_bufferable:
+          f = L4::Ipc::Snd_fpage::Buffered;
+          break;
+        case Dataspace::Map_cacheable:
+          f = L4::Ipc::Snd_fpage::Cached;
+          break;
+        default:
+          f = L4::Ipc::Snd_fpage::Uncached;
+          break;
+        }
     }
 
   fp = L4::Ipc::Snd_fpage::mem(l4_trunc_size(addr, order), order,
