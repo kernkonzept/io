@@ -614,26 +614,6 @@ l4io_release_iomem(l4_addr_t virt, unsigned long size)
 }
 
 
-long
-l4io_search_iomem_region(l4_addr_t phys, l4_addr_t size,
-                         l4_addr_t *rstart, l4_addr_t *rsize)
-{
-  (void) size;
-  if (!_internal._sigma0)
-    return -L4_ENOENT;
-
-  // for the direct mode, we just have regions of superpages,
-  // the real thing would have to search through the descriptors
-  // lets hope this approximation is ok for now, otherwise we need to do
-  // some trickier thing
-  *rstart = phys & L4_SUPERPAGEMASK;
-  *rsize  = L4_SUPERPAGESIZE;
-  return 0;
-}
-
-
-
-
 /***********************************************************************
  * I/O ports
  ***********************************************************************/

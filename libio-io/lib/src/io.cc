@@ -211,15 +211,6 @@ l4io_release_iomem(l4_addr_t virt, unsigned long size)
   return L4Re::Env::env()->rm()->detach(virt, 0);
 }
 
-long
-l4io_search_iomem_region(l4_addr_t phys, l4_addr_t size,
-                         l4_addr_t *rstart, l4_addr_t *rsize)
-{
-  *rstart = l4_trunc_page(phys);
-  *rsize  = l4_round_page(size + phys - *rstart);
-  return 0;
-}
-
 /***********************************************************************
  * I/O ports
  ***********************************************************************/
