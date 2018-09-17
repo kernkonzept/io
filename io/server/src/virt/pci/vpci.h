@@ -465,7 +465,7 @@ private:
  * \brief a basic virtual PCI bridge.
  * This class is the base for virtual Host-to-PCI bridges,
  * for virtual PCI-to-PCI bridges, and also for this such as
- * virtual PCI-to-Cardbus brdiges.
+ * virtual PCI-to-Cardbus bridges.
  */
 class Pci_bridge : public Device
 {
