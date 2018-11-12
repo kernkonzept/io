@@ -500,8 +500,11 @@ System_bus::op_map(L4Re::Dataspace::Rights, long unsigned offset,
         }
     }
 
+  unsigned char rights = (*r)->flags() & Resource::Mem_type_read_only
+                         ? L4_FPAGE_RO : L4_FPAGE_RWX;
+
   fp = L4::Ipc::Snd_fpage::mem(l4_trunc_size(addr, order), order,
-                               L4_FPAGE_RWX, l4_trunc_page(spot),
+                               rights, l4_trunc_page(spot),
                                L4::Ipc::Snd_fpage::Map,
                                f);
   return L4_EOK;

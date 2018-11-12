@@ -96,6 +96,8 @@ public:
     F_cached_mem    = 0x020000,
     F_relative      = 0x040000,
 
+    Mem_type_read_only    = 0x100000,
+
     Irq_type_base         = 0x100000,
     Irq_type_mask         = L4_IRQ_F_MASK       * Irq_type_base,
     Irq_type_none         = L4_IRQ_F_NONE       * Irq_type_base,
