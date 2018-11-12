@@ -7,7 +7,7 @@
 #include <stdio.h>
 #include <string.h>
 
-#define MAX_NAME_SIZE 89
+#define MAX_NAME_SIZE 130
 
 static void
 pq(FILE *f, const char *c)
@@ -105,7 +105,7 @@ main(void)
 			strcpy(vend, line);
 			vendor_len = strlen(c);
 			if (vendor_len + 24 > MAX_NAME_SIZE) {
-				fprintf(stderr, "Line %d: Vendor name too long\n", lino);
+				fprintf(stderr, "Line %d: Vendor name too long (%d)\n", lino, vendor_len + 24);
 				return 1;
 			}
 			fprintf(devf, "VENDOR(%s,\"", vend);
