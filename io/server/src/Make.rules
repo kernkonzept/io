@@ -1,0 +1,90 @@
+# vi:ft=make
+#MODE   := shared
+TARGET  = io
+
+SUBDIRS       = drivers
+
+SRC_CC_ACPI   = acpi.cc acpi_sci.cc acpi_osl.cc pci-acpi.cc
+SRC_CC_PCI    = pci.cc pci_iomem_root_bridge.cc msi.cc pm.cc
+
+SRC_CC := main.cc res.cc phys_space.cc resource.cc hw_device.cc \
+          hw_root_bus.cc device.cc hw_irqs.cc \
+          hw_register_block.cc \
+          dma_domain.cc \
+          gpio.cc \
+          server.cc irqs.cc debug.cc \
+          lua_glue.swg.cc \
+          pm.cc \
+          virt/vdevice.cc \
+          virt/vmsi.cc \
+          virt/vicu.cc \
+          virt/vbus.cc \
+          virt/vproxy_dev.cc \
+          virt/vbus_factory.cc \
+          virt/pci/vpci.cc \
+          virt/pci/vpci_virtual_root.cc \
+          virt/pci/vpci_pci_bridge.cc \
+          virt/gpio/vgpio.cc \
+          pci/pci.cc \
+          pci/pci_iomem_root_bridge.cc \
+          pci/msi.cc \
+          pci/pm.cc \
+          inhibitor_mux.cc \
+          platform_control.cc \
+
+
+SRC_CC_x86    = ux.cc $(addprefix acpi/,$(SRC_CC_ACPI))
+SRC_CC_amd64  = ux.cc $(addprefix acpi/,$(SRC_CC_ACPI))
+
+SRC_CC       += $(SRC_CC_$(ARCH))
+SRC_CC_IS_CXX11 = c++0x
+OPTS         := -g -O3
+
+REQUIRES_LIBS   = libsigma0 libstdc++ libpciids lua++ libpthread
+REQUIRES_LIBS_x86 = acpica
+REQUIRES_LIBS_amd64 = acpica
+
+REQUIRES_CFLAGS = libio-vbus libio-io
+PRIVATE_INCDIR += $(SRC_DIR)
+
+# implementation of lib_subdir, similar to lib_subdir.mk
+SUBDIRS += $(SUBDIRS_$(ARCH)) $(SUBDIRS_$(OSYSTEM))
+SUBDIR_TARGETS := $(addsuffix /OBJ-$(SYSTEM)/builtin.thin.a,$(SUBDIRS))
+SUBDIR_OBJS     = $(addprefix $(OBJ_DIR)/,$(SUBDIR_TARGETS))
+
+all::
+
+$(SUBDIR_OBJS): $(OBJ_DIR)/%/OBJ-$(SYSTEM)/builtin.thin.a: %
+	$(VERBOSE)$(MAKE) $(MAKECMDGOALS) OBJ_BASE=$(OBJ_BASE)\
+	                  -C $(SRC_DIR)/$* $(MKFLAGS)
+
+OBJS_io        += $(SUBDIR_OBJS)
+
+# regenerate shipped files
+ifneq ($(REGEN_FILES),)
+all:: $(SRC_DIR)/lua_glue.swg.h $(SRC_DIR)/lua_glue.swg.cc
+
+SWIG_RM_EXT_C ?= $(L4DIR)/tool/bin/swig-rm-extern-c.pl
+SWIG          ?= swig
+
+%.swg:
+
+$(SRC_DIR)/%.swg.cc: $(SRC_DIR)/%.swg.c_cc $(SRC_DIR)/Makefile
+	@$(GEN_MESSAGE)
+	$(VERBOSE)$(SWIG_RM_EXT_C) $< >$@
+
+$(SRC_DIR)/%.swg.h: $(SRC_DIR)/%.swg.c_h
+	@$(GEN_MESSAGE)
+	$(VERBOSE)$(SWIG_RM_EXT_C) $< >$@
+
+SWIG_INCDIR:=-I$(SRC_DIR) -I$(SRC_DIR)/../../include -I$(L4DIR)/pkg
+
+$(SRC_DIR)/%.swg.c_cc: $(SRC_DIR)/%.swg $(SRC_DIR)/Makefile
+	@$(GEN_MESSAGE)
+	$(VERBOSE)$(SWIG) $(SWIG_INCDIR) -c++ -small -lua -o $@ $<
+
+$(SRC_DIR)/%.swg.c_h:
+	@$(GEN_MESSAGE)
+	$(VERBOSE)$(SWIG) $(SWIG_INCDIR) -c++ -small -lua -external-runtime $@
+
+endif
