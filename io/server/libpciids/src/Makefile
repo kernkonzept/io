@@ -23,7 +23,7 @@ gen-devlist: gen-devlist.c $(GENERIC_LOC_D)
 	$(VERBOSE)$(HOST_CC) -o $@ $<
 
 update:
-	$(VERBOSE)wget -O - http://pciids.sourceforge.net/v2.2/pci.ids.bz2 \
+	$(VERBOSE)wget -O - https://pci-ids.ucw.cz/v2.2/pci.ids.bz2 \
 	   | bzcat > pci.ids
 
 clean::
