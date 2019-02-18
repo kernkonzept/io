@@ -480,6 +480,8 @@ Gpio_bcm2835_chip::get_irq(unsigned pin)
     throw -L4_EINVAL;
 
   unsigned svr = pin / 32;
+  if (!_irq_svr[svr])
+    return nullptr;
   return _irq_svr[svr]->get_pin<Gpio_irq_pin>(pin % 32, _regs[svr]);
 }
 
