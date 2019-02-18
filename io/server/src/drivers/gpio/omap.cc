@@ -624,6 +624,9 @@ public:
     if (pin >= _nr_pins)
       throw -L4_EINVAL;
 
+    if (!_irq_svr)
+      return nullptr;
+
     return _irq_svr->template get_pin<Gpio_irq_pin_t<REGS>>(pin, _regs);
   }
 
