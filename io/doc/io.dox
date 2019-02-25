@@ -52,7 +52,7 @@
  * configuration may be split across several configuration files passed
  * to Io through the command line.
  *
- * To allow clients access to a available devices, a virtual system bus needs
+ * To allow clients access to available devices, a virtual system bus needs
  * to be created that lists the devices and their resources that should be
  * available to that client. The names of the buses correspond to the
  * capabilities given to Io in its launch configuration.
