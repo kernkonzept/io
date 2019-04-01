@@ -170,8 +170,19 @@ Sw_icu::set_mode(unsigned irqn, l4_umword_t mode)
 int
 Sw_icu::unmask_irq(unsigned irqn)
 {
-  Irq_set::Iterator i = _irqs.find(irqn);
-  if (i == _irqs.end())
+  Irq_set *interrupts;
+
+  if (irqn & L4::Icu::F_msi)
+    {
+      interrupts = &_msis;
+      irqn &= ~L4::Icu::F_msi;
+    }
+  else
+    interrupts = &_irqs;
+
+  Irq_set::Iterator i = interrupts->find(irqn);
+
+  if (i == interrupts->end())
     return -L4_ENOENT;
 
   if (!i->unmask_via_icu())
