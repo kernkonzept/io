@@ -436,8 +436,10 @@ System_bus::assign_dma_domain(L4::Ipc::Iostream &ios)
 }
 
 int
-System_bus::op_map(L4Re::Dataspace::Rights, long unsigned offset,
-                   l4_addr_t spot, unsigned long flags,
+System_bus::op_map(L4Re::Dataspace::Rights,
+                   L4Re::Dataspace::Offset offset,
+                   L4Re::Dataspace::Map_addr spot,
+                   L4Re::Dataspace::Flags flags,
                    L4::Ipc::Snd_fpage &fp)
 {
 
@@ -477,7 +479,7 @@ System_bus::op_map(L4Re::Dataspace::Rights, long unsigned offset,
   using L4Re::Dataspace;
   if ((*r)->cached_mem())
     {
-      if ((flags & Dataspace::Map_caching_mask) != Dataspace::Map_cacheable)
+      if ((flags & Dataspace::F::Caching_mask) != Dataspace::F::Cacheable)
         {
           d_printf(DBG_ERR,
                    "MMIO resource at 0x%lx requested as 'uncached' or 'bufferable' "
@@ -489,12 +491,12 @@ System_bus::op_map(L4Re::Dataspace::Rights, long unsigned offset,
     }
   else
     {
-      switch (flags & Dataspace::Map_caching_mask)
+      switch ((flags & Dataspace::F::Caching_mask).raw)
         {
-        case Dataspace::Map_bufferable:
+        case Dataspace::F::Bufferable:
           f = L4::Ipc::Snd_fpage::Buffered;
           break;
-        case Dataspace::Map_cacheable:
+        case Dataspace::F::Cacheable:
           f = L4::Ipc::Snd_fpage::Cached;
           break;
         default:

@@ -10,6 +10,7 @@
 
 #include <set>
 #include <l4/sys/cxx/ipc_epiface>
+#include <l4/sys/cxx/consts>
 #include <l4/cxx/hlist>
 
 #include <l4/vbus/vbus_types.h>
@@ -19,6 +20,7 @@
 #include <l4/re/util/event_buffer>
 
 #include <pthread.h>
+#include <limits.h>
 
 #include "vdevice.h"
 #include "device.h"
@@ -121,32 +123,41 @@ public:
   { return Device::name(); }
 
   // L4::Server_object interface
-  int op_clear(L4Re::Dataspace::Rights, l4_addr_t, unsigned long)
-  { return -L4_ENOSYS; }
+  int op_clear(L4Re::Dataspace::Rights,
+               L4Re::Dataspace::Offset,
+               L4Re::Dataspace::Size)
+  {
+    return -L4_ENOSYS;
+  }
 
   using Vbus_event_source::op_info;
-  int op_info(L4Re::Dataspace::Rights, L4Re::Dataspace::Stats &)
-  { return -L4_ENOSYS; }
+  int op_info(L4Re::Dataspace::Rights, L4Re::Dataspace::Stats &stats)
+  {
+    stats.size = L4::trunc_page(ULONG_MAX);
+    stats.flags = L4Re::Dataspace::F::RW;
+    return 0;
+  }
 
-  int op_take(L4Re::Dataspace::Rights)
-  { return 0; }
+  int op_allocate(L4Re::Dataspace::Rights,
+                  L4Re::Dataspace::Offset,
+                  L4Re::Dataspace::Size)
+  {
+    return 0;
+  }
 
-  int op_release(L4Re::Dataspace::Rights)
-  { return 0; }
+  int op_copy_in(L4Re::Dataspace::Rights,
+                 L4Re::Dataspace::Offset,
+                 L4::Ipc::Snd_fpage,
+                 L4Re::Dataspace::Offset,
+                 L4Re::Dataspace::Size)
+  {
+    return -L4_ENOSYS;
+  }
 
-  int op_allocate(L4Re::Dataspace::Rights, l4_addr_t, l4_size_t)
-  { return 0; }
-
-  int op_copy_in(L4Re::Dataspace::Rights, l4_addr_t, L4::Ipc::Snd_fpage, l4_addr_t,
-                 unsigned long)
-  { return -L4_ENOSYS; }
-
-  int op_phys(L4Re::Dataspace::Rights, l4_addr_t,
-              l4_addr_t &, l4_size_t &)
-  { return -L4_ENOSYS; }
-
-  int op_map(L4Re::Dataspace::Rights r, long unsigned offset,
-             l4_addr_t spot, unsigned long flags,
+  int op_map(L4Re::Dataspace::Rights r,
+             L4Re::Dataspace::Offset offset,
+             L4Re::Dataspace::Map_addr spot,
+             L4Re::Dataspace::Flags flags,
              L4::Ipc::Snd_fpage &fp);
 
 

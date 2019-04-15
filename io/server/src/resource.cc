@@ -296,6 +296,7 @@ void Mmio_data_space::alloc_ram(Size size, unsigned long alloc_flags)
   // CHECK: this seems useless to me (alex)
   L4Re::chksys(L4Re::Env::env()->rm()
                  ->attach(&_r, ds_size,
-                          L4Re::Rm::Search_addr | L4Re::Rm::Eager_map,
+                          L4Re::Rm::F::Search_addr | L4Re::Rm::F::Eager_map
+                          | L4Re::Rm::F::RW,
                           L4::Ipc::make_cap_rw(_ds_ram.get())));
 }

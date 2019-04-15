@@ -148,29 +148,29 @@ __map_iomem(l4_addr_t phys, l4_addr_t* virt, unsigned long size, int flags)
   if (size >= L4_SUPERPAGESIZE)
     align = L4_SUPERPAGESHIFT;
 
-  unsigned long rmflags = 0;
+  L4Re::Rm::Flags rmflags = L4Re::Rm::F::RW;
 
   if (flags & L4IO_MEM_EAGER_MAP)
-    rmflags |= L4Re::Rm::Eager_map;
+    rmflags |= L4Re::Rm::F::Eager_map;
 
   switch (flags & L4IO_MEM_ATTR_MASK)
     {
     case L4IO_MEM_NONCACHED:
-      rmflags |= L4Re::Rm::Cache_uncached;
+      rmflags |= L4Re::Rm::F::Cache_uncached;
       break;
     case L4IO_MEM_WRITE_COMBINED:
-      rmflags |= L4Re::Rm::Cache_buffered;
+      rmflags |= L4Re::Rm::F::Cache_buffered;
       break;
     case L4IO_MEM_CACHED:
-      rmflags |= L4Re::Rm::Cache_normal;
+      rmflags |= L4Re::Rm::F::Cache_normal;
       break;
     }
 
   if (*virt && (flags & L4IO_MEM_USE_RESERVED_AREA))
-    rmflags |= L4Re::Rm::In_area;
+    rmflags |= L4Re::Rm::F::In_area;
 
   if (!*virt)
-    rmflags |= L4Re::Rm::Search_addr;
+    rmflags |= L4Re::Rm::F::Search_addr;
   else
     {
       /* Check for reasonable caller behavior:

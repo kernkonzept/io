@@ -476,7 +476,7 @@ handle_anonram(__internal_res *res, l4_addr_t *virt,
                unsigned long size, unsigned search_virt_address)
 {
   long r;
-  unsigned long flags = 0;
+  L4Re::Rm::Flags flags = L4Re::Rm::F::RW;
   int shift = (size & ~L4_SUPERPAGEMASK) ? L4_PAGESHIFT : L4_SUPERPAGESHIFT;
 
   if (search_virt_address)
@@ -486,7 +486,7 @@ handle_anonram(__internal_res *res, l4_addr_t *virt,
         {
           L4::Cap<L4Re::Dataspace> d(res->ram_cap);
           r = L4Re::Env::env()->rm()->attach(&res->virt, size,
-	                                     flags | L4Re::Rm::Search_addr,
+                                             flags | L4Re::Rm::F::Search_addr,
                                              L4::Ipc::make_cap_rw(d), 0, shift);
           if (r)
             {
@@ -537,7 +537,7 @@ l4io_request_iomem(l4_addr_t phys, unsigned long size, int flags,
   if (!is_anon_ram(res))
     {
       r = L4Re::Env::env()->rm()->reserve_area(virt, size,
-                                               L4Re::Rm::Search_addr);
+                                               L4Re::Rm::F::Search_addr);
       if (r)
         return r;
 

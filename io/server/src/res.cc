@@ -173,7 +173,7 @@ l4_addr_t res_map_iomem(l4_addr_t phys, l4_addr_t size)
           // start searching for virtual region at L4_PAGESIZE
 	  iomem->virt = L4_PAGESIZE;
 	  int res = L4Re::Env::env()->rm()->reserve_area(&iomem->virt,
-	      iomem->size, L4Re::Rm::Search_addr, p2size);
+	      iomem->size, L4Re::Rm::F::Search_addr, p2size);
 
 	  if (res < 0)
 	    {
