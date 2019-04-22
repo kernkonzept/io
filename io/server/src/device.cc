@@ -144,7 +144,7 @@ struct Res_dev
   Resource *r;
   Device *d;
 
-  Res_dev() {}
+  Res_dev() = default;
   Res_dev(Resource *r, Device *d) : r(r), d(d) {}
 };
 
