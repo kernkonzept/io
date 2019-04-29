@@ -14,3 +14,10 @@ extern L4Re::Util::Object_registry *registry;
 L4Re::Util::Object_registry *irq_queue();
 
 int server_loop();
+
+namespace Internal {
+
+static struct Io_svr_init
+{ Io_svr_init(); } init;
+
+};

@@ -32,13 +32,21 @@ public:
   { return l4_kip_clock(l4re_kip()); }
 };
 
-static L4Re::Util::Registry_server<Loop_hooks> server;
+typedef L4Re::Util::Registry_server<Loop_hooks> Registry_svr;
+static Registry_svr *svr()
+{
+  static Registry_svr server;
+  return &server;
+}
 
-L4Re::Util::Object_registry *registry = server.registry();
+L4Re::Util::Object_registry *registry;
+
+Internal::Io_svr_init::Io_svr_init()
+{ registry = svr()->registry(); }
 
 int server_loop()
 {
-  server.loop();
+  svr()->loop();
   return 0;
 }
 
