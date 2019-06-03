@@ -124,13 +124,14 @@ public:
   Device() : _name("(noname)")
   { __devs.insert(l4vbus_device_handle_t(this)); }
 
+  Device *get_dev_by_id(l4vbus_device_handle_t id);
+
   void dump(int indent) const;
 
 protected:
   // helper functions
   int get_by_hid(L4::Ipc::Iostream &ios);
   int vbus_get_device(L4::Ipc::Iostream &ios);
-  Device *get_dev_by_id(l4vbus_device_handle_t id);
 
   Device *get_root()
   {
