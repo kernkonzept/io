@@ -233,6 +233,19 @@ protected:
 class Icu : public Device
 {
 public:
+  /** Flags that can be used with the ICU on a vbus device */
+  enum Src_types
+  {
+    /**
+     * Flag to denote that the value should be interpreted as a device handle.
+     *
+     * This flag may be used in the `source` parameter in L4::Icu::msi_info()
+     * to denote that the ICU should interpret the source ID as a device
+     * handle.
+     */
+    Src_dev_handle = L4VBUS_ICU_SRC_DEV_HANDLE
+  };
+
   /**
    * Request the L4::Icu capability for this Vbus ICU.
    */

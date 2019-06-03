@@ -16,6 +16,10 @@
 #include "debug.h"
 #include "hw_irqs.h"
 
+// this include is temporarily needed to have access to the Pci_dev class
+// this will eventually be replaced by a generic MSI feature header
+#include "pci/vpci.h"
+
 #include <l4/re/util/cap_alloc>
 #include <l4/re/namespace>
 #include <l4/re/env>
@@ -62,6 +66,33 @@ Sw_icu::get_msi_pin(unsigned msin)
   return p;
 }
 
+Io_irq_pin::Msi_src *
+Sw_icu::find_msi_src(l4vbus_device_handle_t device)
+{
+  Device *dev = get_root()->get_dev_by_id(device);
+  if (!dev)
+    return nullptr;
+
+  Pci_dev *pci_dev = dev->find_feature<Pci_dev>();
+  if (!pci_dev)
+    {
+      d_printf(DBG_ALL, "%s: device is not a PCI device\n", __func__);
+      return nullptr;
+    }
+
+  return pci_dev->msi_src();
+}
+
+Io_irq_pin::Msi_src *
+Sw_icu::find_msi_src(Device::Msi_src_info si)
+{
+  if (!si.svt())
+    return nullptr;
+
+  return get_root()->find_msi_src(si);
+}
+
+
 int
 Sw_icu::op_msi_info(L4::Icu::Rights, l4_umword_t irqnum, l4_uint64_t source,
                     l4_icu_msi_info_t &info)
@@ -74,25 +105,26 @@ Sw_icu::op_msi_info(L4::Icu::Rights, l4_umword_t irqnum, l4_uint64_t source,
   if (!msi)
     return -L4_EINVAL;
 
-  d_printf(DBG_ALL, "%s: irqnum=%lx: source=0x%05x\n",
-           __func__, irqnum, (unsigned)source);
+  Io_irq_pin::Msi_src *src;
 
-  Device::Msi_src_info si = source;
-
-  if (!si.svt())
+  // interpret source as the device handle and use that to lookup the device
+  if (source & L4vbus::Icu::Src_dev_handle)
+    src = find_msi_src((l4vbus_device_handle_t)(source & ~L4vbus::Icu::Src_dev_handle));
+  else
     {
-      d_printf(DBG_WARN,
-               "warning: MSI %lx (bus: %s) without source ID will be blocked\n",
-               irqnum & ~L4::Icu::F_msi, get_root()->name());
-      return -L4_ERANGE;
+      Device::Msi_src_info si = source;
+
+      d_printf(DBG_ALL, "%s: irqnum=%lx: source=0x%05x\n",
+               __func__, irqnum, (unsigned)source);
+
+      src = find_msi_src(si);
     }
 
-  Io_irq_pin::Msi_src *src = get_root()->find_msi_src(si);
   if (!src)
     {
       d_printf(DBG_WARN,
-               "warning: MSI source 0x%05x not found on bus %s\n",
-               si.v, get_root()->name());
+               "warning: MSI source for 0x%llx not found on bus %s\n",
+               source, get_root()->name());
       return -L4_ENODEV;
     }
 

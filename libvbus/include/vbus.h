@@ -24,6 +24,17 @@ enum {
   L4VBUS_ROOT_BUS = 0, /**< Root device on the vbus */
 };
 
+/** Flags that can be used with the ICU on a vbus device */
+enum l4vbus_icu_src_types {
+    /**
+     * Flag to denote that the value should be interpreted as a device handle.
+     *
+     * This flag may be used in the `source` parameter in l4_icu_msi_info() to
+     * denote that the ICU should interpret the source ID as a device handle.
+     */
+    L4VBUS_ICU_SRC_DEV_HANDLE = 1ULL << 63
+};
+
 /**
  * \defgroup l4vbus_module L4 Vbus functions
  * \{
