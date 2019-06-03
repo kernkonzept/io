@@ -13,7 +13,7 @@ SUBDIRS      = drivers
 
 SRC_CC_ACPI  = acpi.cc acpi_sci.cc acpi_osl.cc pci-acpi.cc
 
-$(foreach i,$(SRC_CC_ACPI),$(eval CXXFLAGS_acpi/$(i:.cc=.o) = -DL4_ACPICA))
+$(foreach i,$(SRC_CC_ACPI),$(eval CXXFLAGS_acpi/$(i) = -DL4_ACPICA))
 
 SRC_CC-$(CONFIG_L4IO_ACPI) += $(addprefix acpi/,$(SRC_CC_ACPI))
 
@@ -69,10 +69,10 @@ SUBDIR_TARGETS := $(addsuffix /OBJ-$(SYSTEM)/builtin.thin.a,$(SUBDIRS))
 SUBDIR_OBJS     = $(addprefix $(OBJ_DIR)/,$(SUBDIR_TARGETS))
 
 # ACPI contrib code has many unused parameters
-CPPFLAGS_acpi/acpi.o     += -Wno-unused-parameter
-CPPFLAGS_acpi/acpi_sci.o += -Wno-unused-parameter
-CPPFLAGS_acpi/acpi_osl.o += -Wno-unused-parameter
-CPPFLAGS_acpi/pci-acpi.o += -Wno-unused-parameter
+CPPFLAGS_acpi/acpi.cc     += -Wno-unused-parameter
+CPPFLAGS_acpi/acpi_sci.cc += -Wno-unused-parameter
+CPPFLAGS_acpi/acpi_osl.cc += -Wno-unused-parameter
+CPPFLAGS_acpi/pci-acpi.cc += -Wno-unused-parameter
 
 all::
 
