@@ -333,7 +333,7 @@ Pci_dev::~Pci_dev()
 /**
  * \brief General PCI device providing PCI device functions.
  */
-class Pci_dev_feature : public Pci_dev, public Dev_feature
+class Pci_dev_feature : public Pci_dev, public Msi_src_feature
 {
 public:
   l4_uint32_t interface_type() const { return 1 << L4VBUS_INTERFACE_PCIDEV; }
@@ -368,7 +368,7 @@ public:
   bool is_same_device(Pci_dev const *o) const override
   { return o == this; }
 
-  Msi_src *msi_src() const override
+  Io_irq_pin::Msi_src *msi_src() const override
   { return 0; }
 
   ~Pci_virtual_dev() = 0;

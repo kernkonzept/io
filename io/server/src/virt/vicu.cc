@@ -16,10 +16,6 @@
 #include "debug.h"
 #include "hw_irqs.h"
 
-// this include is temporarily needed to have access to the Pci_dev class
-// this will eventually be replaced by a generic MSI feature header
-#include "pci/vpci.h"
-
 #include <l4/re/util/cap_alloc>
 #include <l4/re/namespace>
 #include <l4/re/env>
@@ -73,14 +69,14 @@ Sw_icu::_find_msi_src(l4vbus_device_handle_t device)
   if (!dev)
     return nullptr;
 
-  Pci_dev *pci_dev = dev->find_feature<Pci_dev>();
-  if (!pci_dev)
+  Msi_src_feature *msi = dev->find_feature<Msi_src_feature>();
+  if (!msi)
     {
-      d_printf(DBG_ALL, "%s: device is not a PCI device\n", __func__);
+      d_printf(DBG_ALL, "%s: device has no MSI support\n", __func__);
       return nullptr;
     }
 
-  return pci_dev->msi_src();
+  return msi->msi_src();
 }
 
 Io_irq_pin::Msi_src *

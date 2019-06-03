@@ -43,6 +43,12 @@ public:
 
 inline Dev_feature::~Dev_feature() {}
 
+class Msi_src_feature : public Dev_feature
+{
+public:
+  virtual Io_irq_pin::Msi_src *msi_src() const = 0;
+};
+
 
 class Device : public Generic_device, public Device_tree_mixin<Device>
 {
