@@ -255,7 +255,7 @@ read_config(char const *cfg_file, lua_State *lua)
       d_printf(DBG_ERR, "%s: cannot open/read file: %s\n", cfg_file, lua_err);
       exit(1);
     default:
-      d_printf(DBG_ERR, "%s: unknown error: %s\n", cfg_file, lua_err);
+      d_printf(DBG_ERR, "%s: unknown error\n", cfg_file);
       exit(1);
     }
 
