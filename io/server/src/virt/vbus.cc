@@ -374,6 +374,9 @@ System_bus::assign_dma_domain(L4::Ipc::Iostream &ios)
   if (!tag.items())
     return -L4_EINVAL;
 
+  if (tag.words() > L4::Ipc::Msg::Mr_words - L4::Ipc::Msg::Item_words)
+    return -L4_EMSGTOOLONG;
+
   unsigned id, flags;
   ios >> id >> flags;
 
