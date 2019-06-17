@@ -175,7 +175,15 @@ l4_addr_t res_map_iomem(l4_addr_t phys, l4_addr_t size)
 
 	  unsigned bytes
 	    = cxx::Bitmap_base::bit_buffer_bytes(iomem->size >> Page_shift);
-	  iomem->pages = cxx::Bitmap_base(malloc(bytes));
+          void *bit_buffer = malloc(bytes);
+          if (!bit_buffer)
+            {
+              L4Re::Env::env()->rm()->free_area(iomem->virt);
+              delete iomem;
+              return 0;
+            }
+
+	  iomem->pages = cxx::Bitmap_base(bit_buffer);
 	  memset(iomem->pages.bit_buffer(), 0, bytes);
 
 	  io_set.insert(iomem);
