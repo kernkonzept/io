@@ -137,23 +137,37 @@ l4vbus_get_hid(l4_cap_idx_t vbus, l4vbus_device_handle_t dev, char *hid,
                unsigned long max_len);
 
 /**
- * \brief Request a resource of a specific type
+ * Request an IO port resource.
  *
- * \param  vbus         Capability of the system bus
- * \param  res          Descriptor of the resource
- * \param  flags        Optional flags
+ * \param     vbus  Capability of the system bus.
+ * \param[in] res   The IO port resource to be requested from the bus.
  *
- * \return 0 on success, else failure
+ * \retval 0           Success.
+ * \retval -L4_EINVAL  Resource is not an IO port resource.
+ * \retval -L4_ENOENT  No matching IO port resource found.
  *
- * If any resource is found that contains the requested
- * type and addresses this resource is returned.
- *
- * Flags are only relevant to control the memory caching.
- * If io-memory is requested.
- *
- * \return 0 on success, else failure
+ * If any IO port resource is found that contains the requested IO port range
+ * the IO ports are obtained.
  */
 int L4_CV
+l4vbus_request_ioport(l4_cap_idx_t vbus, l4vbus_resource_t const *res);
+
+/**
+ * Request a resource of a specific type
+ *
+ * \param     vbus   Capability of the system bus.
+ * \param[in] res    Descriptor of the resource.
+ * \param     flags  Ignored.
+ *
+ * \return 0 on success, else failure.
+ *
+ * If any resource is found that contains the requested type and resource
+ * address range the resource is obtained.
+ *
+ * \deprecated This function is deprecated. Use l4vbus_request_ioport().
+ */
+int L4_CV
+L4_DEPRECATED("use l4vbus_request_ioport")
 l4vbus_request_resource(l4_cap_idx_t vbus, l4vbus_resource_t const *res,
                         int flags);
 
@@ -197,14 +211,28 @@ l4vbus_assign_dma_domain(l4_cap_idx_t vbus, unsigned domain_id,
                          unsigned flags, l4_cap_idx_t dma_space);
 
 /**
- * \brief Release a previously requested resource
+ * Release a previously requested IO port resource.
  *
- * \param  vbus         Capability of the system bus.
- * \param  res          Descriptor of the resource.
+ * \param     vbus  Capability of the system bus.
+ * \param[in] res   The IO port resource to be released from the bus.
  *
- * \return 0 on success, else failure
+ * \return >=0 on success, <0 on error.
  */
 int L4_CV
+l4vbus_release_ioport(l4_cap_idx_t vbus, l4vbus_resource_t const *res);
+
+/**
+ * Release a previously requested resource.
+ *
+ * \param     vbus  Capability of the system bus.
+ * \param[in] res   The resource to be released from the bus.
+ *
+ * \return >=0 on success, <0 on error.
+ *
+ * \deprecated This function is deprecated. Use l4vbus_release_ioport().
+ */
+int L4_CV
+L4_DEPRECATED("use l4vbus_release_ioport")
 l4vbus_release_resource(l4_cap_idx_t vbus, l4vbus_resource_t const *res);
 
 /**

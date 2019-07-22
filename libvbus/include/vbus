@@ -267,24 +267,62 @@ class Vbus : public L4::Kobject_3t<Vbus, L4Re::Dataspace, L4Re::Inhibitor, L4Re:
 public:
 
   /**
+   * Request the given IO port resource from the bus.
+   *
+   * \param[in] res  The IO port resource to be requested from the bus.
+   *
+   * \retval 0           Success.
+   * \retval -L4_EINVAL  Resource is not an IO port resource.
+   * \retval -L4_ENOENT  No matching IO port resource found.
+   */
+  int request_ioport(l4vbus_resource_t *res) const
+  {
+    return l4vbus_request_ioport(cap(), res);
+  }
+
+  /**
    * Request the given resource from the bus.
-   * \param res The resource that shall be requested from the bus.
-   * \param flags The flags for the request.
+   *
+   * \param[in] res    The resource to be requested from the bus.
+   * \param     flags  Ignored.
+   *
+   * \return 0 on success, else failure.
+   *
+   * \deprecated This function is deprecated. Use request_ioport().
+   */
+  int
+  L4_DEPRECATED("use L4Vbus::Vbus::request_ioport")
+  request_resource(l4vbus_resource_t *res, int /*flags*/ = 0) const
+  {
+    return l4vbus_request_ioport(cap(), res);
+  }
+
+  /**
+   * Release the given IO port resource from the bus.
+   *
+   * \param[in] res  The IO port resource to be released from the bus.
+   *
    * \return >=0 on success, <0 on error.
    */
-  int request_resource(l4vbus_resource_t *res, int flags = 0) const
+  int release_ioport(l4vbus_resource_t *res) const
   {
-    return l4vbus_request_resource(cap(), res, flags);
+    return l4vbus_release_ioport(cap(), res);
   }
 
   /**
    * Release the given resource from the bus.
-   * \param res The resource that shall be requested from the bus.
+   *
+   * \param[in] res  The resource to be released from the bus.
+   *
    * \return >=0 on success, <0 on error.
+   *
+   * \deprecated This function is deprecated. Use release_ioport().
    */
-  int release_resource(l4vbus_resource_t *res) const
+  int
+  L4_DEPRECATED("use L4Vbus::Vbus::release_ioport")
+  release_resource(l4vbus_resource_t *res) const
   {
-    return l4vbus_release_resource(cap(), res);
+    return l4vbus_release_ioport(cap(), res);
   }
 
   /**

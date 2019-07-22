@@ -222,7 +222,7 @@ l4io_request_ioport(unsigned portnum, unsigned len)
   res.type = L4IO_RESOURCE_PORT;
   res.start = portnum;
   res.end = portnum + len - 1;
-  return l4vbus_request_resource(vbus().cap(), &res, 0);
+  return l4vbus_request_ioport(vbus().cap(), &res);
 }
 
 long
@@ -232,7 +232,7 @@ l4io_release_ioport(unsigned portnum, unsigned len)
   res.type = L4IO_RESOURCE_PORT;
   res.start = portnum;
   res.end = portnum + len - 1;
-  return l4vbus_release_resource(vbus().cap(), &res);
+  return l4vbus_release_ioport(vbus().cap(), &res);
 }
 
 /***********************************************************************
@@ -332,7 +332,7 @@ l4io_request_all_ioports(void (*res_cb)(l4vbus_resource_t const *res))
 	  l4vbus_get_resource(vbus().cap(), next_dev, r, &resource);
 	  if (resource.type == L4IO_RESOURCE_PORT)
             {
-	      l4vbus_request_resource(vbus().cap(), &resource, 0);
+	      l4vbus_request_ioport(vbus().cap(), &resource);
               if (res_cb)
                 res_cb(&resource);
             }
