@@ -199,7 +199,6 @@ public:
 
 private:
   int request_resource(L4::Ipc::Iostream &ios);
-  int request_iomem(L4::Ipc::Iostream &ios);
   int assign_dma_domain(L4::Ipc::Iostream &ios);
 
   int get_stream_info_for_id(l4_umword_t, L4Re::Event_stream_info *) override;

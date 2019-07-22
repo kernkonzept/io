@@ -173,7 +173,6 @@ public:
     S_allow_set_mode = Sw_irq_pin::S_allow_set_mode,
   };
 
-  static void *irq_loop(void*);
   void set_host(Device *d) override
   { _host = d; }
 
