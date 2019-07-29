@@ -44,6 +44,9 @@ Kernel_irq_pin::bind(Triggerable const &irq, unsigned mode)
       chg_flags(true,  F_shareable);
     }
 
+  if (err == 1)
+    Io_irq_pin::bind(irq, mode);
+
   return err;
 }
 
