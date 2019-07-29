@@ -436,7 +436,7 @@ Sw_icu::Sw_irq_pin::_unbind(bool deleted)
     }
 
   _irq = L4::Cap<L4::Irq>::Invalid;
-  _state &= S_irq_type_mask;
+  _state &= S_user_mask;
   return err;
 }
 
