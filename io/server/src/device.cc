@@ -27,6 +27,8 @@ bool
 Generic_device::alloc_child_resource(Resource *r, Device *cld)
 {
   bool found_as = false;
+  bool assigned = false;
+
   for (Resource_list::const_iterator br = resources()->begin();
        br != resources()->end(); ++br)
     {
@@ -50,6 +52,8 @@ Generic_device::alloc_child_resource(Resource *r, Device *cld)
           d_printf(DBG_ALL, "assigned resource: ");
           if (dlevel(DBG_ALL))
             r->dump();
+
+          assigned = true;
         }
       else if ((*br)->provided()->alloc(*br, this, r, cld, false))
 	{
@@ -65,10 +69,12 @@ Generic_device::alloc_child_resource(Resource *r, Device *cld)
   if (!found_as && parent())
     return parent()->alloc_child_resource(r, cld);
 
-
-  d_printf(DBG_ERR, "ERROR: could not reserve resource\n");
-  if (dlevel(DBG_ERR))
-    r->dump();
+  if (!assigned)
+    {
+      d_printf(DBG_ERR, "ERROR: could not reserve resource\n");
+      if (dlevel(DBG_ERR))
+        r->dump();
+    }
 
   r->disable();
   return false;
