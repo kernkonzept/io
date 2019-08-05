@@ -93,7 +93,7 @@ public:
 
 
   /**
-   * Find a device by the human interface identifier (HID).
+   * Find a device by the hardware interface identifier (HID).
    *
    * This function searches the vbus for a device with the given HID and
    * returns a handle to the first matching device. The HID usually conforms to
