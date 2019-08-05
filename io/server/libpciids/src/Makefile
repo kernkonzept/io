@@ -12,7 +12,7 @@ ifeq ($(BID_COMPILER_TYPE),gcc)
 CFLAGS += -fvisibility=internal
 endif
 
-names.c: devlist.h classlist.h
+$(SRC_DIR)/names.c: devlist.h classlist.h
 
 devlist.h classlist.h: $(SRC_DIR)/pci.ids gen-devlist $(GENERIC_LOC_D)
 	$(VERBOSE)echo -e "  ... Generating devlist.h/classlist.h"
