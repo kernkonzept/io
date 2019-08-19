@@ -430,7 +430,7 @@ l4io_release_irq(int irqnum, l4_cap_idx_t /*irq_cap*/)
     return -L4_ENOENT;
 
   l4_task_unmap(L4_BASE_TASK_CAP,
-                l4_obj_fpage(res->d2(), 0, L4_FPAGE_RWX),
+                l4_obj_fpage(res->d2(), 0, L4_CAP_FPAGE_RWS),
                 L4_FP_ALL_SPACES);
 
   Res::del(res);
