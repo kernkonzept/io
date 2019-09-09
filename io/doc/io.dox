@@ -178,4 +178,27 @@
  * concatenate multiple ID strings using `&`. An example where a specific
  * device from a specific vendor at a fixed bus address is matched would use
  * the string `PCI/VEN_vvvv&DEV_dddd&ADR_xxxx:xx:xx.x`.
+ *
+ * ### Isolation of PCIe devices ###
+ *
+ * PCIe encodes device communication with a network-like protocol with
+ * destination headers and packet fragmentation allowing a devices to talk
+ * directly to other devices. This potentially works against security
+ * boundaries for a system. E.g. two network cards could exchange packets and
+ * thereby leak information from one security domain to the other without
+ * involvement of the OS.
+ *
+ * PCIe introduced an optional capability named PCI Access Control Services
+ * (PCI/ACS) to control communication between PCIe devices.
+ *
+ * With PCI/ACS it is possible to restrict inter-device communication between
+ * PCIe devices.
+ *
+ * PCI/ACS is optional and for Intel chipsets, it is usually only implemented
+ * on high-end PCI platform controller hubs (PCHs), and is missing on low-end
+ * and mobile PCHs. On some Intel-PCHs there exist facilities that allow for
+ * similar isolation.
+ *
+ * If IO encounters a supported PCH, it will enable those facilities in order
+ * to enforce device isolation.
  */
