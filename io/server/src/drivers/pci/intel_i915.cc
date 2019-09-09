@@ -27,7 +27,7 @@ struct Pci_intel_i915_drv : Driver
     // According to the Intel IGD OpRegion specification the default value is
     // 0h which means the BIOS has not placed a memory offset into this
     // register
-    if (v == 0 || v == ~0UL)
+    if (v == 0 || v == ~0U)
       return 0;
 
     printf("Found Intel i915 GPU opregion at %x\n", v);
