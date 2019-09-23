@@ -320,7 +320,9 @@ T read_from(L4::Ipc::Istream &s)
 int
 Gpio::multi_setup(L4::Ipc::Iostream &ios)
 {
-  Hw::Gpio_chip::Pin_slice mask = read_from<Hw::Gpio_chip::Pin_slice>(ios);
+  Hw::Gpio_chip::Pin_slice mask;
+  mask.offset = read_from<unsigned>(ios);
+  mask.mask = read_from<unsigned>(ios);
   unsigned mode = read_from<unsigned>(ios);
   unsigned outvalue = read_from<unsigned>(ios);
   check_mask(mask);
@@ -331,7 +333,9 @@ Gpio::multi_setup(L4::Ipc::Iostream &ios)
 int
 Gpio::multi_config_pad(L4::Ipc::Iostream &ios)
 {
-  Hw::Gpio_chip::Pin_slice mask = read_from<Hw::Gpio_chip::Pin_slice>(ios);
+  Hw::Gpio_chip::Pin_slice mask;
+  mask.offset = read_from<unsigned>(ios);
+  mask.mask = read_from<unsigned>(ios);
   unsigned func = read_from<unsigned>(ios);
   unsigned value = read_from<unsigned>(ios);
   check_mask(mask);
@@ -352,7 +356,9 @@ Gpio::multi_get(L4::Ipc::Iostream &ios)
 int
 Gpio::multi_set(L4::Ipc::Iostream &ios)
 {
-  Hw::Gpio_chip::Pin_slice mask = read_from<Hw::Gpio_chip::Pin_slice>(ios);
+  Hw::Gpio_chip::Pin_slice mask;
+  mask.offset = read_from<unsigned>(ios);
+  mask.mask = read_from<unsigned>(ios);
   unsigned data = read_from<unsigned>(ios);
   check_mask(mask);
   _hwd->multi_set(mask, data);
