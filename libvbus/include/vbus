@@ -288,7 +288,8 @@ public:
    *
    * \return 0 on success, else failure.
    *
-   * \deprecated This function is deprecated. Use request_ioport().
+   * \deprecated This function is deprecated since Q3 2019.
+   *             Use request_ioport() instead.
    */
   int
   L4_DEPRECATED("use L4Vbus::Vbus::request_ioport")
@@ -316,7 +317,8 @@ public:
    *
    * \return >=0 on success, <0 on error.
    *
-   * \deprecated This function is deprecated. Use release_ioport().
+   * \deprecated This function is deprecated since Q3 2019.
+   *             Use release_ioport() instead.
    */
   int
   L4_DEPRECATED("use L4Vbus::Vbus::release_ioport")

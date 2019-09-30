@@ -164,7 +164,8 @@ l4vbus_request_ioport(l4_cap_idx_t vbus, l4vbus_resource_t const *res);
  * If any resource is found that contains the requested type and resource
  * address range the resource is obtained.
  *
- * \deprecated This function is deprecated. Use l4vbus_request_ioport().
+ * \deprecated This function is deprecated since Q3 2019.
+ *             Use l4vbus_request_ioport() instead.
  */
 int L4_CV
 L4_DEPRECATED("use l4vbus_request_ioport")
@@ -229,7 +230,8 @@ l4vbus_release_ioport(l4_cap_idx_t vbus, l4vbus_resource_t const *res);
  *
  * \return >=0 on success, <0 on error.
  *
- * \deprecated This function is deprecated. Use l4vbus_release_ioport().
+ * \deprecated This function is deprecated since Q3 2019.
+ *             Use l4vbus_release_ioport() instead.
  */
 int L4_CV
 L4_DEPRECATED("use l4vbus_release_ioport")
