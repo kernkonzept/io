@@ -1231,7 +1231,7 @@ Pci_pci_bridge_irq_router_rs::request(Resource *parent, ::Device *pdev,
   if (pdev->parent())
     {
       child->start((child->start() + (cd->adr() >> 16)) & 3);
-      res = pdev->parent()->request_child_resource(child, pdev);
+      res = pdev->parent()->request_child_resource(child, cdev);
       if (res)
 	child->parent(parent);
     }
