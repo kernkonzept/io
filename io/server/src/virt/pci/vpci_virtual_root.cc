@@ -134,6 +134,7 @@ Pci_vroot::cfg_read(L4::Ipc::Iostream &ios)
   ios << value;
   return L4_EOK;
 }
+
 int
 Pci_vroot::irq_enable(L4::Ipc::Iostream &ios)
 {
@@ -184,7 +185,9 @@ Pci_vroot::cfg_write(L4::Ipc::Iostream &ios)
   l4_uint32_t width;
 
   ios >> bus >> devfn >> reg >> value >> width;
-  // printf("cfg write: %02x:%02x.%1x: reg=%x w=%x v=%08x\n", bus, devfn >> 16, devfn & 0xffff, reg, width, value);
+  if (0)
+    printf("cfg write: %02x:%02x.%1x: reg=%x w=%x v=%08x\n",
+           bus, devfn >> 16, devfn & 0xffff, reg, width, value);
 
   if ((devfn >> 16) >= 32 || (devfn & 0xffff) >= 8)
     return L4_EOK;

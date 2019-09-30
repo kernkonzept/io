@@ -68,7 +68,9 @@ VPci_root::irq_enable(L4::Ipc::Iostream &ios)
   int pin;
 
   ios >> bus >> devfn >> pin;
-  // printf("get IRQ for %02x:%02x.%x: pin INT%c\n", bus, devfn >> 16, devfn & 0xffff, pin + 'A');
+  if (0)
+    printf("get IRQ for %02x:%02x.%x: pin INT%c\n",
+           bus, devfn >> 16, devfn & 0xffff, pin + 'A');
   struct acpica_pci_irq *irq = 0;
   int res = acpica_pci_irq_find(0, bus, devfn >> 16, pin, &irq);
   if (res < 0)

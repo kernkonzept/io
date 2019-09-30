@@ -216,7 +216,8 @@ Pci_proxy_dev::Pci_proxy_dev(Hw::Pci::If *hwf)
 
 	}
 
-      //printf("  bar: %d = %08x\n", i, _vbars[i]);
+      if (0)
+        printf("  bar: %d = %08x\n", i, _vbars[i]);
     }
 
   if (_hwf->rom())
@@ -267,7 +268,8 @@ Pci_proxy_dev::write_bar(int bar, l4_uint32_t v)
   if (!r)
     return;
 
-  // printf("  write bar[%x]: %llx-%llx...\n", bar, r->abs_start(), r->abs_end());
+  if (0)
+    printf("  write bar[%x]: %llx-%llx...\n", bar, r->start(), r->end());
   l4_uint64_t size_mask = r->alignment();
 
   if (r->type() == Resource::Io_res)
@@ -278,7 +280,8 @@ Pci_proxy_dev::write_bar(int bar, l4_uint32_t v)
 
   _vbars[bar] = (_vbars[bar] & size_mask) | (v & ~size_mask);
 
-  // printf("    bar=%lx\n", _vbars[bar]);
+  if (0)
+    printf("    bar=%x\n", _vbars[bar]);
 }
 
 void
@@ -286,7 +289,8 @@ Pci_proxy_dev::write_rom(l4_uint32_t v)
 {
   Hw::Pci::If *p = _hwf;
 
-  // printf("write rom bar %x %p\n", v, _dev->rom());
+  if (0)
+    printf("write ROM bar %x %p\n", v, p->rom());
   Resource *r = p->rom();
   if (!r)
     return;
@@ -656,7 +660,9 @@ Pci_bridge::add_child_fixed(Device *d, Pci_dev *vp, unsigned dn, unsigned fn)
 Pci_bridge *
 Pci_bridge::find_bridge(unsigned bus)
 {
-  // printf("PCI[%p]: look for bridge for bus %x %02x %02x\n", this, bus, _subordinate, _secondary);
+  if (0)
+    printf("PCI[%p]: look for bridge for bus %x %02x %02x\n",
+           this, bus, _subordinate, _secondary);
   if (bus == _secondary)
     return this;
 

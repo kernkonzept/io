@@ -188,8 +188,7 @@ Bus::discover_bus(Hw::Device *host)
 
   bool found = false;
 
-  int device = 0;
-  for (device = 0; device < 32; ++device)
+  for (int device = 0; device < 32; ++device)
     {
       int funcs = 1;
       for (int function = 0; function < funcs; ++function)
@@ -526,7 +525,8 @@ Dev::discover_bar(int bar)
   Resource *res = 0;
   if (!(x & 1))
     {
-      //printf("%08x: BAR[%d] mmio ... %x\n", adr(), bar, x );
+      if (0)
+        printf("%08x: BAR[%d] mmio ... %x\n", host()->adr(), bar, x );
       res = new Resource(mem_flags);
       // set ID to 'BARx', x == bar
       res->set_id(0x00524142 + (((l4_uint32_t)('0' + bar)) << 24));
@@ -561,15 +561,16 @@ Dev::discover_bar(int bar)
 
       res->start_size(a, size);
 
-      // printf("%08x: BAR[%d] mem ...\n", adr(), bar*4 + 10 );
+      if (0)
+        printf("%08x: BAR[%d] mem ...\n", host()->adr(), bar*4 + 10 );
       _bars[bar - res->is_64bit()] = res;
       if (res->is_64bit())
 	_bars[bar] = (Resource*)1;
-
     }
   else
     {
-      // printf("%08x: BAR[%d] io ...\n", adr(), bar );
+      if (0)
+        printf("%08x: BAR[%d] io ...\n", host()->adr(), bar );
       int s;
       for (s = 2; s < 32; ++s)
 	if ((x >> s) & 1)
@@ -591,7 +592,6 @@ Dev::discover_bar(int bar)
 void
 Dev::discover_expansion_rom()
 {
-
   if (!Io_config::cfg->expansion_rom(host()))
     return;
 
@@ -616,7 +616,8 @@ Dev::discover_expansion_rom()
 
   x &= ~0x3ff;
 
-  if (0) printf("ROM %08x: %08x %08x\n", _host->adr(), x, v);
+  if (0)
+    printf("ROM %08x: %08x %08x\n", _host->adr(), x, v);
 
   int s;
   for (s = 2; s < 32; ++s)
@@ -680,8 +681,8 @@ Dev::discover_pci_caps()
 void
 Dev::discover_resources(Hw::Device *host)
 {
-
-  // printf("survey ... %x.%x\n", dynamic_cast<Hw::Pci::Bus*>(parent())->num, adr());
+  if (0)
+    printf("survey ... %x.%x\n", bus()->num, host->adr());
   l4_uint32_t v;
   cfg_read(Config::Subsys_vendor, &v, Cfg_long);
   subsys_ids = v;
@@ -952,10 +953,12 @@ Pci_pci_bridge::setup_children(Hw::Device *)
       l4_uint32_t v = (mmio->start() >> 16) & 0xfff0;
       v |= mmio->end() & 0xfff00000;
       cfg_write(0x20, v, Cfg_long);
-      // printf("%08x: set mmio to %08x\n", adr(), v);
+      if (0)
+        printf("%08x: set mmio to %08x\n", host()->adr(), v);
       l4_uint32_t r;
       cfg_read(0x20, &r, Cfg_long);
-      // printf("%08x: mmio =      %08x\n", adr(), r);
+      if (0)
+        printf("%08x: mmio =      %08x\n", host()->adr(), r);
       cfg_read(0x04, &r, Cfg_short);
       r |= 3;
       cfg_write(0x4, r, Cfg_short);
@@ -966,7 +969,8 @@ Pci_pci_bridge::setup_children(Hw::Device *)
       l4_uint32_t v = (pref_mmio->start() >> 16) & 0xfff0;
       v |= pref_mmio->end() & 0xfff00000;
       cfg_write(0x24, v, Cfg_long);
-      // printf("%08x: set pref mmio to %08x\n", adr(), v);
+      if (0)
+        printf("%08x: set pref mmio to %08x\n", host()->adr(), v);
     }
 }
 
@@ -990,7 +994,8 @@ Pci_pci_bridge::discover_resources(Hw::Device *host)
   else
     r->set_empty();
 
-  // printf("%08x: mmio = %08x\n", adr(), v);
+  if (0)
+    printf("%08x: mmio = %08x\n", _host->adr(), v);
   mmio = r;
   mmio->validate();
   _host->add_resource_rq(mmio);
@@ -1064,13 +1069,13 @@ Root_bridge::setup(Hw::Device *host)
 }
 
 static const char * const pci_classes[] =
-    { "unknown", "mass storage contoller", "network controller", 
+    { "unknown", "mass storage contoller", "network controller",
       "display controller", "multimedia device", "memory controller",
-      "bridge device", "simple communication controller", 
-      "system peripheral", "input device", "docking station", 
+      "bridge device", "simple communication controller",
+      "system peripheral", "input device", "docking station",
       "processor", "serial bus controller", "wireless controller",
       "intelligent I/O controller", "satellite communication controller",
-      "encryption/decryption controller", 
+      "encryption/decryption controller",
       "data aquisition/signal processing controller" };
 
 static char const * const pci_bridges[] =
