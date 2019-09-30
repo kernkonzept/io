@@ -46,8 +46,6 @@
 #include <lauxlib.h>
 #include <lualib.h>
 
-#include "lua_glue.swg.h"
-
 namespace {
 
 static Hw::Root_bus *

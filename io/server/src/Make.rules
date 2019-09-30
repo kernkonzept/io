@@ -92,9 +92,7 @@ clean:: $(addprefix clean-subdir-,$(SUBDIRS))
 
 # regenerate shipped files
 ifneq ($(REGEN_FILES),)
-all:: $(SRC_DIR)/lua_glue.swg.h $(SRC_DIR)/lua_glue.swg.cc
-
-main.o: $(SRC_DIR)/lua_glue.swg.h
+all:: $(SRC_DIR)/lua_glue.swg.cc
 
 -include .lua_glue.swg.c_cc.d
 
@@ -108,15 +106,7 @@ $(SRC_DIR)/%.swg.cc: %.swg.c_cc $(SRC_DIR)/Make.rules $(SRC_DIR)/Makefile
 	@$(GEN_MESSAGE)
 	$(VERBOSE)$(SWIG_RM_EXT_C) $< >$@
 
-$(SRC_DIR)/%.swg.h: %.swg.c_h $(SRC_DIR)/Make.rules $(SRC_DIR)/Makefile
-	@$(GEN_MESSAGE)
-	$(VERBOSE)$(SWIG_RM_EXT_C) $< >$@
-
 %.swg.c_cc: $(SRC_DIR)/%.swg $(SRC_DIR)/Make.rules $(SRC_DIR)/Makefile
 	@$(GEN_MESSAGE)
 	$(VERBOSE)$(SWIG) $(SWIG_INCDIR) -MD -MF .$*.swg.c_cc.d -c++ -small -lua -o $@ $<
-
-%.swg.c_h: $(SRC_DIR)/Make.rules $(SRC_DIR)/Makefile
-	@$(GEN_MESSAGE)
-	$(VERBOSE)$(SWIG) $(SWIG_INCDIR) -c++ -small -lua -external-runtime $@
 endif
