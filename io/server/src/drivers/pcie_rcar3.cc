@@ -153,6 +153,9 @@ static inline unsigned u64_lo(l4_uint64_t u64)
 class Irq_router_rs : public Resource_space
 {
 public:
+  char const *res_type_name() const override
+  { return "RCar3 PCIe IRQ router"; }
+
   bool request(Resource *parent, ::Device *pdev,
                Resource *child, ::Device *cdev) override
   {

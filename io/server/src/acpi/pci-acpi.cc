@@ -63,6 +63,9 @@ public:
 public:
   Acpi_pci_irq_router_rs() : _prt(0) {}
 
+  char const *res_type_name() const override
+  { return "PCI ACPI IRQ router"; }
+
   int add_prt_entry(ACPI_HANDLE obj, ACPI_PCI_ROUTING_TABLE *e);
   int find(int device, int pin, struct acpica_pci_irq **irq);
   bool request(Resource *parent, ::Device *,

@@ -170,6 +170,9 @@ namespace {
 class Pci_irq_router_rs : public Resource_space
 {
 public:
+  char const *res_type_name() const override
+  { return "i.MX8 PCIe IRQ router"; }
+
   bool request(Resource *parent, ::Device *, Resource *child, ::Device *cdev) override;
   bool alloc(Resource *, ::Device *, Resource *, ::Device *, bool) override
   { return false; }

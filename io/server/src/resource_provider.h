@@ -34,6 +34,9 @@ private:
 
 
   public:
+    char const *res_type_name() const override
+    { return "RS"; }
+
     bool request(Resource *parent, Device *pdev, Resource *child,
                  Device *cdev) override;
     bool alloc(Resource *parent, Device *pdev, Resource *child,

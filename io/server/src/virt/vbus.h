@@ -70,6 +70,9 @@ class System_bus :
   public Vbus_event_source
 {
 public:
+  char const *type_name() const override
+  { return "virtual system bus"; }
+
   // Factory to create root resource objects
   struct Root_resource_factory : cxx::H_list_item_t<Root_resource_factory>
   {

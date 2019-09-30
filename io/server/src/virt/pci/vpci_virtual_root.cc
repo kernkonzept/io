@@ -23,6 +23,9 @@ public:
 
   explicit Pci_vroot();
 
+  char const *type_name() const override
+  { return "virtual PCI root"; }
+
   int dispatch(l4_umword_t, l4_uint32_t func, L4::Ipc::Iostream &ios) override;
 
   ~Pci_vroot() {}

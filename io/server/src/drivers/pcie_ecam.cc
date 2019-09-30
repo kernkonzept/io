@@ -158,6 +158,9 @@ private:
 class Irq_router_rs : public Resource_space
 {
 public:
+  char const *res_type_name() const override
+  { return "ECAM PCIe IRQ router"; }
+
   bool request(Resource *parent, ::Device *pdev,
                Resource *child, ::Device *cdev) override
   {

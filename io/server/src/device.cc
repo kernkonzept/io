@@ -201,7 +201,7 @@ static bool _allocate_pending_resources(Device *dev, UAD *to_allocate)
 
       if (0)
         {
-          printf("unallocated resource: %s ", typeid(*r).name());
+          printf("unallocated resource: %s ", r->res_type_name());
           r->dump(0);
         }
 

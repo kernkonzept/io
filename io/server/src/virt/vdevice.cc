@@ -20,7 +20,7 @@ namespace Vi {
 void
 Device::dump(int indent) const
 {
-  printf("%*.s%s: [%s]\n", indent, " ", name(), typeid(*this).name());
+  printf("%*.s%s: [%s]\n", indent, " ", name(), type_name());
 }
 
 bool

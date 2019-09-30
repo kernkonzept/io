@@ -48,6 +48,9 @@ class Irq_router : public Resource
 {
 public:
   Irq_router() : Resource(Irq_res) {}
+  char const *res_type_name() const override
+  { return "IRQ router"; }
+
   void dump(int) const override;
   bool compatible(Resource *consumer, bool = true) const override
   {
@@ -83,6 +86,9 @@ public:
 class Pci_pci_bridge_irq_router_rs : public Resource_space
 {
 public:
+  char const *res_type_name() const override
+  { return "PCI-PCI root bridge IRQ router"; }
+
   bool request(Resource *parent, ::Device *,
                Resource *child, ::Device *cdev) override;
   bool alloc(Resource *, ::Device *, Resource *, ::Device *, bool) override

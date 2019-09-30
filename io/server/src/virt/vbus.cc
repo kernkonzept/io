@@ -48,6 +48,9 @@ public:
     _icu->name("L4ICU");
   }
 
+  char const *res_type_name() const override
+  { return "Root IRQ"; }
+
   bool request(Resource *parent, Device *, Resource *child, Device *) override
   {
     if (0)
@@ -133,6 +136,9 @@ public:
   Root_x_rs(Vi::System_bus *bus) : Resource_space(), _bus(bus)
   {}
 
+  char const *res_type_name() const override
+  { return "Root X"; }
+
   bool request(Resource *parent, Device *, Resource *child, Device *) override
   {
     if (0)
@@ -173,6 +179,9 @@ public:
   Root_dma_domain_rs(Vi::System_bus *bus, Dma_domain_group *g)
   : Resource_space(), _bus(bus), _domain_group(g)
   {}
+
+  char const *res_type_name() const override
+  { return "Root DMA domain"; }
 
   bool request(Resource *, Device *, Resource *child, Device *) override
   {

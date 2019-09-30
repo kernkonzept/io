@@ -58,6 +58,8 @@ public:
   using Device_tree_mixin<Device>::begin;
   using Device_tree_mixin<Device>::end;
 
+  virtual char const *type_name() const
+  { return "virtual device"; }
 
   typedef std::vector<Dev_feature*> Feature_list;
 

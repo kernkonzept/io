@@ -56,6 +56,8 @@ public:
 class Resource_space
 {
 public:
+  virtual char const *res_type_name() const = 0;
+
   virtual bool request(Resource *parent, Device *pdev,
                        Resource *child, Device *cdev) = 0;
   virtual void assign(Resource *parent, Resource *child) = 0;
@@ -75,6 +77,9 @@ private:
   Resource *_p = nullptr;
 
 public:
+  virtual char const *res_type_name() const
+  { return "resource"; }
+
   typedef l4_uint64_t Addr;
   typedef l4_uint64_t Size;
 
@@ -338,6 +343,9 @@ private:
 public:
   Root_resource(unsigned long flags, Resource_space *rs)
   : Resource(flags), _rs(rs) {}
+
+  char const *res_type_name() const override
+  { return "root resource"; }
 
   Resource_space *provided() const override { return _rs; }
   void dump(int) const override {}

@@ -32,6 +32,9 @@ public:
   Sw_icu();
   virtual ~Sw_icu();
 
+  char const *type_name() const override
+  { return "virtual ICU"; }
+
   l4_uint32_t interface_type() const override
   { return 1 << L4VBUS_INTERFACE_ICU; }
 

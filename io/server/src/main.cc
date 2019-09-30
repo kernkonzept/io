@@ -122,14 +122,6 @@ system_icu()
   return &_icu;
 }
 
-template< typename X >
-char const *type_name(X const &x)
-{
-  char *n = const_cast<char *>(typeid(x).name());
-  strtol(n, &n, 0);
-  return n;
-}
-
 static void dump(Device *d)
 {
   Device::iterator i = Device::iterator(0, d, 100);

@@ -29,6 +29,9 @@ public:
     return true;
   };
 
+  char const *res_type_name() const override
+  { return "Root IRQ"; }
+
   bool alloc(Resource *, Device *, Resource *, Device *, bool) override
   { return false; }
 
@@ -48,6 +51,9 @@ public:
 class Root_io_rs : public Resource_space
 {
 public:
+  char const *res_type_name() const override
+  { return "Root IO"; }
+
   bool request(Resource *parent, Device *,
                Resource *child, Device *) override
   {
@@ -81,6 +87,9 @@ public:
 class Root_mmio_rs : public Resource_space
 {
 public:
+  char const *res_type_name() const override
+  { return "Root MMIO"; }
+
   bool request(Resource *parent, Device *, Resource *child, Device *) override;
   bool alloc(Resource *parent, Device *,
              Resource *child, Device *, bool) override;
@@ -150,6 +159,9 @@ Root_mmio_rs::alloc(Resource * /*parent*/, Device *, Resource * /*child*/,
 class Root_dma_domain_rs : public Resource_space
 {
 public:
+  char const *res_type_name() const override
+  { return "Root DMA domain"; }
+
   bool request(Resource *parent, Device *,
                Resource *child, Device *) override
   {

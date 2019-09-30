@@ -452,6 +452,9 @@ private:
 class Root_gpio_rs : public Resource_space
 {
 public:
+  char const *res_type_name() const override
+  { return "Root GPIO"; }
+
   explicit Root_gpio_rs(System_bus *bus) : _bus(bus)
   {}
 
