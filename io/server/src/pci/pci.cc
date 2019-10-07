@@ -223,9 +223,15 @@ Bus::discover_bus(Hw::Device *host)
 	    {
 	      Pci_pci_bridge_basic *b = 0;
 	      if ((hdr_type & 0x7f) == 1)
-		b = new Pci_pci_bridge(child, this, hdr_type);
+                {
+                  child->set_name_if_empty("PCI-to-PCI bridge");
+                  b = new Pci_pci_bridge(child, this, hdr_type);
+                }
 	      else if((hdr_type & 0x7f) == 2)
-		b = new Pci_cardbus_bridge(child, this, hdr_type);
+                {
+                  child->set_name_if_empty("PCI-to-Cardbus bridge");
+                  b = new Pci_cardbus_bridge(child, this, hdr_type);
+                }
 
 	      l4_uint32_t buses;
 	      bool reassign_buses = false;
@@ -261,7 +267,10 @@ Bus::discover_bus(Hw::Device *host)
 	      d = b;
 	    }
 	  else
-	    d = new Dev(child, this, hdr_type);
+            {
+              child->set_name_if_empty("PCI device");
+              d = new Dev(child, this, hdr_type);
+            }
 
 	  child->add_feature(d);
 
