@@ -139,7 +139,34 @@ Root_mmio_rs::alloc(Resource *parent, Device *, Resource *child, Device *,
   return true;
 }
 
-// --- End Root address space for MMIO --------------------------------------
+
+// --- Root DMA domain space -----------------------------------------------
+class Root_dma_domain_rs : public Resource_space
+{
+public:
+  bool request(Resource *parent, Device *, Resource *child, Device *)
+  {
+    child->parent(parent);
+
+    return true;
+  }
+
+  bool alloc(Resource *, Device *, Resource *, Device *, bool)
+  { return false; }
+
+  void assign(Resource *, Resource *)
+  {
+    d_printf(DBG_ERR, "internal error: cannot assign to root Root_dma_domain_rs\n");
+  }
+
+  bool adjust_children(Resource *)
+  {
+    d_printf(DBG_ERR, "internal error: cannot adjust root Root_dma_domain_rs\n");
+    return false;
+  }
+};
+
+// --- End Root DMA domain space  ------------------------------------------
 }
 
 namespace {
@@ -213,6 +240,11 @@ Root_bus::Root_bus(char const *name)
   // add root resource for IO ports
   r = new Root_resource(Resource::Io_res, new Root_io_rs());
   r->set_id("IO");
+  add_resource(r);
+
+  // add root DMA domain resource space
+  r = new Root_resource(Resource::Dma_domain_res, new Root_dma_domain_rs());
+  r->set_id("DMAD");
   add_resource(r);
 }
 
