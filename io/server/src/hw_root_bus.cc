@@ -194,21 +194,25 @@ Root_bus::Root_bus(char const *name)
 
   // add root resource for IRQs
   Root_resource *r = new Root_resource(Resource::Irq_res, new Root_irq_rs());
+  r->set_id("IRQR");
   add_resource(r);
 
   Resource_space *rs_mmio = new Root_mmio_rs();
   // add root resource for non-prefetchable MMIO resources
   r = new Root_resource(Resource::Mmio_res, rs_mmio);
   r->add_flags(Resource::F_width_64bit);
+  r->set_id("MMIO");
   add_resource(r);
 
   // add root resource for prefetchable MMIO resources
   r = new Root_resource(Resource::Mmio_res | Resource::F_prefetchable, rs_mmio);
   r->add_flags(Resource::F_width_64bit);
+  r->set_id("MMIO");
   add_resource(r);
 
   // add root resource for IO ports
   r = new Root_resource(Resource::Io_res, new Root_io_rs());
+  r->set_id("IO");
   add_resource(r);
 }
 
