@@ -230,7 +230,6 @@ public:
 
   virtual char const *name() const = 0;
   virtual char const *hid() const = 0;
-  virtual bool name(cxx::String const &)  = 0;
 
   virtual void dump(int) const {};
 
@@ -271,7 +270,6 @@ public:
 
   char const *name() const { return "(noname)"; }
   char const *hid() const { return 0; }
-  bool name(cxx::String const &) { return false; }
 
   bool request_child_resource(Resource *, Device *);
   bool alloc_child_resource(Resource *, Device *);
