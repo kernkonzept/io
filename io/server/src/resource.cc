@@ -148,6 +148,11 @@ Resource_provider::_RS::assign(Resource *parent, Resource *child)
     parent->size(sz);
 }
 
+/**
+ * Allocating child resources from the resource list '_rl'.
+ *
+ * Resource alignment is enforced.
+*/
 bool
 Resource_provider::_RS::alloc(Resource *parent, Device *pdev,
                               Resource *child, Device *cdev,

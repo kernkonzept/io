@@ -128,6 +128,15 @@ public:
 
 
   l4_umword_t uid() const { return _uid; }
+
+  /**
+   * Get bus-specific 'address' of the device.
+   *
+   * Bus-specific representation of the device address. For PCI devices, 'adr'
+   * contains the device number (upper 16 bits) and the function number (lower
+   * 16 bits). The bus number is not part of 'adr' -- use the parent device to
+   * determine this information instead.
+   */
   l4_uint32_t adr() const { return _adr.val(); }
 
   bool resource_allocated(Resource const *r) const;
@@ -176,6 +185,12 @@ public:
   void dump(int indent) const;
 
   char const *name() const { return _name.c_str(); }
+  /**
+   * Get the 'hardware interface description ID' of this hardware device.
+   *
+   * HIDs are not suitable for identifying a specific device as multiple
+   * devices can share the same HID.
+   */
   char const *hid() const { return _hid.val().c_str(); }
 
   void set_name(std::string const &name) { _name = name; }

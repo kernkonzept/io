@@ -696,6 +696,13 @@ public:
 };
 
 
+/**
+ * Default router if no IRQ router is present on the PCI bus.
+ *
+ * This router forwards Resource_space::request() calls to the parent bus. The
+ * mapping from the IRQ pin (\#IRQA..\#IRQD) to the interrupt line depends on
+ * the device slot.
+ */
 class Pci_pci_bridge_irq_router_rs : public Resource_space
 {
 public:
