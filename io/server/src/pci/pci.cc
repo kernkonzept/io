@@ -704,11 +704,7 @@ Dev::discover_resources(Hw::Device *host)
                                   | Resource::F_hierarchical,
                                   irq_pin - 1, irq_pin - 1);
       r->set_id("PIN");
-      r->dump(0);
       host->add_resource_rq(r);
-      //new Resource(Resource::Irq_res | Resource::F_relative
-//                                  | Resource::F_hierarchical,
-//                                  irq_pin - 1, irq_pin - 1));
     }
 
   cfg_read(Config::Command, &v, Cfg_short);
