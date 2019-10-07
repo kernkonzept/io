@@ -40,52 +40,33 @@ Resource_list::find(char const *id) const
 void
 Resource::dump(char const *ty, int indent) const
 {
-  //bool abs = true;
-
-  //if (!valid())
-  //  return;
-
-  l4_uint64_t s, e;
-#if 0
-  if (abs)
-    {
-      s = abs_start();
-      e = abs_end();
-    }
-  else
-#endif
-    {
-      s = _s;
-      e = _e;
-    }
-
-  static char const * const irq_trigger[]
-    = { "none", // 0
-        "raising edge", // 1
-        "<unkn>", // 2
-        "level high", // 3
-        "<unkn>", // 4
-        "falling edge", // 5
-        "<unkn>", // 6
-        "level low", // 7
-        "<unkn>", // 8
-        "both edges", // 9
-        "<unkn>", // 10
-        "<unkn>", // 11
-        "<unkn>", // 12
-        "<unkn>", // 13
-        "<unkn>", // 14
-        "<unkn>", // 15
-    };
+  static char const * const irq_trigger[] =
+  { "none",             // 0
+    "raising edge",     // 1
+    "<unkn>",           // 2
+    "level high",       // 3
+    "<unkn>",           // 4
+    "falling edge",     // 5
+    "<unkn>",           // 6
+    "level low",        // 7
+    "<unkn>",           // 8
+    "both edges",       // 9
+    "<unkn>",           // 10
+    "<unkn>",           // 11
+    "<unkn>",           // 12
+    "<unkn>",           // 13
+    "<unkn>",           // 14
+    "<unkn>",           // 15
+  };
 
   char const *tp = prefetchable() ? "pref" : "non-pref";
   if (type() == Irq_res)
     tp = irq_trigger[(flags() / Irq_type_base) & 0xf];
 
-  printf("%*.s%s%c [%014llx-%014llx %llx] %s (%dbit) (align=%llx flags=%lx)\n",
+  printf("%*.s%-6s%c [%014llx-%014llx %llx] %s (%dbit) (align=%llx flags=%lx)\n",
          indent, " ",
          ty, provided() ? '*' : ' ',
-         s, e, (l4_uint64_t)size(),
+         _s, _e, (l4_uint64_t)size(),
          tp,
          is_64bit() ? 64 : 32, (unsigned long long)alignment(), flags());
 }
@@ -94,8 +75,8 @@ Resource::dump(char const *ty, int indent) const
 void
 Resource::dump(int indent) const
 {
-  static char const *ty[] = { "INVALID", "IRQ   ", "IOMEM ", "IOPORT",
-                              "BUS   ",  "GPIO  ", "DMADOM", "" };
+  static char const *ty[] = { "INVLD", "IRQ", "IOMEM", "IOPORT",
+                              "BUS",  "GPIO", "DMADOM", "" };
 
   dump(ty[type() % 8], indent);
 }
