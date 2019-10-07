@@ -179,6 +179,15 @@ public:
   char const *hid() const { return _hid.val().c_str(); }
 
   void set_name(std::string const &name) { _name = name; }
+  bool set_name_if_empty(std::string const &name)
+  {
+    if (!_name.empty())
+      return false;
+
+    _name = name;
+    return true;
+  }
+
   void set_hid(char const *hid) { _hid.set(-1, hid); }
   void set_uid(l4_umword_t uid) { _uid = uid; }
 
