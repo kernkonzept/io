@@ -12,6 +12,7 @@
 #include <l4/sys/icu>
 
 #include <l4/vbus/vbus_types.h>
+#include <string>
 #include <vector>
 
 #include <l4/re/dataspace>
@@ -162,6 +163,13 @@ public:
 
   l4_uint32_t id() const { return _id; }
 
+  std::string id_str() const
+  {
+    std::string s;
+    for (l4_uint32_t id = _id; id; id >>=8)
+      s += id & 0xff;
+    return s;
+  }
 
 public:
 //private:
