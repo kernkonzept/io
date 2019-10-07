@@ -11,6 +11,7 @@
 #include "hw_device.h"
 #include "irqs.h"
 #include "pci.h"
+#include <functional>
 
 extern "C" {
 #include "acpi.h"
@@ -67,25 +68,24 @@ struct Acpi_buffer : ACPI_BUFFER
 
 struct Acpi_walk
 {
-  ACPI_WALK_CALLBACK cb;
-  void *ctxt;
+  typedef std::function<int (ACPI_HANDLE, int)> Func;
+  Func _f;
 
   template<typename Functor>
-  Acpi_walk(Functor f)
-  : cb(invoke<Functor>), ctxt(reinterpret_cast<void*>(&f))
+  Acpi_walk(Functor &&f)
+  : _f(cxx::forward<Functor>(f))
   {}
 
   ACPI_STATUS walk(ACPI_OBJECT_TYPE type, ACPI_HANDLE root, unsigned max_depth)
   {
-    return AcpiWalkNamespace(type, root, max_depth, cb, 0, ctxt, 0);
+    return AcpiWalkNamespace(type, root, max_depth, &invoke, 0, &_f, 0);
   }
 
 private:
 
-  template< typename Functor >
   static ACPI_STATUS invoke(ACPI_HANDLE obj, l4_uint32_t level, void *ctxt, void **)
   {
-    return (*reinterpret_cast<typename cxx::remove_reference<Functor>::type *>(ctxt))(obj, level);
+    return (*reinterpret_cast<Func const *>(ctxt))(obj, level);
   }
 };
 
