@@ -195,7 +195,7 @@ void
 Device::dump(int indent) const
 {
   printf("%*.s%s: %s%s\n", indent, " ", name(),
-         hid() ? "hid=" : "", hid() ? hid() : "");
+         hid() && hid()[0] ? "hid=" : "", hid() ? hid() : "");
 
   if (!_cid.empty())
     {
