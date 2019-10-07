@@ -285,6 +285,17 @@ private:
     typedef Resource::Size Size;
     Resource_list _rl;
 
+    Size min_align(Resource const *r) const
+    {
+      switch (r->type())
+        {
+        case Mmio_res: return L4_PAGESIZE - 1;
+        case Io_res:   return 3;
+        default:       return 0;
+        }
+    }
+
+
   public:
     bool request(Resource *parent, Device *pdev, Resource *child, Device *cdev);
     bool alloc(Resource *parent, Device *pdev, Resource *child, Device *cdev,

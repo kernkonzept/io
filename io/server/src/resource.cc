@@ -135,7 +135,7 @@ Resource_provider::_RS::assign(Resource *parent, Resource *child)
     parent->alignment(f->alignment());
 
   Size sz = 0;
-  Size min_align = L4_PAGESIZE - 1;
+  Size min_align = this->min_align(parent);
 
   for (auto r: _rl)
     {
@@ -161,7 +161,7 @@ Resource_provider::_RS::alloc(Resource *parent, Device *pdev,
   Resource_list::iterator p = _rl.begin();
   Addr start = parent->start();
   Addr end;
-  Size min_align = L4_PAGESIZE - 1;
+  Size min_align = this->min_align(parent);
 
   if (p != _rl.end() && (*p)->start() == start)
     {
