@@ -217,7 +217,7 @@ Device::dump(int indent) const
 
       if (!_clients.empty())
         {
-          printf("%*.s  Clients: ===== start ==== \n", indent, " ");
+          printf("%*.s  Clients: ===== start ====\n", indent, " ");
           for (auto i = _clients.begin(); i != _clients.end(); ++i)
             (*i)->dump(indent + 4);
           printf("%*.s  Clients: ===== end ====\n", indent, " ");
