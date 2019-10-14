@@ -1143,12 +1143,16 @@ Acpi_device_driver::find(unsigned short type)
 
 Acpi_dev *
 Acpi_device_driver::probe(Hw::Device *device, ACPI_HANDLE acpi_hdl,
-                          ACPI_DEVICE_INFO const *info)
+                          ACPI_DEVICE_INFO const *)
 {
+  ACPI_NAMESPACE_NODE *node = AcpiNsValidateHandle(acpi_hdl);
   Acpi_dev *adev = new Acpi_dev(acpi_hdl);
-  if ((info->Valid & ACPI_VALID_STA)
-      && (info->CurrentStatus & ACPI_STA_DEVICE_ENABLED))
+  UINT32 sta;
+
+  if (ACPI_SUCCESS(AcpiUtExecute_STA(node, &sta))
+      && (sta & ACPI_STA_DEVICE_ENABLED))
     adev->discover_crs(device);
+
   device->add_feature(adev);
   return adev;
 }
