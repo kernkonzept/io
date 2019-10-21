@@ -1130,15 +1130,15 @@ Dev::dump(int indent) const
 	classname = pci_bridges[sc];
     }
 
-  printf("%*.s%04x:%02x:%02x.%x: %s [%d]\n", indent, " ",
+  printf("%*.s%04x:%02x:%02x.%x: %s (0x%06x) [%d]\n", indent, " ",
          0, (int)_bus->num, _host->adr() >> 16, _host->adr() & 0xffff,
-         classname, (int)hdr_type);
+         classname, cls_rev >> 8, (int)hdr_type);
 
-  printf("%*.s              0x%04x 0x%04x\n", indent, " ", vendor(), device());
+  printf("%*.s0x%04x 0x%04x\n", indent + 14, " ", vendor(), device());
 #ifdef CONFIG_L4IO_PCIID_DB
   char buf[130];
   libpciids_name_device(buf, sizeof(buf), vendor(), device());
-  printf("%*.s              %s\n", indent, " ", buf);
+  printf("%*.s%s\n", indent + 14, " ", buf);
 #endif
 #if 0
   if (verbose_lvl)
