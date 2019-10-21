@@ -41,7 +41,8 @@ void
 Resource::dump(char const *ty, int indent) const
 {
   static char const * const irq_trigger[] =
-  { "none",             // 0
+  {
+    "none",             // 0
     "raising edge",     // 1
     "<unkn>",           // 2
     "level high",       // 3
@@ -59,16 +60,22 @@ Resource::dump(char const *ty, int indent) const
     "<unkn>",           // 15
   };
 
-  char const *tp = prefetchable() ? "pref" : "non-pref";
-  if (type() == Irq_res)
-    tp = irq_trigger[(flags() / Irq_type_base) & 0xf];
+  static char const * const mem_type[2][2] =
+  {
+      {"32-bit non-pref", "64-bit non-pref"}, {"32-bit pref", "64-bit pref"}
+  };
 
-  printf("%*.s%-6s%c [%014llx-%014llx %llx] %s (%dbit) (align=%llx flags=%lx)\n",
-         indent, " ",
-         ty, provided() ? '*' : ' ',
-         _s, _e, (l4_uint64_t)size(),
-         tp,
-         is_64bit() ? 64 : 32, (unsigned long long)alignment(), flags());
+  char const *tp;
+  if (type() == Mmio_res)
+    tp = mem_type[prefetchable()][is_64bit()];
+  else if (type() == Irq_res)
+    tp = irq_trigger[(flags() / Irq_type_base) & 0xf];
+  else
+    tp = nullptr;
+
+  printf("%*.s%-6s%c [%014llx-%014llx %llx]%s%s (align=%llx flags=%lx)\n",
+         indent, " ", ty, provided() ? '*' : ' ', _s, _e, (l4_uint64_t)size(),
+         tp ? " " : "", tp ? tp : "", (unsigned long long)alignment(), flags());
 }
 
 
