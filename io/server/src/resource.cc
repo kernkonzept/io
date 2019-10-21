@@ -220,7 +220,7 @@ bool
 Resource_provider::_RS::adjust_children(Resource *self)
 {
   Addr start = self->start();
-  Size min_align = L4_PAGESIZE - 1;
+  Size min_align = this->min_align(self);
 
   for (auto c: _rl)
     {
