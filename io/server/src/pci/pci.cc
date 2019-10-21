@@ -1074,14 +1074,28 @@ Root_bridge::setup(Hw::Device *host)
 }
 
 static const char * const pci_classes[] =
-    { "unknown", "mass storage contoller", "network controller",
-      "display controller", "multimedia device", "memory controller",
-      "bridge device", "simple communication controller",
-      "system peripheral", "input device", "docking station",
-      "processor", "serial bus controller", "wireless controller",
-      "intelligent I/O controller", "satellite communication controller",
-      "encryption/decryption controller",
-      "data aquisition/signal processing controller" };
+{
+  /* 0x00 */ "legacy",
+  /* 0x01 */ "mass storage controller",
+  /* 0x02 */ "network controller",
+  /* 0x03 */ "display controller",
+  /* 0x04 */ "multimedia device",
+  /* 0x05 */ "memory controller",
+  /* 0x06 */ "bridge device",
+  /* 0x07 */ "simple communication controller",
+  /* 0x08 */ "system peripheral",
+  /* 0x09 */ "input device",
+  /* 0x0a */ "docking station",
+  /* 0x0b */ "processor",
+  /* 0x0c */ "serial bus controller",
+  /* 0x0d */ "wireless controller",
+  /* 0x0e */ "intelligent I/O controller",
+  /* 0x0f */ "satellite communication controller",
+  /* 0x10 */ "encryption/decryption controller",
+  /* 0x11 */ "data acquisition/signal processing controller",
+  /* 0x12 */ "processing accelerator",
+  /* 0x13 */ "non-essential instrumentation function"
+};
 
 static char const * const pci_bridges[] =
 { "Host/PCI Bridge", "ISA Bridge", "EISA Bridge", "Micro Channel Bridge",
