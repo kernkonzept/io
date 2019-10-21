@@ -70,7 +70,7 @@ Generic_device::alloc_child_resource(Resource *r, Device *cld)
               if (dlevel(DBG_ALL))
                 r->dump();
 
-              assigned = true;
+              return true;
             }
           else if ((*br)->provided()->alloc(*br, this, r, cld, false))
             {
