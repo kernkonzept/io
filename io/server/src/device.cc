@@ -23,6 +23,18 @@ Generic_device::get_full_path() const
 }
 
 
+// The resource setup works in two phases:
+//
+// (1) The REQUEST phase tries to map preconfigured child resources into
+//     provided resources of their parents.
+// (2) Child resources which are not yet configured are configured in the
+//     ALLOCATE phase.
+//
+// The rationale behind this strategy is to try hard to not change any setup
+// done by previous instances in the boot chain (BIOS, EFI, firmware, etc).
+// Changing such an existing setup can lead to a hanging system if firmware
+// (e.g. System Management Mode on x86 systems) continues to use the old setup.
+
 bool
 Generic_device::alloc_child_resource(Resource *r, Device *cld)
 {
@@ -143,7 +155,7 @@ Device::request_child_resources()
 {
   for (iterator dev = begin(0); dev != end(); ++dev)
     {
-      // First, try to map all our resources of out child (dev) into
+      // First, try to map all our resources of our child (dev) into
       // provided resources of ourselves
       (*dev)->request_resources();
 

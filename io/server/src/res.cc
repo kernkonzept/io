@@ -141,6 +141,14 @@ map_iomem_range(l4_addr_t phys, l4_addr_t virt, l4_addr_t size)
   return 0;
 }
 
+/**
+ * Request mapping of physical MMIO to our address space from Sigma0.
+ *
+ * Chose an I/O region 'iomem' which is log2-sized, log2-aligned and which
+ * contains the entire region from phys..phys+size-1. Map this I/O region from
+ * Sigma0 and remember that this physical region is mapped into our address
+ * space (in the 'io_set' AVL tree).
+ */
 l4_addr_t res_map_iomem(l4_addr_t phys, l4_addr_t size)
 {
   int p2size = Min_rs;
