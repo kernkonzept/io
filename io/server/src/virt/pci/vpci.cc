@@ -251,7 +251,12 @@ Pci_proxy_dev::irq_enable(Irq_info *irq)
 }
 
 
-
+/**
+ * Read the nth BAR of a PCI device.
+ *
+ * The IO client must not be able to change the BAR of a physical PCI device.
+ * Thus we emulate read/write accesses to BARs.
+ */
 l4_uint32_t
 Pci_proxy_dev::read_bar(int bar)
 {
@@ -259,6 +264,12 @@ Pci_proxy_dev::read_bar(int bar)
   return _vbars[bar];
 }
 
+/**
+ * Write the nth BAR of a PCI device.
+ *
+ * The IO client must not be able to change the BAR of a physical PCI device.
+ * Thus we emulate read/write accesses to BARs.
+ */
 void
 Pci_proxy_dev::write_bar(int bar, l4_uint32_t v)
 {

@@ -215,6 +215,18 @@ static bool _allocate_pending_resources(Device *dev, UAD *to_allocate)
 
 }
 
+/**
+ * Allocate all unallocated child resources.
+ *
+ * The allocation of a resource includes its relocation so that PCI device
+ * resources are located inside the respective resource window of their PCI
+ * bridge. Allocated resources are fixed until the device is removed.
+ *
+ * It is not possible for IO clients to perform a resource relocation on a
+ * physical device as physical devices are accessible by clients only through
+ * respective proxy devices. The proxy device for PCI devices emulates accesses
+ * to the BARs.
+ */
 void
 Device::allocate_pending_resources()
 {

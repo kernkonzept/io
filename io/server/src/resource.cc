@@ -216,6 +216,11 @@ Resource_provider::_RS::alloc(Resource *parent, Device *pdev,
   return request(parent, pdev, child, cdev);
 }
 
+/**
+ * Relocate child resources according to the resource list '_rl'.
+ *
+ * Enforce the same alignment as in alloc() and assign().
+ */
 bool
 Resource_provider::_RS::adjust_children(Resource *self)
 {
