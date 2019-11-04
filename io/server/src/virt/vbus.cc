@@ -450,7 +450,7 @@ System_bus::op_map(L4Re::Dataspace::Rights,
     {
       if (dlevel(DBG_INFO))
         {
-          printf("request: no MMIO resource at %lx\n", offset);
+          printf("request: no MMIO resource at %llx\n", offset);
           printf("Available resources:\n");
           dump_resources();
         }
@@ -482,7 +482,7 @@ System_bus::op_map(L4Re::Dataspace::Rights,
       if ((flags & Dataspace::F::Caching_mask) != Dataspace::F::Cacheable)
         {
           d_printf(DBG_ERR,
-                   "MMIO resource at 0x%lx requested as 'uncached' or 'bufferable' "
+                   "MMIO resource at 0x%llx requested as 'uncached' or 'bufferable' "
                    "but marked as cachable only.\n",
                    offset);
           return -L4_EINVAL;
