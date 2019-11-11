@@ -1,5 +1,7 @@
 %module Io
 
+%ignore std::string;
+
 %include <typemaps.i>
 %include <lua_typemap.i>
 %include "std_string.i"
