@@ -163,20 +163,49 @@ void
 Pci_proxy_dev::scan_pcie_caps()
 {
   l4_uint16_t offset = 0x100;
-  l4_uint32_t c;
   for (;;)
     {
-      _hwf->cfg_read(offset, &c);
-      if (offset == 0x100 && ((c & 0xffff) == 0xffff))
+      Hw::Pci::Extended_cap cap(_hwf, offset);
+
+      // the device doesn't have extended capabilities
+      if (offset == 0x100 && !cap.is_valid())
         return;
 
-      add_pcie_cap(new Pcie_proxy_cap(_hwf, c, offset, offset));
+      // hide the ACS capability
+      if (cap.id() == Hw::Pci::Extended_cap::Acs)
+        {
+          // if this is the first capability there are two possibilities
+          // 1. it's the only extended capability
+          // 2. other extended capabilities follow
+          if (offset == 0x100)
+            {
+              // the only extended capability, just return
+              if (cap.next() == 0)
+                return;
 
-      offset = c >> 20;
+              // create "fake" capability with a reserved ID, according to
+              // PCI-SIG IDs >0x2c are reserved
+              l4_uint32_t hdr = cap.header();
+              hdr = (hdr & 0xffffff00) | 0xfe;
+              add_pcie_cap(new Pcie_proxy_cap(_hwf, hdr, offset, offset));
+            }
+
+          // skip extended capability
+          offset = cap.next();
+          if (!offset)
+            break;
+
+          continue;
+        }
+
+      add_pcie_cap(new Pcie_proxy_cap(_hwf, cap.header(), offset, offset));
+
+      offset = cap.next();
       if (!offset)
         break;
     }
 
+  // if the device has extended capabilities there must be one at offset 0x100
   assert (!_pcie_caps || _pcie_caps->offset() == 0x100);
 #if 0
   if (_pcie_caps && _pcie_caps->offset() != 0x100)

@@ -658,6 +658,11 @@ private:
 
   void parse_msi_cap(Cfg_addr cap_ptr);
 
+  /*
+   * Configure PCIe ACS
+   */
+  void parse_acs_cap(Extended_cap acs_cap);
+
 public:
   enum Cfg_status
   {
@@ -772,6 +777,7 @@ private:
   int discover_bar(int bar);
   void discover_expansion_rom();
   void discover_pci_caps();
+  void discover_pcie_caps();
 };
 
 

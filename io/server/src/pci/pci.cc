@@ -647,6 +647,31 @@ Dev::discover_expansion_rom()
 }
 
 void
+Dev::discover_pcie_caps()
+{
+  l4_uint16_t offset = 0x100;
+
+  for (;;)
+    {
+      Hw::Pci::Extended_cap cap(this, offset);
+
+      if (offset == 0x100 && !cap.is_valid())
+        return;
+
+      switch (cap.id())
+        {
+        case Hw::Pci::Extended_cap::Acs:
+          parse_acs_cap(cap);
+          break;
+        }
+
+      offset = cap.next();
+      if (!offset)
+        return;
+    }
+}
+
+void
 Dev::discover_pci_caps()
 {
     {
@@ -717,6 +742,10 @@ Dev::discover_resources(Hw::Device *host)
 
   discover_expansion_rom();
   discover_pci_caps();
+
+  Cap pcie = find_pci_cap(Cap::Pcie);
+  if (pcie.is_valid())
+      discover_pcie_caps();
 
   Dma_domain *d = host->dma_domain();
   if (!d)
