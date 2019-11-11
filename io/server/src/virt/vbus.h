@@ -88,7 +88,7 @@ public:
   template< unsigned TYPE, typename RS >
   struct Root_resource_factory_t : Root_resource_factory
   {
-    Root_resource *create(System_bus *bus) const
+    Root_resource *create(System_bus *bus) const override
     {
       return new Root_resource(TYPE, new RS(bus));
     }

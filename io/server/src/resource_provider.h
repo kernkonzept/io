@@ -36,11 +36,12 @@ private:
 
 
   public:
-    bool request(Resource *parent, Device *pdev, Resource *child, Device *cdev);
-    bool alloc(Resource *parent, Device *pdev, Resource *child, Device *cdev,
-               bool resize);
-    void assign(Resource *parent, Resource *child);
-    bool adjust_children(Resource *self);
+    bool request(Resource *parent, Device *pdev, Resource *child,
+                 Device *cdev) override;
+    bool alloc(Resource *parent, Device *pdev, Resource *child,
+               Device *cdev, bool resize) override;
+    void assign(Resource *parent, Resource *child) override;
+    bool adjust_children(Resource *self) override;
   };
 
   mutable _RS _rs;
@@ -52,6 +53,6 @@ public:
   Resource_provider(unsigned long flags, Addr s, Addr e)
   : Resource(flags, s, e), _rs() {}
 
-  Resource_space *provided() const
+  Resource_space *provided() const override
   { return &_rs; }
 };

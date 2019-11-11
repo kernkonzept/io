@@ -138,7 +138,7 @@ private:
   typedef std::vector<int> Irqs;
 
 public:
-  int dispatch(l4_umword_t, l4_uint32_t func, L4::Ipc::Iostream &ios);
+  int dispatch(l4_umword_t, l4_uint32_t func, L4::Ipc::Iostream &ios) override;
 
   explicit Gpio(Hw::Device *d)
   : _hwd(dynamic_cast<Hw::Gpio_chip*>(d))
@@ -152,14 +152,14 @@ public:
     static_assert(-1 != -L4_ENODEV, "...");
   }
 
-  int add_filter(cxx::String const &tag, cxx::String const &)
+  int add_filter(cxx::String const &tag, cxx::String const &) override
   {
     if (tag != "pins")
       return -L4_ENODEV;
     return -L4_EINVAL;
   }
 
-  int add_filter(cxx::String const &tag, unsigned long long val)
+  int add_filter(cxx::String const &tag, unsigned long long val) override
   {
     if (tag != "pins")
       return -L4_ENODEV;
@@ -167,7 +167,8 @@ public:
     return 0;
   }
 
-  int add_filter(cxx::String const &tag, unsigned long long s, unsigned long long e)
+  int add_filter(cxx::String const &tag,
+                 unsigned long long s, unsigned long long e) override
   {
     if (tag != "pins")
       return -L4_ENODEV;
@@ -182,20 +183,21 @@ public:
       throw -L4_ERANGE;
   }
 
-  char const *hid() const { return "GPIO"; }
-  void set_host(Device *d) { _host = d; }
-  Device *host() const { return _host; }
-  l4_uint32_t interface_type() const { return 1 << L4VBUS_INTERFACE_GPIO; }
+  char const *hid() const override { return "GPIO"; }
+  void set_host(Device *d) override { _host = d; }
+  Device *host() const override { return _host; }
+  l4_uint32_t interface_type() const override
+  { return 1 << L4VBUS_INTERFACE_GPIO; }
 
-  bool match_hw_feature(const Hw::Dev_feature*) const
+  bool match_hw_feature(const Hw::Dev_feature*) const override
   { return false; }
 
-  void dump(int indent) const
+  void dump(int indent) const override
   {
     printf("%*.s %s.%s\n", indent, " ", hid(), name());
   }
 
-  bool check_conflict(Hw::Device_client const *other) const
+  bool check_conflict(Hw::Device_client const *other) const override
   {
     if (Gpio const *g = dynamic_cast<Gpio const *>(other))
       return (g->_hwd == _hwd) && _pins.overlaps(g->_pins);
@@ -203,9 +205,9 @@ public:
     return false;
   }
 
-  std::string get_full_name() const { return get_full_path(); }
+  std::string get_full_name() const override { return get_full_path(); }
 
-  void notify(unsigned type, unsigned event, unsigned value)
+  void notify(unsigned type, unsigned event, unsigned value) override
   { Device::notify(type, event, value, true); }
 
   unsigned nr_pins() const { return _pins.size(); }
@@ -441,7 +443,7 @@ public:
   void set_handle(l4vbus_device_handle_t handle)
   { _handle = handle; }
 
-  l4vbus_device_handle_t provider_device_handle() const
+  l4vbus_device_handle_t provider_device_handle() const override
   { return _handle; }
 
 private:
@@ -455,7 +457,8 @@ public:
   explicit Root_gpio_rs(System_bus *bus) : _bus(bus)
   {}
 
-  bool request(Resource *parent, ::Device *pdev, Resource *child, ::Device *)
+  bool request(Resource *parent, ::Device *pdev,
+               Resource *child, ::Device *) override
   {
     Vi::System_bus *vsb = dynamic_cast<Vi::System_bus *>(pdev);
     if (!vsb || !parent)
@@ -519,7 +522,8 @@ public:
     return true;
   }
 
-  bool alloc(Resource *parent, ::Device *, Resource *child, ::Device *, bool)
+  bool alloc(Resource *parent, ::Device *,
+             Resource *child, ::Device *, bool) override
   {
     d_printf(DBG_DEBUG2, "Allocate virtual GPIO resource ...\n");
     if (dlevel(DBG_DEBUG2))
@@ -530,12 +534,12 @@ public:
     return false;
   }
 
-  void assign(Resource *, Resource *)
+  void assign(Resource *, Resource *) override
   {
     d_printf(DBG_ERR, "internal error: cannot assign to root Root_gpio_rs\n");
   }
 
-  bool adjust_children(Resource *)
+  bool adjust_children(Resource *) override
   {
     d_printf(DBG_ERR, "internal error: cannot adjust root Root_gpio_rs\n");
     return false;

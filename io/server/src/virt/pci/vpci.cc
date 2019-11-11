@@ -538,7 +538,7 @@ private:
   unsigned char _cfg_space[4*4];
 
 public:
-  int irq_enable(Irq_info *irq)
+  int irq_enable(Irq_info *irq) override
   {
     irq->irq = -1;
     return -1;
@@ -556,9 +556,9 @@ public:
     cfg_hdr()->cmd = 0x0;
   }
 
-  bool match_hw_feature(const Hw::Dev_feature*) const { return false; }
-  void set_host(Device *d) { _host = d; }
-  Device *host() const { return _host; }
+  bool match_hw_feature(const Hw::Dev_feature*) const override { return false; }
+  void set_host(Device *d) override { _host = d; }
+  Device *host() const override { return _host; }
 
 private:
   Device *_host;

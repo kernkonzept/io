@@ -456,7 +456,7 @@ acpi_trace_notifications(ACPI_HANDLE handle, UINT32 event, void *)
 
 struct Acpi_pm : Hw::Root_bus::Pm
 {
-  int suspend()
+  int suspend() override
   {
     int res;
     if ((res = acpi_enter_sleep()) < 0)
@@ -465,7 +465,7 @@ struct Acpi_pm : Hw::Root_bus::Pm
     return res;
   }
 
-  int shutdown()
+  int shutdown() override
   {
     int res;
     if ((res = acpi_enter_sleep(5)) < 0)
@@ -474,7 +474,7 @@ struct Acpi_pm : Hw::Root_bus::Pm
     return res;
   }
 
-  int reboot()
+  int reboot() override
   {
     ACPI_STATUS status = AcpiReset();
 

@@ -454,10 +454,10 @@ template< typename BASE, unsigned MAX_BITS = 32 >
 struct Register_block_impl;
 
 #define REGBLK_IMPL_RW_TEMPLATE(sz, ...) \
-  l4_uint##sz##_t do_read_##sz(l4_addr_t reg) const \
+  l4_uint##sz##_t do_read_##sz(l4_addr_t reg) const override \
   { return static_cast<BASE const *>(this)->template read<l4_uint##sz##_t>(reg); } \
   \
-  void do_write_##sz(l4_uint##sz##_t value, l4_addr_t reg) \
+  void do_write_##sz(l4_uint##sz##_t value, l4_addr_t reg) override \
   { static_cast<BASE*>(this)->template write<l4_uint##sz##_t>(value, reg); }
 
 

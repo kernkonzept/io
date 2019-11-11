@@ -40,7 +40,7 @@ public:
   : Pci_pci_bridge_basic(host, bus, hdr_type)
   {}
 
-  void discover_resources(Hw::Device *host);
+  void discover_resources(Hw::Device *host) override;
 };
 
 Root_bridge *root_bridge(int segment)

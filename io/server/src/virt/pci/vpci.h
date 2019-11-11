@@ -336,8 +336,9 @@ Pci_dev::~Pci_dev()
 class Pci_dev_feature : public Pci_dev, public Msi_src_feature
 {
 public:
-  l4_uint32_t interface_type() const { return 1 << L4VBUS_INTERFACE_PCIDEV; }
-  int dispatch(l4_umword_t, l4_uint32_t, L4::Ipc::Iostream&);
+  l4_uint32_t interface_type() const override
+  { return 1 << L4VBUS_INTERFACE_PCIDEV; }
+  int dispatch(l4_umword_t, l4_uint32_t, L4::Ipc::Iostream&) override;
 };
 
 
@@ -534,12 +535,12 @@ public:
   void secondary(unsigned char v) { _secondary = v; }
   void subordinate(unsigned char v) { _subordinate = v; }
   Pci_dev *child_dev(unsigned bus, unsigned char dev, unsigned char fn);
-  void add_child(Device *d);
+  void add_child(Device *d) override;
   void add_child_fixed(Device *d, Pci_dev *vp, unsigned dn, unsigned fn);
 
   Pci_bridge *find_bridge(unsigned bus);
   void setup_bus();
-  void finalize_setup();
+  void finalize_setup() override;
 
 };
 

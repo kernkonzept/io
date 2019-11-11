@@ -42,12 +42,12 @@ public:
     register_property("int_d", &_int_map[3]);
   }
 
-  int cfg_read(Cfg_addr addr, l4_uint32_t *value, Cfg_width);
-  int cfg_write(Cfg_addr addr, l4_uint32_t value, Cfg_width);
+  int cfg_read(Cfg_addr addr, l4_uint32_t *value, Cfg_width) override;
+  int cfg_write(Cfg_addr addr, l4_uint32_t value, Cfg_width) override;
 
   void discover_bus(Hw::Device *host);
 
-  void init();
+  void init() override;
 
   int int_map(int i) const { return _int_map[i]; }
 
@@ -62,16 +62,17 @@ private:
 class Irq_router_rs : public Resource_space
 {
 public:
-  bool request(Resource *parent, Device *, Resource *child, Device *cdev);
-  bool alloc(Resource *, Device *, Resource *, Device *, bool)
+  bool request(Resource *parent, Device *,
+               Resource *child, Device *cdev) override;
+  bool alloc(Resource *, Device *, Resource *, Device *, bool) override
   { return false; }
 
-  void assign(Resource *, Resource *)
+  void assign(Resource *, Resource *) override
   {
     d_printf(DBG_ERR, "internal error: cannot assign to root Irq_router_rs\n");
   }
 
-  bool adjust_children(Resource *)
+  bool adjust_children(Resource *) override
   {
     d_printf(DBG_ERR, "internal error: cannot adjust root Irq_router_rs\n");
     return false;

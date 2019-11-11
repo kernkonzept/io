@@ -104,8 +104,8 @@ public:
   ACPI_HANDLE handle() const { return _obj; }
 
   void discover_crs(Hw::Device *host);
-  void enable_notifications(Hw::Device *host);
-  void disable_notifications(Hw::Device *host);
+  void enable_notifications(Hw::Device *host) override;
+  void disable_notifications(Hw::Device *host) override;
 
 protected:
   ACPI_HANDLE _obj;

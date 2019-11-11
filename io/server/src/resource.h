@@ -285,8 +285,8 @@ public:
   Root_resource(unsigned long flags, Resource_space *rs)
   : Resource(flags), _rs(rs) {}
 
-  Resource_space *provided() const { return _rs; }
-  void dump(int) const {}
+  Resource_space *provided() const override { return _rs; }
+  void dump(int) const override {}
 };
 
 
@@ -306,7 +306,7 @@ public:
 
   void alloc_ram(Size size, unsigned long alloc_flags);
 
-  l4_addr_t map_iomem() const
+  l4_addr_t map_iomem() const override
   {
     return _r.get();
   }

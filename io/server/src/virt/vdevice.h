@@ -88,7 +88,7 @@ public:
   virtual ~Device()
   { __devs.erase(l4vbus_device_handle_t(this)); }
 
-  char const *name() const
+  char const *name() const override
   { return _name.c_str(); }
 
   bool name(cxx::String const &n)
@@ -97,7 +97,7 @@ public:
     return true;
   }
 
-  bool resource_allocated(Resource const *) const;
+  bool resource_allocated(Resource const *) const override;
 
   virtual int add_filter(cxx::String const &, cxx::String const &)
   { return -ENODEV; }
@@ -111,10 +111,10 @@ public:
   virtual void finalize_setup()
   {}
 
-  Device *parent() const { return _dt.parent(); }
-  Device *children() const { return _dt.children(); }
-  Device *next() const { return _dt.next(); }
-  int depth() const { return _dt.depth(); }
+  Device *parent() const override { return _dt.parent(); }
+  Device *children() const override { return _dt.children(); }
+  Device *next() const override { return _dt.next(); }
+  int depth() const override { return _dt.depth(); }
 
   virtual Io::Event_source_infos const *get_event_infos() const
   { return 0; }
@@ -132,7 +132,7 @@ public:
 
   Device *get_dev_by_id(l4vbus_device_handle_t id);
 
-  void dump(int indent) const;
+  void dump(int indent) const override;
 
 protected:
   // helper functions

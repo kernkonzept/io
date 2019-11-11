@@ -256,7 +256,7 @@ private:
 public:
   //typedef gen_iterator<Generic_device> iterator;
 
-  Resource_list const *resources() const { return &_resources; }
+  Resource_list const *resources() const override { return &_resources; }
   void add_resource(Resource *r)
   { _resources.push_back(r); }
 
@@ -268,17 +268,17 @@ public:
 
   virtual bool match_cid(cxx::String const &) const { return false; }
 
-  char const *name() const { return "(noname)"; }
-  char const *hid() const { return 0; }
+  char const *name() const override { return "(noname)"; }
+  char const *hid() const override { return 0; }
 
-  bool request_child_resource(Resource *, Device *);
-  bool alloc_child_resource(Resource *, Device *);
-  void setup_resources();
+  bool request_child_resource(Resource *, Device *) override;
+  bool alloc_child_resource(Resource *, Device *) override;
+  void setup_resources() override;
 
-  int pm_suspend() { return 0; }
-  int pm_resume() { return 0; }
+  int pm_suspend() override { return 0; }
+  int pm_resume() override { return 0; }
 
-  std::string get_full_path() const;
+  std::string get_full_path() const override;
 
   /**
    * Register a property
@@ -354,7 +354,7 @@ private:
   std::string _s;
 
 public:
-  int set(int k, std::string const &str)
+  int set(int k, std::string const &str) override
   {
     if (k != -1)
       return -EINVAL;
@@ -363,9 +363,9 @@ public:
     return 0;
   }
 
-  int set(int, l4_int64_t) { return -EINVAL; }
-  int set(int, Generic_device *) { return -EINVAL; }
-  int set(int, Resource *) { return -EINVAL; }
+  int set(int, l4_int64_t) override { return -EINVAL; }
+  int set(int, Generic_device *) override { return -EINVAL; }
+  int set(int, Resource *) override { return -EINVAL; }
 
   /// Read property value
   std::string const &val() const { return _s; }
@@ -388,9 +388,9 @@ public:
 
   operator l4_int64_t () const { return _i; }
 
-  int set(int, std::string const &) { return -EINVAL; }
+  int set(int, std::string const &) override { return -EINVAL; }
 
-  int set(int k, l4_int64_t i)
+  int set(int k, l4_int64_t i) override
   {
     if (k != -1)
       return -EINVAL;
@@ -399,8 +399,8 @@ public:
     return 0;
   }
 
-  int set(int, Generic_device *) { return -EINVAL; }
-  int set(int, Resource *) { return -EINVAL; }
+  int set(int, Generic_device *) override { return -EINVAL; }
+  int set(int, Resource *) override { return -EINVAL; }
 
   l4_int64_t val() const { return _i; }
 };
@@ -415,9 +415,9 @@ private:
 public:
   Device_property(): _dev(0) {}
 
-  int set(int, std::string const &) { return -EINVAL; }
-  int set(int, l4_int64_t) { return -EINVAL; }
-  int set(int k, Generic_device *d)
+  int set(int, std::string const &) override { return -EINVAL; }
+  int set(int, l4_int64_t) override { return -EINVAL; }
+  int set(int k, Generic_device *d) override
   {
     if (k != -1)
       return -EINVAL;
@@ -428,7 +428,7 @@ public:
 
     return 0;
   }
-  int set(int, Resource *) { return -EINVAL; }
+  int set(int, Resource *) override { return -EINVAL; }
 
   DEVICE *dev() { return _dev; }
 };
@@ -442,10 +442,10 @@ private:
 public:
   Resource_property() : _res(0) {}
 
-  int set(int, std::string const &) { return -EINVAL; }
-  int set(int, l4_int64_t) { return -EINVAL; }
-  int set(int, Generic_device *) { return -EINVAL; }
-  int set(int k, Resource *r)
+  int set(int, std::string const &) override { return -EINVAL; }
+  int set(int, l4_int64_t) override { return -EINVAL; }
+  int set(int, Generic_device *) override { return -EINVAL; }
+  int set(int k, Resource *r) override
   {
     if (k != -1)
       return -EINVAL;

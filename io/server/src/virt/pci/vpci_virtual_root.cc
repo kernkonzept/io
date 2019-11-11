@@ -61,7 +61,7 @@ public:
 class Pci_vroot_id : public Pci_vroot
 {
 public:
-  void add_child(Device *d);
+  void add_child(Device *d) override;
 
 };
 

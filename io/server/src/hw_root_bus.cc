@@ -23,22 +23,23 @@ namespace {
 class Root_irq_rs : public Resource_space
 {
 public:
-  bool request(Resource *parent, Device *, Resource *child, Device *)
+  bool request(Resource *parent, Device *,
+               Resource *child, Device *) override
   {
     child->parent(parent);
 
     return true;
   };
 
-  bool alloc(Resource *, Device *, Resource *, Device *, bool)
+  bool alloc(Resource *, Device *, Resource *, Device *, bool) override
   { return false; }
 
-  void assign(Resource *, Resource *)
+  void assign(Resource *, Resource *) override
   {
     d_printf(DBG_ERR, "internal error: cannot assign to root Root_irq_rs\n");
   }
 
-  bool adjust_children(Resource *)
+  bool adjust_children(Resource *) override
   {
     d_printf(DBG_ERR, "internal error: cannot adjust root Root_irq_rs\n");
     return false;
@@ -49,26 +50,28 @@ public:
 class Root_io_rs : public Resource_space
 {
 public:
-  bool request(Resource *parent, Device *, Resource *child, Device *)
+  bool request(Resource *parent, Device *,
+               Resource *child, Device *) override
   {
     child->parent(parent);
 
     return true;
   }
 
-  bool alloc(Resource *parent, Device *, Resource *child, Device *, bool)
+  bool alloc(Resource *parent, Device *,
+             Resource *child, Device *, bool) override
   {
     child->parent(parent);
 
     return true;
   }
 
-  void assign(Resource *, Resource *)
+  void assign(Resource *, Resource *) override
   {
     d_printf(DBG_ERR, "internal error: cannot assign to root Root_io_rs\n");
   }
 
-  bool adjust_children(Resource *)
+  bool adjust_children(Resource *) override
   {
     d_printf(DBG_ERR, "internal error: cannot adjust root Root_io_rs\n");
     return false;
@@ -80,14 +83,15 @@ public:
 class Root_mmio_rs : public Resource_space
 {
 public:
-  bool request(Resource *parent, Device *, Resource *child, Device *);
-  bool alloc(Resource *parent, Device *, Resource *child, Device *, bool);
-  void assign(Resource *, Resource *)
+  bool request(Resource *parent, Device *, Resource *child, Device *) override;
+  bool alloc(Resource *parent, Device *,
+             Resource *child, Device *, bool) override;
+  void assign(Resource *, Resource *) override
   {
     d_printf(DBG_ERR, "internal error: cannot assign to root Root_mmio_rs\n");
   }
 
-  bool adjust_children(Resource *)
+  bool adjust_children(Resource *) override
   {
     d_printf(DBG_ERR, "internal error: cannot adjust root Root_mmio_rs\n");
     return false;
@@ -144,22 +148,23 @@ Root_mmio_rs::alloc(Resource *parent, Device *, Resource *child, Device *,
 class Root_dma_domain_rs : public Resource_space
 {
 public:
-  bool request(Resource *parent, Device *, Resource *child, Device *)
+  bool request(Resource *parent, Device *,
+               Resource *child, Device *) override
   {
     child->parent(parent);
 
     return true;
   }
 
-  bool alloc(Resource *, Device *, Resource *, Device *, bool)
+  bool alloc(Resource *, Device *, Resource *, Device *, bool) override
   { return false; }
 
-  void assign(Resource *, Resource *)
+  void assign(Resource *, Resource *) override
   {
     d_printf(DBG_ERR, "internal error: cannot assign to root Root_dma_domain_rs\n");
   }
 
-  bool adjust_children(Resource *)
+  bool adjust_children(Resource *) override
   {
     d_printf(DBG_ERR, "internal error: cannot adjust root Root_dma_domain_rs\n");
     return false;
@@ -178,7 +183,7 @@ struct Generic_pm : Hw::Root_bus::Pm
   Generic_pm() : pfc(L4Re::Env::env()->get_cap<L4::Platform_control>("icu"))
   {}
 
-  int suspend()
+  int suspend() override
   {
     if (pfc)
       return l4_error(pfc->system_suspend(0));
@@ -188,7 +193,7 @@ struct Generic_pm : Hw::Root_bus::Pm
     return 0;
   }
 
-  int shutdown()
+  int shutdown() override
   {
     if (pfc)
       return l4_error(pfc->system_shutdown(0));
@@ -198,7 +203,7 @@ struct Generic_pm : Hw::Root_bus::Pm
     return 0;
   }
 
-  int reboot()
+  int reboot() override
   {
     if (pfc)
       return l4_error(pfc->system_shutdown(1));

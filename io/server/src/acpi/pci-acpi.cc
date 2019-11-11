@@ -22,7 +22,7 @@ static void pci_acpi_wake_dev(ACPI_HANDLE, l4_uint32_t event, void *context)
 
 struct Acpi_pci_handler : Hw::Feature_manager<Pci::Dev, Acpi_dev>
 {
-  bool setup(Hw::Device *, Pci::Dev *pci, Acpi_dev *acpi_dev) const
+  bool setup(Hw::Device *, Pci::Dev *pci, Acpi_dev *acpi_dev) const override
   {
     ACPI_STATUS status;
 
@@ -62,16 +62,17 @@ public:
 
   int add_prt_entry(ACPI_HANDLE obj, ACPI_PCI_ROUTING_TABLE *e);
   int find(int device, int pin, struct acpica_pci_irq **irq);
-  bool request(Resource *parent, ::Device *, Resource *child, ::Device *cdev);
-  bool alloc(Resource *, ::Device *, Resource *, ::Device *, bool)
+  bool request(Resource *parent, ::Device *,
+               Resource *child, ::Device *cdev) override;
+  bool alloc(Resource *, ::Device *, Resource *, ::Device *, bool) override
   { return false; }
 
-  void assign(Resource *, Resource *)
+  void assign(Resource *, Resource *) override
   {
     d_printf(DBG_ERR, "internal error: cannot assign to root Acpi_pci_irq_router_rs\n");
   }
 
-  bool adjust_children(Resource *)
+  bool adjust_children(Resource *) override
   {
     d_printf(DBG_ERR, "internal error: cannot adjust root Acpi_pci_irq_router_rs\n");
     return false;
@@ -263,7 +264,8 @@ Resource *discover_prt(Acpi_dev *adev)
 
 struct Acpi_pci_bridge_handler : Hw::Feature_manager<Hw::Pci::Bus, Acpi_dev>
 {
-  bool setup(Hw::Device *dev, Hw::Pci::Bus *pci_bus, Acpi_dev *acpi_dev) const
+  bool setup(Hw::Device *dev, Hw::Pci::Bus *pci_bus,
+             Acpi_dev *acpi_dev) const override
   {
     Resource *router = discover_prt(acpi_dev);
     if (router && !pci_bus->irq_router)

@@ -91,18 +91,18 @@ public:
   Io_config_x()
   : _do_transparent_msi(false), _verbose_lvl(1) {}
 
-  bool transparent_msi(Hw::Device *) const
+  bool transparent_msi(Hw::Device *) const override
   { return _do_transparent_msi; }
 
-  bool legacy_ide_resources(Hw::Device *) const
+  bool legacy_ide_resources(Hw::Device *) const override
   { return true; }
 
-  bool expansion_rom(Hw::Device *) const
+  bool expansion_rom(Hw::Device *) const override
   { return false; }
 
   void set_transparent_msi(bool v) { _do_transparent_msi = v; }
 
-  int verbose() const { return _verbose_lvl; }
+  int verbose() const override { return _verbose_lvl; }
   void inc_verbosity() { ++_verbose_lvl; }
 
 private:

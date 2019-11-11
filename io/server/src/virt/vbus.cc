@@ -48,7 +48,7 @@ public:
     _icu->name("L4ICU");
   }
 
-  bool request(Resource *parent, Device *, Resource *child, Device *)
+  bool request(Resource *parent, Device *, Resource *child, Device *) override
   {
     if (0)
       {
@@ -74,7 +74,8 @@ public:
     return _bus->add_resource_to_bus(child);
   };
 
-  bool alloc(Resource *parent, Device *, Resource *child, Device *, bool)
+  bool alloc(Resource *parent, Device *,
+             Resource *child, Device *, bool) override
   {
     d_printf(DBG_DEBUG2, "Allocate virtual IRQ resource ...\n");
     if (dlevel(DBG_DEBUG2))
@@ -111,12 +112,12 @@ public:
     return _bus->add_resource_to_bus(msi);
   }
 
-  void assign(Resource *, Resource *)
+  void assign(Resource *, Resource *) override
   {
     d_printf(DBG_ERR, "internal error: cannot assign to root Root_irq_rs\n");
   }
 
-  bool adjust_children(Resource *)
+  bool adjust_children(Resource *) override
   {
     d_printf(DBG_ERR, "internal error: cannot adjust root Root_irq_rs\n");
     return false;
@@ -132,7 +133,7 @@ public:
   Root_x_rs(Vi::System_bus *bus) : Resource_space(), _bus(bus)
   {}
 
-  bool request(Resource *parent, Device *, Resource *child, Device *)
+  bool request(Resource *parent, Device *, Resource *child, Device *) override
   {
     if (0)
       {
@@ -147,15 +148,15 @@ public:
     return _bus->add_resource_to_bus(child);
   }
 
-  bool alloc(Resource *, Device *, Resource *, Device *, bool)
+  bool alloc(Resource *, Device *, Resource *, Device *, bool) override
   { return false; }
 
-  void assign(Resource *, Resource *)
+  void assign(Resource *, Resource *) override
   {
     d_printf(DBG_ERR, "internal error: cannot assign to root Root_x_rs\n");
   }
 
-  bool adjust_children(Resource *)
+  bool adjust_children(Resource *) override
   {
     d_printf(DBG_ERR, "internal error: cannot adjust root Root_x_rs\n");
     return false;
@@ -173,22 +174,22 @@ public:
   : Resource_space(), _bus(bus), _domain_group(g)
   {}
 
-  bool request(Resource *, Device *, Resource *child, Device *)
+  bool request(Resource *, Device *, Resource *child, Device *) override
   {
     Dma_domain *d = dynamic_cast<Dma_domain *>(child);
     d->add_to_group(_domain_group);
     return _bus->add_resource_to_bus(child);
   }
 
-  bool alloc(Resource *, Device *, Resource *, Device *, bool)
+  bool alloc(Resource *, Device *, Resource *, Device *, bool) override
   { return false; }
 
-  void assign(Resource *, Resource *)
+  void assign(Resource *, Resource *) override
   {
     d_printf(DBG_ERR, "internal error: cannot assign to root Root_dma_domain_rs\n");
   }
 
-  bool adjust_children(Resource *)
+  bool adjust_children(Resource *) override
   {
     d_printf(DBG_ERR, "internal error: cannot adjust root Root_dma_domain_rs\n");
     return false;

@@ -112,7 +112,7 @@ public:
   { return cfg_write(Cfg_addr(bus, devfn >> 16, devfn & 0xffff, reg), value, w); }
 
   bool discover_bus(Hw::Device *host);
-  void dump(int) const;
+  void dump(int) const override;
 
   virtual void increase_subordinate(int s) = 0;
 
@@ -447,9 +447,9 @@ public:
 
   Hw::Device *host() const { return _host; }
 
-  void setup(Hw::Device *host);
+  void setup(Hw::Device *host) override;
 
-  void increase_subordinate(int x)
+  void increase_subordinate(int x) override
   {
     if (x > subordinate)
       subordinate = x;
@@ -671,8 +671,8 @@ class Irq_router : public Resource
 {
 public:
   Irq_router() : Resource(Irq_res) {}
-  void dump(int) const;
-  bool compatible(Resource *consumer, bool = true) const
+  void dump(int) const override;
+  bool compatible(Resource *consumer, bool = true) const override
   {
     // only relative CPU IRQ lines are compatible with IRQ routing
     // global IRQs must be allocated at a higher level
@@ -692,7 +692,7 @@ public:
   template< typename ...ARGS >
   Irq_router_res(ARGS && ...args) : _rs(cxx::forward<ARGS>(args)...) {}
 
-  RES_SPACE *provided() const { return &_rs; }
+  RES_SPACE *provided() const override { return &_rs; }
 };
 
 
@@ -706,16 +706,17 @@ public:
 class Pci_pci_bridge_irq_router_rs : public Resource_space
 {
 public:
-  bool request(Resource *parent, ::Device *, Resource *child, ::Device *cdev);
-  bool alloc(Resource *, ::Device *, Resource *, ::Device *, bool)
+  bool request(Resource *parent, ::Device *,
+               Resource *child, ::Device *cdev) override;
+  bool alloc(Resource *, ::Device *, Resource *, ::Device *, bool) override
   { return false; }
 
-  void assign(Resource *, Resource *)
+  void assign(Resource *, Resource *) override
   {
     d_printf(DBG_ERR, "internal error: cannot assign to root Pci_pci_bridge_irq_router_rs\n");
   }
 
-  bool adjust_children(Resource *)
+  bool adjust_children(Resource *) override
   {
     d_printf(DBG_ERR, "internal error: cannot adjust root Pci_pci_bridge_irq_router_rs\n");
     return false;
@@ -743,7 +744,7 @@ public:
    */
   Pci_pci_bridge_basic(Hw::Device *host, Bus *bus, l4_uint8_t hdr_type);
 
-  void increase_subordinate(int x)
+  void increase_subordinate(int x) override
   {
     if (subordinate < x)
       {
@@ -753,19 +754,19 @@ public:
       }
   }
 
-  int cfg_read(Cfg_addr addr, l4_uint32_t *value, Cfg_width width)
+  int cfg_read(Cfg_addr addr, l4_uint32_t *value, Cfg_width width) override
   { return _bus->cfg_read(addr, value, width); }
 
-  int cfg_write(Cfg_addr addr, l4_uint32_t value, Cfg_width width)
+  int cfg_write(Cfg_addr addr, l4_uint32_t value, Cfg_width width) override
   { return _bus->cfg_write(addr, value, width); }
 
-  void discover_bus(Hw::Device *host)
+  void discover_bus(Hw::Device *host) override
   {
     Bus::discover_bus(host);
     Dev::discover_bus(host);
   }
 
-  void dump(int indent) const
+  void dump(int indent) const override
   {
     Dev::dump(indent);
     Bus::dump(indent);
@@ -785,8 +786,8 @@ public:
   : Pci_pci_bridge_basic(host, bus, hdr_type), mmio(0), pref_mmio(0), io(0)
   {}
 
-  void setup_children(Hw::Device *host);
-  void discover_resources(Hw::Device *host);
+  void setup_children(Hw::Device *host) override;
+  void discover_resources(Hw::Device *host) override;
 };
 
 struct Port_root_bridge : public Root_bridge
@@ -795,8 +796,8 @@ struct Port_root_bridge : public Root_bridge
                             Bus_type bus_type, Hw::Device *host)
   : Root_bridge(segment, bus_nr, bus_type, host) {}
 
-  int cfg_read(Cfg_addr addr, l4_uint32_t *value, Cfg_width);
-  int cfg_write(Cfg_addr addr, l4_uint32_t value, Cfg_width);
+  int cfg_read(Cfg_addr addr, l4_uint32_t *value, Cfg_width) override;
+  int cfg_write(Cfg_addr addr, l4_uint32_t value, Cfg_width) override;
 
 private:
   pthread_mutex_t _cfg_lock = PTHREAD_MUTEX_INITIALIZER;
@@ -814,8 +815,8 @@ struct Mmio_root_bridge : public Root_bridge
       throw("ne");
   }
 
-  int cfg_read(Cfg_addr addr, l4_uint32_t *value, Cfg_width);
-  int cfg_write(Cfg_addr addr, l4_uint32_t value, Cfg_width);
+  int cfg_read(Cfg_addr addr, l4_uint32_t *value, Cfg_width) override;
+  int cfg_write(Cfg_addr addr, l4_uint32_t value, Cfg_width) override;
 
   l4_addr_t a(Cfg_addr addr) const { return _mmio + addr.addr(); }
 
