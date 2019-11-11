@@ -22,7 +22,6 @@ void dump_devs(Device *d);
 
 %ignore Resource_space;
 %ignore Resource_list;
-%ignore Resource_provider;
 %ignore Root_resource;
 %ignore Vi::Dev_feature;
 %ignore Hw::Dev_feature;

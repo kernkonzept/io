@@ -26,6 +26,7 @@ SRC_CC-$(CONFIG_L4IO_PCI)  += virt/pci/vpci.cc \
                               pci/pm.cc
 
 SRC_CC := main.cc res.cc phys_space.cc resource.cc hw_device.cc \
+          resource_provider.cc \
           hw_root_bus.cc device.cc hw_irqs.cc \
           hw_register_block.cc \
           dma_domain.cc \

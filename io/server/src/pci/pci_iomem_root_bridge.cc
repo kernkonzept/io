@@ -11,6 +11,7 @@
 #include "hw_device.h"
 #include "pci.h"
 #include "main.h"
+#include "resource_provider.h"
 
 namespace {
 

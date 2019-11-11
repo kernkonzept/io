@@ -275,47 +275,6 @@ public:
   { return ~0; }
 };
 
-class Resource_provider : public Resource
-{
-private:
-  class _RS : public Resource_space
-  {
-  private:
-    typedef Resource::Addr Addr;
-    typedef Resource::Size Size;
-    Resource_list _rl;
-
-    Size min_align(Resource const *r) const
-    {
-      switch (r->type())
-        {
-        case Mmio_res: return L4_PAGESIZE - 1;
-        case Io_res:   return 3;
-        default:       return 0;
-        }
-    }
-
-
-  public:
-    bool request(Resource *parent, Device *pdev, Resource *child, Device *cdev);
-    bool alloc(Resource *parent, Device *pdev, Resource *child, Device *cdev,
-               bool resize);
-    void assign(Resource *parent, Resource *child);
-    bool adjust_children(Resource *self);
-  };
-
-  mutable _RS _rs;
-
-public:
-  explicit Resource_provider(unsigned long flags)
-  : Resource(flags), _rs() {}
-
-  Resource_provider(unsigned long flags, Addr s, Addr e)
-  : Resource(flags, s, e), _rs() {}
-
-  Resource_space *provided() const
-  { return &_rs; }
-};
 
 class Root_resource : public Resource
 {

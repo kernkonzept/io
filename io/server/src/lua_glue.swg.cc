@@ -2701,14 +2701,13 @@ SWIG_Lua_dostring(lua_State *L, const char *str) {
 #define SWIGTYPE_p_Mmio_data_space swig_types[6]
 #define SWIGTYPE_p_Property swig_types[7]
 #define SWIGTYPE_p_Resource swig_types[8]
-#define SWIGTYPE_p_Resource_provider swig_types[9]
-#define SWIGTYPE_p_Resource_space swig_types[10]
-#define SWIGTYPE_p_Root_resource swig_types[11]
-#define SWIGTYPE_p_Size swig_types[12]
-#define SWIGTYPE_p_Vi__Dev_factory swig_types[13]
-#define SWIGTYPE_p_Vi__Device swig_types[14]
-static swig_type_info *swig_types[16];
-static swig_module_info swig_module = {swig_types, 15, 0, 0, 0, 0};
+#define SWIGTYPE_p_Resource_space swig_types[9]
+#define SWIGTYPE_p_Root_resource swig_types[10]
+#define SWIGTYPE_p_Size swig_types[11]
+#define SWIGTYPE_p_Vi__Dev_factory swig_types[12]
+#define SWIGTYPE_p_Vi__Device swig_types[13]
+static swig_type_info *swig_types[15];
+static swig_module_info swig_module = {swig_types, 14, 0, 0, 0, 0};
 #define SWIG_TypeQuery(name) SWIG_TypeQueryModule(&swig_module, &swig_module, name)
 #define SWIG_MangledTypeQuery(name) SWIG_MangledTypeQueryModule(&swig_module, &swig_module, name)
 
@@ -4372,9 +4371,6 @@ static void *_p_Mmio_data_spaceTo_p_Resource(void *x, int *SWIGUNUSEDPARM(newmem
 static void *_p_Gpio_resourceTo_p_Resource(void *x, int *SWIGUNUSEDPARM(newmemory)) {
     return (void *)((Resource *)  ((Gpio_resource *) x));
 }
-static void *_p_Resource_providerTo_p_Resource(void *x, int *SWIGUNUSEDPARM(newmemory)) {
-    return (void *)((Resource *)  ((Resource_provider *) x));
-}
 static void *_p_Generic_deviceTo_p_Device(void *x, int *SWIGUNUSEDPARM(newmemory)) {
     return (void *)((Device *)  ((Generic_device *) x));
 }
@@ -4400,7 +4396,6 @@ static swig_type_info _swigt__p_Mmio_data_space = {"_p_Mmio_data_space", "Mmio_d
 static swig_type_info _swigt__p_Property = {"_p_Property", "Property *", 0, 0, (void*)&_wrap_class_Property, 0};
 static swig_type_info _swigt__p_Resource = {"_p_Resource", "Resource *", 0, 0, (void*)&_wrap_class_Resource, 0};
 static swig_type_info _swigt__p_Root_resource = {"_p_Root_resource", 0, 0, 0, 0, 0};
-static swig_type_info _swigt__p_Resource_provider = {"_p_Resource_provider", 0, 0, 0, 0, 0};
 static swig_type_info _swigt__p_Resource_space = {"_p_Resource_space", "Resource_space *", 0, 0, (void*)0, 0};
 static swig_type_info _swigt__p_Size = {"_p_Size", "Size *", 0, 0, (void*)0, 0};
 static swig_type_info _swigt__p_Vi__Dev_factory = {"_p_Vi__Dev_factory", "Vi::Dev_factory *", 0, 0, (void*)&_wrap_class_Vi_dev_factory, 0};
@@ -4416,7 +4411,6 @@ static swig_type_info *swig_type_initial[] = {
   &_swigt__p_Mmio_data_space,
   &_swigt__p_Property,
   &_swigt__p_Resource,
-  &_swigt__p_Resource_provider,
   &_swigt__p_Resource_space,
   &_swigt__p_Root_resource,
   &_swigt__p_Size,
@@ -4433,8 +4427,7 @@ static swig_cast_info _swigc__p_Hw__Device_factory[] = {  {&_swigt__p_Hw__Device
 static swig_cast_info _swigc__p_Mmio_data_space[] = {  {&_swigt__p_Mmio_data_space, 0, 0, 0},{0, 0, 0, 0}};
 static swig_cast_info _swigc__p_Property[] = {  {&_swigt__p_Property, 0, 0, 0},{0, 0, 0, 0}};
 static swig_cast_info _swigc__p_Root_resource[] = {{&_swigt__p_Root_resource, 0, 0, 0},{0, 0, 0, 0}};
-static swig_cast_info _swigc__p_Resource_provider[] = {{&_swigt__p_Resource_provider, 0, 0, 0},{0, 0, 0, 0}};
-static swig_cast_info _swigc__p_Resource[] = {  {&_swigt__p_Resource, 0, 0, 0},  {&_swigt__p_Root_resource, _p_Root_resourceTo_p_Resource, 0, 0},  {&_swigt__p_Mmio_data_space, _p_Mmio_data_spaceTo_p_Resource, 0, 0},  {&_swigt__p_Gpio_resource, _p_Gpio_resourceTo_p_Resource, 0, 0},  {&_swigt__p_Resource_provider, _p_Resource_providerTo_p_Resource, 0, 0},{0, 0, 0, 0}};
+static swig_cast_info _swigc__p_Resource[] = {  {&_swigt__p_Resource, 0, 0, 0},  {&_swigt__p_Root_resource, _p_Root_resourceTo_p_Resource, 0, 0},  {&_swigt__p_Mmio_data_space, _p_Mmio_data_spaceTo_p_Resource, 0, 0},  {&_swigt__p_Gpio_resource, _p_Gpio_resourceTo_p_Resource, 0, 0},{0, 0, 0, 0}};
 static swig_cast_info _swigc__p_Resource_space[] = {  {&_swigt__p_Resource_space, 0, 0, 0},{0, 0, 0, 0}};
 static swig_cast_info _swigc__p_Size[] = {  {&_swigt__p_Size, 0, 0, 0},{0, 0, 0, 0}};
 static swig_cast_info _swigc__p_Vi__Dev_factory[] = {  {&_swigt__p_Vi__Dev_factory, 0, 0, 0},{0, 0, 0, 0}};
@@ -4450,7 +4443,6 @@ static swig_cast_info *swig_cast_initial[] = {
   _swigc__p_Mmio_data_space,
   _swigc__p_Property,
   _swigc__p_Resource,
-  _swigc__p_Resource_provider,
   _swigc__p_Resource_space,
   _swigc__p_Root_resource,
   _swigc__p_Size,

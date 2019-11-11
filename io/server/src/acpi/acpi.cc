@@ -20,6 +20,7 @@
 #include "main.h"
 #include "phys_space.h"
 #include "hw_root_bus.h"
+#include "resource_provider.h"
 #include <map>
 #include <l4/re/error_helper>
 #include <l4/sys/iommu>

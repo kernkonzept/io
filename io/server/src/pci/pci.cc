@@ -26,6 +26,7 @@
 #include "pci.h"
 #include "phys_space.h"
 #include "cfg.h"
+#include "resource_provider.h"
 #include "../utils.h"
 
 namespace Hw { namespace Pci {

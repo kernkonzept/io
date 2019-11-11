@@ -90,6 +90,7 @@
 #include "hw_device.h"
 #include "hw_mmio_register_block.h"
 #include "pci.h"
+#include "resource_provider.h"
 
 namespace {
 
