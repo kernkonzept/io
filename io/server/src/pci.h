@@ -439,6 +439,63 @@ public:
   Cap(If *dev, l4_uint16_t reg) : Cfg_ptr(dev, reg) {}
 };
 
+/**
+ * Wrapper class to work with PCIe extended capabilities
+ */
+class Extended_cap : public Cfg_ptr
+{
+public:
+  enum Types
+  {
+    Aer = 0x01, ///< Advanced Error Reporting
+    Dsn = 0x03, ///< Device Serial Number
+    Pbe = 0x04, ///< Power Budgeting
+    Acs = 0x0d, ///< Access Control Services
+  };
+
+  Extended_cap() = default;
+  Extended_cap(Cfg_ptr const &cfg) : Cfg_ptr(cfg) {}
+  Extended_cap(If *dev, l4_uint16_t offset) : Cfg_ptr(dev, offset) {}
+
+  bool is_valid()
+  {
+    return id() != 0 && version() > 0;
+  }
+
+  l4_uint32_t header()
+  {
+    l4_uint32_t hdr;
+    read(0, &hdr);
+    return hdr;
+  }
+
+  l4_uint16_t id()
+  {
+    l4_uint16_t id;
+    read(0, &id);
+    return id;
+  }
+
+  l4_uint8_t version()
+  {
+    l4_uint8_t v;
+    read(2, &v);
+    return v & 0xf;
+  }
+
+  l4_uint16_t next()
+  {
+    l4_uint16_t n;
+    read(2, &n);
+    return (n & 0xffc0) >> 4;
+  }
+
+  void dump()
+  {
+    printf("Extended Cap: id=%x, version=%x, next=%x\n", id(), version(), next());
+  }
+};
+
 
 class Saved_cap : public cxx::H_list_item_t<Saved_cap>
 {
