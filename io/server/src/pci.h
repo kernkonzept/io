@@ -417,7 +417,13 @@ public:
     Msi_x = 0x11
   };
 
-  l4_uint8_t id() { l4_uint8_t r; read(0, &r); return r; }
+  l4_uint8_t id()
+  {
+    l4_uint8_t r;
+    read(0, &r);
+    return r;
+  }
+
   Cap next()
   {
     l4_uint8_t r;
