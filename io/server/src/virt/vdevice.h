@@ -33,20 +33,23 @@ class Device;
 class Dev_feature
 {
 public:
-  virtual ~Dev_feature() = 0;
   virtual bool match_hw_feature(Hw::Dev_feature const *) const = 0;
   virtual int dispatch(l4_umword_t obj, l4_uint32_t func, L4::Ipc::Iostream &ios) = 0;
   virtual Device *host() const = 0;
   virtual void set_host(Device *d) = 0;
   virtual l4_uint32_t interface_type() const = 0;
-};
 
-inline Dev_feature::~Dev_feature() {}
+protected:
+  ~Dev_feature() = default;
+};
 
 class Msi_src_feature : public Dev_feature
 {
 public:
   virtual Io_irq_pin::Msi_src *msi_src() const = 0;
+
+protected:
+  ~Msi_src_feature() = default;
 };
 
 
