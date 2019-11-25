@@ -372,7 +372,39 @@ private:
   Bus *_bus;
 };
 
-class Cap : public Config
+/**
+ * Encapsulate the config space of PCI device object.
+ */
+class Cfg_ptr : public Cfg_rw_mixin<Cfg_ptr>
+{
+public:
+  explicit Cfg_ptr(If *dev, l4_uint16_t reg = 0) : _dev(dev), _reg(reg) {}
+  Cfg_ptr() = default;
+
+  bool is_valid() const { return _dev; }
+
+  int read(unsigned offset, l4_uint32_t *value, Cfg_width w) const
+  { return _dev->cfg_read(_reg + offset, value, w); }
+
+  using Cfg_rw_mixin<Cfg_ptr>::read;
+
+  int write(unsigned offset, l4_uint32_t value, Cfg_width w) const
+  { return _dev->cfg_write(_reg + offset, value, w); }
+
+  using Cfg_rw_mixin<Cfg_ptr>::write;
+
+  Cfg_ptr operator + (unsigned offset) const
+  { return Cfg_ptr(_dev, _reg + offset); }
+
+  If *dev() const { return _dev; }
+  l4_uint16_t reg() const { return _reg; }
+
+private:
+  If *_dev = nullptr;
+  l4_uint16_t _reg = 0;
+};
+
+class Cap : public Cfg_ptr
 {
 public:
   enum Types
@@ -391,14 +423,14 @@ public:
     l4_uint8_t r;
     read(1, &r);
     if (r)
-      return Cap(Cfg_addr(addr(), r), bus());
+      return Cap(dev(), r);
+
     return Cap();
   }
 
   Cap() = default;
-  Cap(Cfg_addr addr, Bus *bus)
-  : Config(addr, bus)
-  {}
+  Cap(Cfg_ptr const &cfg) : Cfg_ptr(cfg) {}
+  Cap(If *dev, l4_uint16_t reg) : Cfg_ptr(dev, reg) {}
 };
 
 

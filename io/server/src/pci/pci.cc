@@ -493,7 +493,7 @@ Dev::find_pci_cap(unsigned char id)
   if (o == 0)
     return Cap();
 
-  for (Cap c = Cap(cfg_addr(o), bus()); c.is_valid(); c = c.next())
+  for (Cap c = Cap(this, o); c.is_valid(); c = c.next())
     if (c.id() == id)
       return c;
 
