@@ -37,7 +37,7 @@ private:
   l4_uint16_t data;
   l4_uint16_t control;
 
-  void _save(Config cap) override
+  void _save(Cfg_ptr cap) override
   {
     cap.read(Control, &control);
     cap.read(Addr_lo, &addr_lo);
@@ -50,7 +50,7 @@ private:
       cap.read(Data_32, &data);
   }
 
-  void _restore(Config cap) override
+  void _restore(Cfg_ptr cap) override
   {
     cap.write(Addr_lo, addr_lo);
     if (control & (1 << 7))

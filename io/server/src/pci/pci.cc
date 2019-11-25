@@ -783,7 +783,7 @@ Dev::setup(Hw::Device *)
 void
 Dev::pm_save_state(Hw::Device *)
 {
-  _saved_state.save(Config(cfg_addr(0), bus()));
+  _saved_state.save(this);
   flags.state_saved() = true;
 }
 
@@ -792,7 +792,7 @@ Dev::pm_restore_state(Hw::Device *)
 {
   if (flags.state_saved())
     {
-      _saved_state.restore(Config(cfg_addr(0), bus()));
+      _saved_state.restore(this);
       flags.state_saved() = false;
     }
 }
@@ -1262,8 +1262,9 @@ Saved_config::find_cap(l4_uint8_t type)
 }
 
 void
-Saved_config::save(Config cfg)
+Saved_config::save(If *dev)
 {
+  Cfg_ptr cfg(dev, 0);
   for (unsigned i = 0; i < 16; ++i)
     cfg.read(i * 4, &_regs.w[i]);
 
@@ -1272,7 +1273,7 @@ Saved_config::save(Config cfg)
 }
 
 static void
-restore_cfg_word(Config cfg, l4_uint32_t value, int retry)
+restore_cfg_word(Cfg_ptr cfg, l4_uint32_t value, int retry)
 {
   l4_uint32_t v;
   cfg.read(0, &v);
@@ -1294,7 +1295,7 @@ restore_cfg_word(Config cfg, l4_uint32_t value, int retry)
 }
 
 static void
-restore_cfg_range(Config cfg, l4_uint32_t *saved,
+restore_cfg_range(Cfg_ptr cfg, l4_uint32_t *saved,
                   unsigned start, unsigned end, unsigned retry = 0)
 {
   for (unsigned i = start; i <= end; ++i)
@@ -1302,9 +1303,11 @@ restore_cfg_range(Config cfg, l4_uint32_t *saved,
 }
 
 void
-Saved_config::restore(Config cfg)
+Saved_config::restore(If *dev)
 {
   Saved_cap *pcie = find_cap(Cap::Pcie);
+
+  Cfg_ptr cfg(dev, 0);
 
   // PCI express state must be restored first
   if (pcie)

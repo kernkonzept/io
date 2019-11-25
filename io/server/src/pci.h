@@ -445,8 +445,8 @@ class Saved_cap : public cxx::H_list_item_t<Saved_cap>
 public:
   Saved_cap(l4_uint8_t type, unsigned pos) : _type(type), _reg(pos) {}
   virtual ~Saved_cap() = 0;
-  void save(Config cfg) { _save(cfg + _reg); }
-  void restore(Config cfg) { _restore(cfg + _reg); }
+  void save(Cfg_ptr cfg) { _save(cfg + _reg); }
+  void restore(Cfg_ptr cfg) { _restore(cfg + _reg); }
 
   l4_uint8_t type() const { return _type; }
   unsigned cap_offset() const { return _reg; }
@@ -455,8 +455,8 @@ private:
   l4_uint8_t _type;
   unsigned   _reg;
 
-  virtual void _save(Config cfg) = 0;
-  virtual void _restore(Config cfg) = 0;
+  virtual void _save(Cfg_ptr cfg) = 0;
+  virtual void _restore(Cfg_ptr cfg) = 0;
 
 };
 
@@ -474,8 +474,8 @@ public:
       }
   }
 
-  void save(Config cfg);
-  void restore(Config cfg);
+  void save(If *dev);
+  void restore(If *dev);
 
   Saved_cap *find_cap(l4_uint8_t type);
   void add_cap(Saved_cap *cap)
