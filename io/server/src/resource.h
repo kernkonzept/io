@@ -54,10 +54,10 @@ public:
   virtual bool alloc(Resource *parent, Device *pdev,
                      Resource *child, Device *cdev, bool resize) = 0;
   virtual bool adjust_children(Resource *self) = 0;
-  virtual ~Resource_space() noexcept = 0;
-};
 
-inline Resource_space::~Resource_space() noexcept {}
+protected:
+  ~Resource_space() noexcept = default;
+};
 
 class Resource
 {
