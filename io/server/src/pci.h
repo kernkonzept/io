@@ -219,11 +219,62 @@ struct Pm_cap
   { return cap + 2; }
 };
 
+/**
+ * Mixin for PCI config space accessors to allow typed
+ * read and write.
+ */
+template<typename B>
+class Cfg_rw_mixin
+{
+private:
+  B *_this() { return static_cast<B *>(this); }
+  B const *_this() const { return static_cast<B const *>(this); }
+
+public:
+  template<typename T>
+  int read(unsigned offset, T *val) const
+  {
+    union
+    {
+      l4_uint32_t v;
+      T t;
+    } x;
+
+    int r = _this()->read(offset, &x.v, cfg_width<T>::width);
+    *val = x.t;
+    return r;
+  }
+
+  template<typename T> T read(unsigned offset) const
+  {
+    T v;
+    read(offset, &v);
+    return v;
+  }
+
+  template<typename T>
+  int write(unsigned offset, T const &val) const
+  {
+    union
+    {
+      l4_uint32_t v;
+      T t;
+    } x;
+
+    x.t = val;
+    return _this()->write(offset, x.v, cfg_width<T>::width);
+  }
+};
+
 
 /**
- * \brief Encapsulate the config space of a PCI device.
+ * Encapsulate the config space of a PCI device (without a device).
+ *
+ * This class is used to access the config space of the PCI bus
+ * without having a PCI device object allocated yet. If there
+ * is already a PCI device object use Cfg_ptr instead.
  */
-class Config
+class Config : public Cfg_rw_mixin<Config>
 {
 public:
   enum Regs
@@ -300,40 +351,15 @@ public:
 
   bool is_valid() const { return _bus; }
 
-  int read(unsigned reg, l4_uint32_t *value, Cfg_width w)
+  int read(unsigned reg, l4_uint32_t *value, Cfg_width w) const
   { return _bus->cfg_read(_addr + reg, value, w); }
 
-  int write(unsigned reg, l4_uint32_t value, Cfg_width w)
+  using Cfg_rw_mixin<Config>::read;
+
+  int write(unsigned reg, l4_uint32_t value, Cfg_width w) const
   { return _bus->cfg_write(_addr + reg, value, w); }
 
-  template<typename T>
-  int read(unsigned reg, T *val)
-  {
-    union
-    {
-      l4_uint32_t v;
-      T t;
-    } x;
-
-    int r = read(reg, &x.v, cfg_width<T>::width);
-    *val = x.t;
-    return r;
-  }
-
-  template<typename T> T read(unsigned reg) { T v; read(reg, &v); return v; }
-
-  template<typename T>
-  int write(unsigned reg, T const &val)
-  {
-    union
-    {
-      l4_uint32_t v;
-      T t;
-    } x;
-
-    x.t = val;
-    return write(reg, x.v, cfg_width<T>::width);
-  }
+  using Cfg_rw_mixin<Config>::write;
 
   Config operator + (unsigned offset) const
   { return Config(_addr + offset, _bus); }
