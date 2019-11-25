@@ -143,7 +143,7 @@ class Pcie_capability
 public:
   typedef Hw::Pci::Cfg_width Cfg_width;
 
-  /// Make e extended PCI capability at given offset.
+  /// Make an extended PCI capability at given offset.
   explicit Pcie_capability(l4_uint16_t offset)
   : _offset(offset), _size(4) {}
 

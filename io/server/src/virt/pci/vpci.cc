@@ -410,7 +410,7 @@ Pci_proxy_dev::cfg_read(int reg, l4_uint32_t *v, Cfg_width order)
                /* fall through */
     case 0x28:
     case 0x3c:
-               /* pass trough the rest ... */
+               /* pass through the rest ... */
                p->cfg_read(dw_reg, &buf);
                break;
     }
