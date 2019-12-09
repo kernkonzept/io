@@ -77,6 +77,21 @@ Dev::parse_acs_cap(Extended_cap acs_cap)
 
   acs_cap.write(Acs::Control, caps);
 
+  // Certain Intel PCIe root ports implement ACS but instead of using words for
+  // the capability and control registers they use dwords. This means the
+  // control register is at offset 8 instead of 6.
+  // We read the control word and compare it with our desired configuration. If
+  // they don't match we print a warning.
+  l4_uint16_t ctrl;
+  acs_cap.read(Acs::Control, &ctrl);
+  if (ctrl != caps)
+    {
+      d_printf(DBG_ERR,
+               "Error: PCI ACS control does not match desired configuration. "
+               "Is this a buggy PCIe root port?\n");
+      return;
+    }
+
   _saved_state.add_cap(new Saved_acs_cap(acs_cap.reg()));
 }
 
