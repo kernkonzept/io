@@ -93,7 +93,7 @@ public:
   }
 
 private:
-enum : unsigned
+  enum : unsigned
   {
     Cpgwpr        = 0x900,      //< CPG write protect register
     Cpgwpcr       = 0x904,      //< CPG write protect control register

@@ -67,8 +67,11 @@
 #include <l4/re/error_helper>
 #include <l4/util/util.h>
 
-// More investigation required.
-#undef MSI_ENABLE
+enum
+{
+  // More investigation required.
+  Enable_msi = 0
+};
 
 namespace {
 
@@ -288,6 +291,7 @@ private:
 
   L4Re::Util::Unique_cap<L4Re::Dataspace> _ds_msi;
 };
+
 // return upper 32-bit part of a 64-bit value
 static inline unsigned u64_hi(unsigned long u64)
 { return u64 >> 32; }
@@ -464,11 +468,12 @@ Rcar3_pcie_bridge::host_init()
   // terminate cap list
   _regs[Vccap0].modify(0xfff00000, 0x00000000);
 
-#ifdef MSI_ENABLE
-  // MSI: enable
-  _regs[Pcie_msitxr] = Pcie_msitxr_msie
-                     | (0x1f << Pcie_msitxr_mmenum_shft);
-#endif
+  if (Enable_msi)
+    {
+      // MSI: enable
+      _regs[Pcie_msitxr] = Pcie_msitxr_msie
+                         | (0x1f << Pcie_msitxr_mmenum_shft);
+    }
 
   // IO / mmio /prefetchable memory disabled
   _regs[Pciconf7] = 0x000000f0; // no IO (base > limit)
@@ -740,17 +745,22 @@ Rcar3_pcie_bridge::init()
 
   d_printf(DBG_INFO, "%s: new device.\n", _prefix);
 
-  try
+  if (Enable_msi)
     {
-      init_msi();
-    }
-  catch (L4::Runtime_error &e)
-    {
-      if (e.extra_str() && e.extra_str()[0] != '\0')
-        dprintf(DBG_ERR, "%s: %s: %s\n", _prefix, e.extra_str(), e.str());
-      else
-        dprintf(DBG_ERR, "%s: %s\n", _prefix, e.str());
-      return;
+      try
+        {
+          init_msi();
+        }
+      // Errors during MSI initialization are fatal. This could change in the
+      // future.
+      catch (L4::Runtime_error &e)
+        {
+          if (e.extra_str() && e.extra_str()[0] != '\0')
+            dprintf(DBG_ERR, "%s: %s: %s\n", _prefix, e.extra_str(), e.str());
+          else
+            dprintf(DBG_ERR, "%s: %s\n", _prefix, e.str());
+          return;
+        }
     }
 
   Resource *mr;
