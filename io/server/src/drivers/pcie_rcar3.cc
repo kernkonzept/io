@@ -293,11 +293,11 @@ private:
 };
 
 // return upper 32-bit part of a 64-bit value
-static inline unsigned u64_hi(unsigned long u64)
+static inline unsigned u64_hi(l4_uint64_t u64)
 { return u64 >> 32; }
 
 // return lower 32-bit part of a 64-bit value
-static inline unsigned u64_lo(unsigned long u64)
+static inline unsigned u64_lo(l4_uint64_t u64)
 { return u64 & 0xffffffff; }
 
 class Irq_router_rs : public Resource_space
