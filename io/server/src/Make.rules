@@ -33,6 +33,7 @@ SRC_CC := main.cc res.cc phys_space.cc resource.cc hw_device.cc \
           dma_domain.cc \
           gpio.cc \
           server.cc irqs.cc debug.cc \
+          irq_server.cc \
           lua_glue.swg.cc \
           pm.cc \
           virt/vdevice.cc \
