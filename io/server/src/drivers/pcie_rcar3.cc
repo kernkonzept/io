@@ -436,7 +436,10 @@ Rcar3_pcie_bridge::host_init()
     l4_sleep(10);
 
   if (!(_regs[Pcie_physr] & 1))
-    d_printf(DBG_ERR, "ERROR: %s: PHY not ready!\n", _prefix);
+    {
+      d_printf(DBG_ERR, "ERROR: %s: PHY not ready!\n", _prefix);
+      return -L4_ENXIO;
+    }
 
   // ID setting register 1 (value reflected to Pciconf2)
   _regs[Idsetr1] = 0x6040000;
