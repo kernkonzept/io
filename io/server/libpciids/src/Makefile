@@ -27,6 +27,6 @@ update:
 	   | bzcat > pci.ids
 
 clean::
-	$(VERBOSE)$(RM) devlist.h classlist.h
+	$(VERBOSE)$(RM) devlist.h classlist.h gen-devlist
 
 .PHONY: update
