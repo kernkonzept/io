@@ -233,6 +233,12 @@ Bus::discover_bus(Hw::Device *host)
                   child->set_name_if_empty("PCI-to-Cardbus bridge");
                   b = new Pci_cardbus_bridge(child, this, hdr_type);
                 }
+              else
+                {
+                  d_printf(DBG_WARN, "Ignoring unknown PCI bridge type %02x at %08x\n",
+                           hdr_type, devfn(device, function));
+                  continue;
+                }
 
 	      l4_uint32_t buses;
 	      bool reassign_buses = false;
