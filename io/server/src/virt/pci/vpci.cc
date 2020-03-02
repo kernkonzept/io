@@ -15,11 +15,11 @@
 #include <cstring>
 #include <cstdlib>
 #include <l4/cxx/exceptions>
-#include <l4/io/pciids.h>
 #include <l4/sys/err.h>
 
 #include "debug.h"
 #include "pci.h"
+#include "pciids.h"
 #include "vpci.h"
 #include "virt/vbus_factory.h"
 

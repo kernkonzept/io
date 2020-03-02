@@ -4,7 +4,7 @@ L4DIR         ?= $(PKGDIR)/../../..
 PC_FILENAME    = libpciids
 TARGET         = libpciids.a libpciids.so
 SRC_C          = names.c
-PRIVATE_INCDIR = .
+PRIVATE_INCDIR = . $(SRC_DIR)/../include
 
 include $(L4DIR)/mk/lib.mk
 

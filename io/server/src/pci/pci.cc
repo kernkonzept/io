@@ -11,7 +11,6 @@
 #include <l4/sys/types.h>
 #include <l4/cxx/string>
 #include <l4/cxx/minmax>
-#include <l4/io/pciids.h>
 
 #include <l4/util/util.h>
 
@@ -24,6 +23,7 @@
 #include "debug.h"
 #include "main.h"
 #include "pci.h"
+#include "pciids.h"
 #include "phys_space.h"
 #include "cfg.h"
 #include "resource_provider.h"

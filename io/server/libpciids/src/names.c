@@ -10,7 +10,7 @@
 //#include <linux/pci.h>
 
 #include <stdio.h>
-#include <l4/io/pciids.h>
+#include "pciids.h"
 
 struct pci_device_info {
 	unsigned short device;

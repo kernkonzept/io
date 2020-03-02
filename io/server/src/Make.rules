@@ -64,7 +64,7 @@ REQUIRES_LIBS-$(CONFIG_L4IO_ACPI)     += acpica
 REQUIRES_LIBS                         += $(REQUIRES_LIBS-y)
 
 REQUIRES_CFLAGS = libio-vbus libio-io
-PRIVATE_INCDIR += $(SRC_DIR)
+PRIVATE_INCDIR += $(SRC_DIR) $(SRC_DIR)/../libpciids/include
 
 # implementation of lib_subdir, similar to lib_subdir.mk
 SUBDIRS += $(SUBDIRS_$(ARCH)) $(SUBDIRS_$(OSYSTEM))
