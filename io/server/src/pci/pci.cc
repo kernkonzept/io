@@ -23,7 +23,9 @@
 #include "debug.h"
 #include "main.h"
 #include "pci.h"
-#include "pciids.h"
+#ifdef CONFIG_L4IO_PCIID_DB
+# include "pciids.h"
+#endif
 #include "phys_space.h"
 #include "cfg.h"
 #include "resource_provider.h"

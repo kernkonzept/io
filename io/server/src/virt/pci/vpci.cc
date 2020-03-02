@@ -19,7 +19,9 @@
 
 #include "debug.h"
 #include "pci.h"
-#include "pciids.h"
+#ifdef CONFIG_L4IO_PCIID_DB
+# include "pciids.h"
+#endif
 #include "vpci.h"
 #include "virt/vbus_factory.h"
 
