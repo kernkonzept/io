@@ -73,9 +73,12 @@ Resource::dump(char const *ty, int indent) const
   else
     tp = nullptr;
 
-  printf("%*.s%-6s%c [%014llx-%014llx %llx]%s%s (align=%llx flags=%lx)\n",
-         indent, " ", ty, provided() ? '*' : ' ', _s, _e, (l4_uint64_t)size(),
-         tp ? " " : "", tp ? tp : "", (unsigned long long)alignment(), flags());
+  if (flags() & F_empty)
+    printf("%*.s%-6s  <EMPTY>\n", indent, " ", ty);
+  else
+    printf("%*.s%-6s%c [%014llx-%014llx %llx]%s%s (align=%llx flags=%lx)\n",
+           indent, "", ty, provided() ? '*' : ' ', _s, _e, (l4_uint64_t)size(),
+           tp ? " " : "", tp ? tp : "", (unsigned long long)alignment(), flags());
 }
 
 
