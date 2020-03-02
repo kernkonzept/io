@@ -47,9 +47,7 @@
  *   Property.mem_size_3 = 0x08000000;
  *   Property.mem_base_4 = 0x38000000; -- 4th window, see 'ranges'
  *   Property.mem_size_4 = 0x08000000;
- *   Property.irq_1      = 32 + 116;   -- 1st interrupt, see 'interrupts'
- *   Property.irq_2      = 32 + 117;   -- 2nd interrupt, see 'interrupts'
- *   Property.irq_pme    = 32 + 118;   -- 3rd interrupt, see 'interrupts'
+ *   Property.irq        = 32 + 116;   -- 1st interrupt, see 'interrupts'
  * end)
  * \endcode
  *
@@ -95,9 +93,7 @@ public:
     register_property("mem_size_3", &_mem_size_3);
     register_property("mem_base_4", &_mem_base_4);
     register_property("mem_size_4", &_mem_size_4);
-    register_property("irq_1", &_int_map[0]);
-    register_property("irq_2", &_int_map[1]);
-    register_property("irq_pme", &_int_pme);
+    register_property("irq", &_interrupt);
 
     set_name("Rcar3 PCIe root bridge");
   }
@@ -110,7 +106,7 @@ public:
   int cfg_read(Cfg_addr addr, l4_uint32_t *value, Cfg_width) override;
   int cfg_write(Cfg_addr addr, l4_uint32_t value, Cfg_width) override;
 
-  int int_map(int i) const { return _int_map[i]; }
+  int interrupt() const { return _interrupt; }
 
 private:
   int assert_prop(Int_property &prop, char const *prop_name);
@@ -130,8 +126,7 @@ private:
   Int_property _mem_size_3{~0};
   Int_property _mem_base_4{~0};
   Int_property _mem_size_4{~0};
-  Int_property _int_map[2];
-  Int_property _int_pme{~0};
+  Int_property _interrupt{~0};
 
   // PCI root bridge core memory.
   Hw::Register_block<32> _regs;
@@ -161,14 +156,12 @@ public:
       return false;
 
     unsigned pin = child->start();
-    if (pin > 1)
-      return false;
 
     auto *pd = dynamic_cast<Rcar3_pcie_bridge *>(pdev);
     if (!pd)
       return false;
 
-    int irq_nr = pd->int_map(pin);
+    int irq_nr = pd->interrupt();
     if (irq_nr < 0)
       return false;
 
@@ -226,9 +219,7 @@ Rcar3_pcie_bridge::host_init()
       || assert_prop(_mem_size_3, "mem_size_3")
       || assert_prop(_mem_base_4, "mem_base_4")
       || assert_prop(_mem_size_4, "mem_size_4")
-      || assert_prop(_int_map[0], "irq_1")
-      || assert_prop(_int_map[1], "irq_2")
-      || assert_prop(_int_pme,    "irq_pme"))
+      || assert_prop(_interrupt,  "irq"))
     return -L4_EINVAL;
 
   l4_addr_t va = res_map_iomem(_regs_base, _regs_size);
