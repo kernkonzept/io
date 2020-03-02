@@ -309,7 +309,7 @@ public:
  * Base class to define device driver properties
  *
  * This class is not intended to be used directly. Instead you should inherit
- * from this class to define your own property type if neccessary.
+ * from this class to define your own property type if necessary.
  */
 class Property
 {
@@ -374,7 +374,7 @@ public:
 /**
  * This class implements an integer property
  *
- * The value of this property is stored as a 64bit signed integer
+ * The value of this property is stored as a 64-bit signed integer
  */
 class Int_property : public Property
 {
@@ -433,7 +433,7 @@ public:
   DEVICE *dev() { return _dev; }
 };
 
-////This class implements a resource property
+/// This class implements a resource property
 class Resource_property : public Property
 {
 private:
