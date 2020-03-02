@@ -379,7 +379,7 @@ public:
 class Int_property : public Property
 {
 private:
-  l4_int64_t _i;
+  l4_int64_t _i = 0;
 
 public:
   Int_property() = default;
