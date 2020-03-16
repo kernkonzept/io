@@ -81,15 +81,15 @@ Pci_to_pci_bridge::cfg_write(int reg, l4_uint32_t v, Cfg_width o)
 
   switch (reg & ~3)
     {
-    case 0x1c:
+    case 0x1c: // Port I/O base/limit
       *(l4_uint32_t*)(_h + 0x1c) &= 0x0000f000;
       break;
-    case 0x24:
+    case 0x20: // MMIO base/limit
+      *(l4_uint32_t*)(_h + 0x20) &= 0xfff0fff0;
+      break;
+    case 0x24: // prefetchable MMIO base/limit
       *(l4_uint32_t*)(_h + 0x24) &= 0xfff0fff0;
       *(l4_uint32_t*)(_h + 0x24) |= 0x00010001;
-      break;
-    case 0x22:
-      *(l4_uint32_t*)(_h + 0x22) &= 0xfff0fff0;
       break;
     }
 
