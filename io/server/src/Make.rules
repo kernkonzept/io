@@ -21,7 +21,6 @@ SRC_CC-$(CONFIG_L4IO_PCI)  += virt/pci/vpci.cc \
                               virt/pci/vpci_virtual_root.cc \
                               virt/pci/vpci_pci_bridge.cc \
                               pci/pci.cc \
-                              pci/pci_iomem_root_bridge.cc \
                               pci/msi.cc \
                               pci/pm.cc \
                               pci/acs.cc
