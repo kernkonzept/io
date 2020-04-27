@@ -459,7 +459,7 @@ public:
 
   bool is_valid()
   {
-    return id() != 0 && version() > 0;
+    return id() != 0 && id() < 0xffff && version() > 0;
   }
 
   l4_uint32_t header()
