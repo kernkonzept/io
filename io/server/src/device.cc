@@ -260,13 +260,6 @@ Device::allocate_pending_child_resources()
 }
 
 
-void
-Generic_device::setup_resources()
-{
-  for (iterator i = begin(0); i != end(); ++i)
-    i->setup_resources();
-}
-
 bool
 Generic_device::request_child_resource(Resource *r, Device *cld)
 {

@@ -226,8 +226,6 @@ public:
   void allocate_pending_child_resources();
   void allocate_pending_resources();
 
-  virtual void setup_resources() = 0;
-
   virtual char const *name() const = 0;
   virtual char const *hid() const = 0;
 
@@ -273,7 +271,6 @@ public:
 
   bool request_child_resource(Resource *, Device *) override;
   bool alloc_child_resource(Resource *, Device *) override;
-  void setup_resources() override;
 
   int pm_suspend() override { return 0; }
   int pm_resume() override { return 0; }

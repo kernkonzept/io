@@ -185,7 +185,6 @@ int add_vbus(Vi::Device *dev)
 
   b->request_child_resources();
   b->allocate_pending_child_resources();
-  b->setup_resources();
   if (!registry->register_obj(b, b->name()).is_valid())
     {
       d_printf(DBG_WARN, "WARNING: Service registration failed: '%s'\n", b->name());
