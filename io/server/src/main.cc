@@ -197,29 +197,6 @@ int add_vbus(Vi::Device *dev)
 }
 
 
-struct Add_system_bus
-{
-  void operator () (Vi::Device *dev)
-  {
-    Vi::System_bus *b = dynamic_cast<Vi::System_bus*>(dev);
-    if (!b)
-      {
-        d_printf(DBG_ERR, "ERROR: found non system-bus device as root device, ignored\n");
-	return;
-      }
-
-    b->request_child_resources();
-    b->allocate_pending_child_resources();
-    b->setup_resources();
-    if (!registry->register_obj(b, b->name()).is_valid())
-      {
-	d_printf(DBG_WARN, "WARNING: Service registration failed: '%s'\n", b->name());
-	return;
-      }
-  }
-};
-
-
 static int
 read_config(char const *cfg_file, lua_State *lua)
 {
