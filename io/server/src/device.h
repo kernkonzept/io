@@ -24,16 +24,30 @@
 
 template<typename D> class Device_tree_mixin;
 
+/**
+ * The device tree consists of nodes with links to their parent, child and
+ * sibling nodes. If there is no parent node, this node is a root node.
+ * After setup, there must only be one root node.
+ *
+ * The parent has only one pointer to a child node.
+ * Sibling nodes have the same parent node and the same depth in the tree.
+ * The siblings form a single-linked list via their next pointer.
+ * The head of this single-linked list is the child pointer in the parent node.
+ *
+ * The depth describes the number of parent nodes until the root node is
+ * reached.
+ * The root node has depth zero.
+ */
 template< typename D >
 class Device_tree
 {
   friend class Device_tree_mixin<D>;
 
 private:
-  D *_n;
-  D *_p;
-  D *_c;
-  int _depth;
+  D *_n;        ///< next sibling node
+  D *_p;        ///< parent node
+  D *_c;        ///< child node
+  int _depth;   ///< depth of this node
 
 public:
   Device_tree() : _n(0), _p(0), _c(0), _depth(0) {}
@@ -91,14 +105,30 @@ public:
   class iterator
   {
   public:
+    /**
+     * Construct an iterator for a subtree of devices.
+     *
+     * \param p      Root node of the subtree to iterate.
+     * \param c      Node to start iterating from.
+     * \param depth  Maximum depth of the iteratable subtree relative to `p`.
+     */
     iterator(D *p, D *c, int depth = 0)
     : _p(p), _c(c), _d(depth + (p ? p->depth() : 0))
     {}
 
+    /**
+     * Construct an iterator for a subtree of devices with root node `p`.
+     *
+     * \param p      Root node of the subtree to iterate.
+     * \param depth  Maximum depth of the iteratable subtree relative to `p`.
+     *
+     * \pre `p` must not be nullptr.
+     */
     iterator(D const *p, int depth = 0)
     : _p(p), _c(p->children()), _d(depth + p->depth())
     {}
 
+    /// Construct an invalid interator.
     iterator()
     : _c(0)
     {}
@@ -117,10 +147,13 @@ public:
     D *operator -> () const { return _c; }
     D *operator * () const { return _c; }
 
+    /// Advance to next device; if there is none, return an invalid iterator.
     iterator operator ++ ()
     {
       if (!_c)
         return *this;
+
+      // This performs a limited-depth, depth-first search algorithm.
 
       if (_d > _c->depth() && _c->children())
         // go to a child if not at max depth and there are children
@@ -152,9 +185,9 @@ public:
     }
 
   private:
-    D const *_p;
-    D *_c;
-    int _d;
+    D const *_p;  ///< parent device
+    D *_c;        ///< current device or end()
+    int _d;       ///< max depth to iterate up to
   };
 };
 
