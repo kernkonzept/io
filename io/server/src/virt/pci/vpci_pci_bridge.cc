@@ -15,8 +15,11 @@ namespace Vi {
 Pci_to_pci_bridge::Pci_to_pci_bridge()
 {
   add_feature(this);
+  memset(_cfg_space, 0, sizeof(_cfg_space));
+
   _h = &_cfg_space[0];
   _h_len = sizeof(_cfg_space);
+
   cfg_hdr()->hdr_type = 1;
   cfg_hdr()->vendor_device = 0x02000400;
   cfg_hdr()->status = 0;

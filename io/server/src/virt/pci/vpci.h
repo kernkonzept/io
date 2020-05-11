@@ -374,8 +374,6 @@ public:
 
   ~Pci_virtual_dev() = 0;
 
-  Pci_virtual_dev();
-
   void set_host(Device *d) override
   { _host = d; }
 
@@ -390,9 +388,7 @@ protected:
 };
 
 inline
-Pci_virtual_dev::~Pci_virtual_dev()
-{}
-
+Pci_virtual_dev::~Pci_virtual_dev() = default;
 
 
 /**

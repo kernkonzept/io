@@ -31,11 +31,6 @@ namespace Vi {
 // Pci_virtual_dev
 // -----------------------------------------------------------------------
 
-Pci_virtual_dev::Pci_virtual_dev()
-{
-  memset(&_h, 0, sizeof(_h));
-}
-
 int
 Pci_virtual_dev::cfg_read(int reg, l4_uint32_t *v, Cfg_width order)
 {
@@ -578,8 +573,11 @@ public:
   Pci_dummy()
   {
     add_feature(this);
+    memset(_cfg_space, 0, sizeof(_cfg_space));
+
     _h = &_cfg_space[0];
     _h_len = sizeof(_cfg_space);
+
     cfg_hdr()->hdr_type = 0x80;
     cfg_hdr()->vendor_device = 0x02000400;
     cfg_hdr()->status = 0;
