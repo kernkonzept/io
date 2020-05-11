@@ -451,9 +451,9 @@ Rcar3_pcie_bridge::alloc_msi_page(void **virt, l4_addr_t *phys)
                        L4Re::Mem_alloc::Continuous));
 
   auto d = L4Re::chkcap(L4Re::Util::make_unique_cap<L4Re::Dma_space>(),
-                        "Allocate DMA dataspace cap");
+                        "Allocate DMA space cap");
   L4Re::chksys(L4Re::Env::env()->user_factory()->create(d.get()),
-               "Create DMA dataspace");
+               "Create DMA space");
   L4Re::chksys(d->associate(L4::Ipc::Cap<L4::Task>(),
                             L4Re::Dma_space::Space_attrib::Phys_space),
                "Associate DMA space for CPU physical");
