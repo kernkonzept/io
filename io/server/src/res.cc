@@ -92,6 +92,19 @@ int res_init()
   return 0;
 };
 
+/**
+ * Map physical memory range from sigma0 to the current task.
+ *
+ * \param phys  Physical address to map from.
+ * \param virt  Virtual address to map to.
+ * \param size  Size of the area to map.
+ *
+ * \pre `phys`, `virt`, and `size` are aligned to a power of two.
+ *
+ * \retval 0           Requested range mapped successfully.
+ * \retval -L4_ERANGE  Input values are not page aligned.
+ * \retval <0          Error during sigma0 request.
+ */
 static long
 map_iomem_range(l4_addr_t phys, l4_addr_t virt, l4_addr_t size)
 {
@@ -104,7 +117,8 @@ map_iomem_range(l4_addr_t phys, l4_addr_t virt, l4_addr_t size)
 
   while (size)
     {
-#if 1
+      // Search for the largest power of two page size that fits
+      // the requested region to map at once.
       while (p2sz < 22)
 	{
 	  unsigned n = p2sz + 1;
@@ -112,7 +126,7 @@ map_iomem_range(l4_addr_t phys, l4_addr_t virt, l4_addr_t size)
 	    break;
 	  ++p2sz;
 	}
-#endif
+
       l4_msg_regs_t *m = l4_utcb_mr_u(l4_utcb());
       l4_buf_regs_t *b = l4_utcb_br_u(l4_utcb());
       l4_msgtag_t tag = l4_msgtag(L4_PROTO_SIGMA0, 2, 0, 0);
