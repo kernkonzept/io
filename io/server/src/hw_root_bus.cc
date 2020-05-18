@@ -102,7 +102,8 @@ bool
 Root_mmio_rs::request(Resource *parent, Device *, Resource *child, Device *)
 {
   //printf("request resource at root level: "); child->dump();
-  if (Phys_space::space.alloc(Phys_space::Phys_region(child->start(), child->end())))
+  if (Phys_space::space.request(
+        Phys_space::Phys_region(child->start(), child->end())))
     {
       child->parent(parent);
       return true;

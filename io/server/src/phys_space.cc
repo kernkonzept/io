@@ -106,7 +106,7 @@ Phys_space::reserve(Phys_region const &r)
 }
 
 bool
-Phys_space::alloc(Phys_region const &r)
+Phys_space::request(Phys_region const &r)
 {
 
   Set::Iterator n;
