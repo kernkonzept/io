@@ -57,15 +57,15 @@ public:
    */
   void add_child(D *d, D *self)
   {
-    for (iterator i = iterator(0, d, L4VBUS_MAX_DEPTH); i != iterator(); ++i)
-      i->set_depth(i->depth() + depth() + 1);
-
     if (d->parent())
       {
          d_printf(DBG_ERR, "warning: device %s already has a parent. Ignoring.\n",
                   d->name());
          return;
       }
+
+    for (iterator i = iterator(0, d, L4VBUS_MAX_DEPTH); i != iterator(); ++i)
+      i->set_depth(i->depth() + depth() + 1);
 
     d->set_parent(self);
 
