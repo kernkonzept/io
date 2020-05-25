@@ -260,8 +260,8 @@ public:
   virtual Device *next() const = 0;
   virtual int depth() const = 0;
 
-  virtual bool request_child_resource(Resource *, Device *) = 0;
-  virtual bool alloc_child_resource(Resource *, Device *)  = 0;
+  bool request_child_resource(Resource *, Device *);
+  bool alloc_child_resource(Resource *, Device *);
 
   void request_resource(Resource *r);
   void request_resources();
@@ -311,9 +311,6 @@ public:
 
   char const *name() const override { return "(noname)"; }
   char const *hid() const override { return 0; }
-
-  bool request_child_resource(Resource *, Device *) override;
-  bool alloc_child_resource(Resource *, Device *) override;
 
   int pm_suspend() override { return 0; }
   int pm_resume() override { return 0; }
