@@ -22,9 +22,13 @@
 #include <string>
 #include <map>
 
+template<typename D> class Device_tree_mixin;
+
 template< typename D >
 class Device_tree
 {
+  friend class Device_tree_mixin<D>;
+
 private:
   D *_n;
   D *_p;
@@ -39,6 +43,7 @@ public:
   D *next() const { return _n; }
   int depth() const { return _depth; }
 
+private:
   /**
    * Set \a p as parent device
    *
@@ -82,6 +87,7 @@ public:
 
   void set_depth(int d) { _depth = d; }
 
+public:
   class iterator
   {
   public:
@@ -155,6 +161,8 @@ public:
 template< typename D >
 class Device_tree_mixin
 {
+  friend class Device_tree<D>;
+
 protected:
   Device_tree<D> _dt;
 
@@ -175,11 +183,13 @@ public:
     return 0;
   }
 
+  virtual void add_child(D *c) { _dt.add_child(c, static_cast<D*>(this)); }
+  virtual ~Device_tree_mixin() {}
+
+private:
   void set_depth(int d) { return _dt.set_depth(d); }
   void set_parent(D *p) { _dt.set_parent(p); }
   void add_sibling(D *s) { _dt.add_sibling(s); }
-  virtual void add_child(D *c) { _dt.add_child(c, static_cast<D*>(this)); }
-  virtual ~Device_tree_mixin() {}
 };
 
 class Resource_container
