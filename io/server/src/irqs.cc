@@ -54,7 +54,7 @@ int
 Kernel_irq_pin::unmask()
 {
   system_icu()->icu->unmask(_idx);
-  return -L4_EINVAL;
+  return -L4_ENOREPLY;
 }
 
 
