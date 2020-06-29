@@ -194,12 +194,6 @@ discover_pre_cb(ACPI_HANDLE obj, UINT32 nl, void *ctxt, void **)
 {
   Discover_ctxt *c = reinterpret_cast<Discover_ctxt*>(ctxt);
 
-  if (nl > c->level)
-    {
-      c->current_bus = c->last_device;
-      c->level = nl;
-    }
-
   if (nl == 1)
     return AE_OK;
 
@@ -210,12 +204,18 @@ discover_pre_cb(ACPI_HANDLE obj, UINT32 nl, void *ctxt, void **)
       return AE_OK;
     }
 
+  if (nl > c->level)
+    {
+      c->current_bus = c->last_device;
+      c->level = nl;
+    }
+
   Acpi_ptr<ACPI_DEVICE_INFO> info;
   if (!ACPI_SUCCESS(AcpiGetObjectInfo(node, info.ref())))
-    return AE_OK;
+    return AE_CTRL_DEPTH;
 
   if (info->Type != ACPI_TYPE_DEVICE && info->Type != ACPI_TYPE_PROCESSOR)
-    return AE_OK;
+    return AE_CTRL_DEPTH;
 
   l4_uint32_t adr = ~0U;
 
