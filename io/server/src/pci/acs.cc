@@ -46,12 +46,12 @@ public:
 private:
   l4_uint16_t control;
 
-  void _save(Cfg_ptr cap) override
+  void _save(Config cap) override
   {
     cap.read(Acs::Control, &control);
   }
 
-  void _restore(Cfg_ptr cap) override
+  void _restore(Config cap) override
   {
     cap.write(Acs::Control, control);
   }

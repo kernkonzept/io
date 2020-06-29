@@ -256,9 +256,7 @@ public:
   Pci_proxy_cap(Hw::Pci::If *hwf, l4_uint8_t offset)
   : Pci_capability(offset), _hwf(hwf)
   {
-    l4_uint8_t t;
-    _hwf->cfg_read(offset, &t);
-    set_id(t);
+    set_id(_hwf->config().read<l4_uint8_t>(offset));
   }
 
   int cap_read(int offs, l4_uint32_t *v, Cfg_width order) override

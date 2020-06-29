@@ -321,7 +321,7 @@ Dev::bus_nr() const
 l4_uint32_t
 Dev::checked_cmd_read()
 {
-  l4_uint32_t cs = cfg_read<l4_uint32_t>(Config::Command);
+  l4_uint32_t cs = config().read<l4_uint32_t>(Config::Command);
   if (_transp_msi)
     return _transp_msi->filter_cmd_read(cs);
 
@@ -331,7 +331,7 @@ Dev::checked_cmd_read()
 l4_uint16_t
 Dev::checked_cmd_write(l4_uint16_t mask, l4_uint16_t cmd)
 {
-  l4_uint16_t ocmd = cfg_read<l4_uint16_t>(Config::Command);
+  l4_uint16_t ocmd = config().read<l4_uint16_t>(Config::Command);
   l4_uint16_t ncmd = (ocmd & ~mask) | (cmd & mask);
 
   if (_transp_msi)
@@ -347,7 +347,7 @@ Dev::checked_cmd_write(l4_uint16_t mask, l4_uint16_t cmd)
       ncmd &= (~3U | enable_decoders);
     }
 
-  cfg_write<l4_uint16_t>(Pci::Config::Command, ncmd);
+  config().write<l4_uint16_t>(Pci::Config::Command, ncmd);
   return ncmd;
 }
 
@@ -357,11 +357,13 @@ Dev::recheck_bars(unsigned enable_decoders)
   if (!enable_decoders)
     return 0;
 
+  auto c = config();
+
   unsigned next_bar;
   for (unsigned i = 0; i < 6; i += next_bar)
     {
       l4_uint32_t const bar_addr = Pci::Config::Bar_0 + i * 4;
-      l4_uint32_t bar = cfg_read<l4_uint32_t>(bar_addr);
+      l4_uint32_t bar = c.read<l4_uint32_t>(bar_addr);
       bool const is_io_bar = bar & 1;
       bool const is_64bit  = (bar & 0x7) == 0x4;
       next_bar = is_64bit ? 2 : 1;
@@ -395,7 +397,7 @@ Dev::recheck_bars(unsigned enable_decoders)
       l4_uint64_t addr = 0;
       if (is_64bit)
         {
-          addr = cfg_read<l4_uint32_t>(bar_addr + 4);
+          addr = c.read<l4_uint32_t>(bar_addr + 4);
           addr <<= 32;
         }
 
@@ -407,8 +409,8 @@ Dev::recheck_bars(unsigned enable_decoders)
       addr = r->start();
       if (is_64bit)
         {
-          cfg_write<l4_uint32_t>(bar_addr + 4, addr >> 32);
-          if (cfg_read<l4_uint32_t>(bar_addr + 4) != addr >> 32)
+          c.write<l4_uint32_t>(bar_addr + 4, addr >> 32);
+          if (c.read<l4_uint32_t>(bar_addr + 4) != addr >> 32)
             {
               d_printf(DBG_ERR, "error: PCI BAR refused write: bar=%d\n", i);
               enable_decoders &= ~decoder;
@@ -418,8 +420,8 @@ Dev::recheck_bars(unsigned enable_decoders)
 
       bar = (bar & ~mask) | (addr & mask);
 
-      cfg_write(bar_addr, bar);
-      if (cfg_read<l4_uint32_t>(bar_addr) != bar)
+      c.write(bar_addr, bar);
+      if (c.read<l4_uint32_t>(bar_addr) != bar)
         {
           d_printf(DBG_ERR, "error: PCI BAR refused write: bar=%d\n", i);
           enable_decoders &= ~decoder;
@@ -441,7 +443,9 @@ Dev::enable_rom()
   if (!_rom)
     return false;
 
-  l4_uint32_t r = cfg_read<l4_uint32_t>(Config::Rom_address);
+  auto c = config();
+
+  l4_uint32_t r = c.read<l4_uint32_t>(Config::Rom_address);
 
   // ROM always enabled
   if (r & 1)
@@ -456,24 +460,24 @@ Dev::enable_rom()
     return true;
 
   r = rom | 1;
-  cfg_write(Config::Rom_address, r);
-  return cfg_read<l4_uint32_t>(Config::Rom_address) == r;
+  c.write(Config::Rom_address, r);
+  return c.read<l4_uint32_t>(Config::Rom_address) == r;
 }
 
 unsigned
 Dev::disable_decoders()
 {
-  l4_uint16_t v = 0;
+  auto c = config();
   // disable decoders, and mask IRQs
-  cfg_read(Config::Command, &v);
-  cfg_write(Config::Command, (v & ~3) | (1<<10));
+  l4_uint16_t v = c.read<l4_uint16_t>(Config::Command);
+  c.write<l4_uint16_t>(Config::Command, (v & ~3) | (1<<10));
   return v & 0xff;
 }
 
 void
-Dev::restore_decoders(unsigned cmd)
+Dev::restore_decoders(l4_uint16_t cmd)
 {
-  cfg_write(Config::Command, cmd, Cfg_short);
+  config().write(Config::Command, cmd);
 }
 
 Cap
@@ -496,12 +500,11 @@ Dev::find_pci_cap(unsigned char id)
       return Cap();
     }
 
-  l4_uint8_t o;
-  cfg_read(cap_ptr, &o);
+  l4_uint8_t o = config().read<l4_uint8_t>(cap_ptr);
   if (o == 0)
     return Cap();
 
-  for (Cap c = Cap(this, o); c.is_valid(); c = c.next())
+  for (Cap c = config(o); c.is_valid(); c = c.next())
     if (c.id() == id)
       return c;
 
@@ -511,16 +514,17 @@ Dev::find_pci_cap(unsigned char id)
 int
 Dev::discover_bar(int bar)
 {
+  auto c = config();
   l4_uint32_t v, x;
 
   _bars[bar] = 0;
   int r = Config::Bar_0 + bar * 4;
   l4_uint16_t cmd = disable_decoders();
 
-  cfg_read(r, &v, Cfg_long);
-  cfg_write(r, ~0U, Cfg_long);
-  cfg_read(r, &x, Cfg_long);
-  cfg_write(r, v, Cfg_long);
+  v = c.read<l4_uint32_t>(r);
+  c.write<l4_uint32_t>(r, ~0U);
+  x = c.read<l4_uint32_t>(r);
+  c.write(r, v);
 
   restore_decoders(cmd);
 
@@ -557,18 +561,18 @@ Dev::discover_bar(int bar)
       l4_uint64_t size = x & ~0x7f;
       l4_uint64_t a = v & ~0x7f;
       if (res->is_64bit())
-	{
-	  ++bar;
-	  r = 0x10 + bar * 4;
-	  cmd = disable_decoders();
-	  cfg_read(r, &v, Cfg_long);
-	  cfg_write(r, ~0U, Cfg_long);
-	  cfg_read(r, &x, Cfg_long);
-	  cfg_write(r, v, Cfg_long);
-	  restore_decoders(cmd);
-	  a |= l4_uint64_t(v) << 32;
-	  size |= l4_uint64_t(x) << 32;
-	}
+        {
+          ++bar;
+          r = 0x10 + bar * 4;
+          cmd = disable_decoders();
+          v = c.read<l4_uint32_t>(r);
+          c.write<l4_uint32_t>(r, ~0U);
+          x = c.read<l4_uint32_t>(r);
+          c.write(r, v);
+          restore_decoders(cmd);
+          a |= l4_uint64_t(v) << 32;
+          size |= l4_uint64_t(x) << 32;
+        }
 
       for (int s = 7; s < 64; ++s)
 	if ((size >> s) & 1)
@@ -616,15 +620,17 @@ Dev::discover_expansion_rom()
   l4_uint32_t v, x;
   unsigned rom_register = ((hdr_type & 0x7f) == 0) ? 12 * 4 : 14 * 4;
 
-  cfg_read(rom_register, &v, Cfg_long);
+  auto c = config();
+
+  v = c.read<l4_uint32_t>(rom_register);
 
   if (v == 0xffffffff)
     return; // no expansion ROM
 
   l4_uint16_t cmd = disable_decoders();
-  cfg_write(rom_register, ~0x7ffU, Cfg_long);
-  cfg_read(rom_register, &x, Cfg_long);
-  cfg_write(rom_register, v, Cfg_long);
+  c.write<l4_uint32_t>(rom_register, ~0x7ffU);
+  x = c.read<l4_uint32_t>(rom_register);
+  c.write<l4_uint32_t>(rom_register, v);
   restore_decoders(cmd);
 
   v &= ~0x3ff;
@@ -661,7 +667,7 @@ Dev::discover_pcie_caps()
 
   for (;;)
     {
-      Hw::Pci::Extended_cap cap(this, offset);
+      Hw::Pci::Extended_cap cap = config(offset);
 
       if (offset == 0x100 && !cap.is_valid())
         return;
@@ -682,20 +688,18 @@ Dev::discover_pcie_caps()
 void
 Dev::discover_pci_caps()
 {
+  auto c = config();
     {
-      l4_uint32_t status;
-      cfg_read(Config::Status, &status, Cfg_short);
+      l4_uint32_t status = c.read<l4_uint32_t>(Config::Status);
       if (!(status & CS_cap_list))
-	return;
+        return;
     }
 
-  l4_uint32_t cap_ptr;
-  cfg_read(Config::Capability_ptr, &cap_ptr, Cfg_byte);
+  l4_uint32_t cap_ptr = c.read<l4_uint8_t>(Config::Capability_ptr);
   cap_ptr &= ~0x3;
-  for (; cap_ptr; cfg_read(cap_ptr + 1, &cap_ptr, Cfg_byte), cap_ptr &= ~0x3)
+  for (; cap_ptr; cap_ptr = c.read<l4_uint8_t>(cap_ptr + 1) & ~0x3)
     {
-      l4_uint32_t id;
-      cfg_read(cap_ptr, &id, Cfg_byte);
+      l4_uint32_t id = c.read<l4_uint8_t>(cap_ptr);
       if (0)
         printf("  PCI-cap: ptr: %x -> %x %s %s\n", cap_ptr, id,
                Io_config::cfg->transparent_msi(host()) ? "yes" : "no",
@@ -711,7 +715,7 @@ Dev::discover_pci_caps()
           break;
         case Hw::Pci::Cap::Pcie:
           {
-            l4_uint32_t v = cfg_read<l4_uint32_t>(cap_ptr + 4);
+            l4_uint32_t v = c.read<l4_uint32_t>(cap_ptr + 4);
             _phantomfn_bits = (v >> 3) & 3;
             break;
           }
@@ -726,11 +730,11 @@ Dev::discover_resources(Hw::Device *host)
 {
   if (0)
     printf("survey ... %x.%x\n", bus()->num, host->adr());
-  l4_uint32_t v;
-  cfg_read(Config::Subsys_vendor, &v, Cfg_long);
-  subsys_ids = v;
-  cfg_read(Config::Irq_pin, &v, Cfg_byte);
-  irq_pin = v;
+
+  auto c = config();
+
+  subsys_ids = c.read<l4_uint32_t>(Config::Subsys_vendor);
+  irq_pin = c.read<l4_uint8_t>(Config::Irq_pin);
 
   if (irq_pin)
     {
@@ -740,8 +744,6 @@ Dev::discover_resources(Hw::Device *host)
       r->set_id("PIN");
       host->add_resource_rq(r);
     }
-
-  cfg_read(Config::Command, &v, Cfg_short);
 
   int bars = ((hdr_type & 0x7f) == 0) ? 6 : 2;
 
@@ -767,6 +769,7 @@ Dev::discover_resources(Hw::Device *host)
 void
 Dev::setup(Hw::Device *)
 {
+  auto c = config();
   unsigned decoders_to_enable = 0;
   for (unsigned i = 0; i < sizeof(_bars)/sizeof(_bars[0]); ++i)
     {
@@ -780,17 +783,16 @@ Dev::setup(Hw::Device *)
       int reg = 0x10 + i * 4;
       l4_uint64_t s = r->start();
       l4_uint16_t cmd = disable_decoders();
-      cfg_write(reg, s, Cfg_long);
+      c.write<l4_uint32_t>(reg, s);
       if (r->is_64bit())
-	{
-	  cfg_write(reg + 4, s >> 32, Cfg_long);
-	  ++i;
-	}
+        {
+          c.write<l4_uint32_t>(reg + 4, s >> 32);
+          ++i;
+        }
       restore_decoders(cmd);
 
 
-      l4_uint32_t v;
-      cfg_read(reg, &v, Cfg_long);
+      l4_uint32_t v = c.read<l4_uint32_t>(reg);
       l4_uint32_t mask = (r->type() == Resource::Io_res) ? ~0x3 : ~0xf;
       if (l4_uint32_t(v & mask) == l4_uint32_t(s & 0xffffffff))
         decoders_to_enable |= (r->type() == Resource::Io_res) ? 1 : 2;
@@ -807,12 +809,11 @@ Dev::setup(Hw::Device *)
 
   if (decoders_to_enable)
     {
-      l4_uint16_t v = 0;
-      cfg_read(Config::Command, &v);
+      l4_uint16_t v = c.read<l4_uint16_t>(Config::Command);
       if ((v & decoders_to_enable) != decoders_to_enable)
         {
           v = (v & ~3) | decoders_to_enable;
-          cfg_write(Config::Command, v);
+          c.write<l4_uint16_t>(Config::Command, v);
         }
     }
 }
@@ -991,27 +992,25 @@ Pci_pci_bridge_basic::Pci_pci_bridge_basic(Hw::Device *host, Bus *bus,
 void
 Pci_pci_bridge::setup_children(Hw::Device *)
 {
+  auto c = config();
   if (!mmio->empty() && mmio->valid())
     {
       l4_uint32_t v = (mmio->start() >> 16) & 0xfff0;
       v |= mmio->end() & 0xfff00000;
-      cfg_write(0x20, v, Cfg_long);
+      c.write<l4_uint32_t>(0x20, v);
       if (0)
         printf("%08x: set mmio to %08x\n", host()->adr(), v);
-      l4_uint32_t r;
-      cfg_read(0x20, &r, Cfg_long);
       if (0)
-        printf("%08x: mmio =      %08x\n", host()->adr(), r);
-      cfg_read(0x04, &r, Cfg_short);
-      r |= 3;
-      cfg_write(0x4, r, Cfg_short);
+        printf("%08x: mmio =      %08x\n", host()->adr(), c.read<l4_uint32_t>(0x20));
+
+      c.write<l4_uint16_t>(0x4, c.read<l4_uint16_t>(0x04) | 3);
     }
 
   if (!pref_mmio->empty() && pref_mmio->valid())
     {
       l4_uint32_t v = (pref_mmio->start() >> 16) & 0xfff0;
       v |= pref_mmio->end() & 0xfff00000;
-      cfg_write(0x24, v, Cfg_long);
+      c.write<l4_uint32_t>(0x24, v);
       if (0)
         printf("%08x: set pref mmio to %08x\n", host()->adr(), v);
     }
@@ -1021,10 +1020,12 @@ void
 Pci_pci_bridge::discover_resources(Hw::Device *host)
 {
 
+  auto c = config();
+
   l4_uint32_t v;
   l4_uint64_t s, e;
 
-  cfg_read(Config::Mem_base, &v, Cfg_long);
+  v = c.read<l4_uint32_t>(Config::Mem_base);
   s = (v & 0xfff0) << 16;
   e = (v & 0xfff00000) | 0xfffff;
 
@@ -1046,16 +1047,16 @@ Pci_pci_bridge::discover_resources(Hw::Device *host)
   r = new Resource_provider(Resource::Mmio_res | Resource::F_prefetchable
                             | Resource::F_can_move | Resource::F_can_resize);
   r->set_id("WIN1");
-  cfg_read(Config::Pref_mem_base, &v, Cfg_long);
+  v = c.read<l4_uint32_t>(Config::Pref_mem_base);
   s = (v & 0xfff0) << 16;
   e = (v & 0xfff00000) | 0xfffff;
 
   if ((v & 0x0f) == 1)
     {
       r->add_flags(Resource::F_width_64bit);
-      cfg_read(Config::Pref_mem_base_hi, &v, Cfg_long);
+      v = c.read<l4_uint32_t>(Config::Pref_mem_base_hi);
       s |= l4_uint64_t(v) << 32;
-      cfg_read(Config::Pref_mem_limit_hi, &v, Cfg_long);
+      v = c.read<l4_uint32_t>(Config::Pref_mem_limit_hi);
       e |= l4_uint64_t(v) << 32;
     }
 
@@ -1069,7 +1070,7 @@ Pci_pci_bridge::discover_resources(Hw::Device *host)
   r->validate();
   _host->add_resource_rq(r);
 
-  cfg_read(Config::Io_base, &v, Cfg_short);
+  v = c.read<l4_uint16_t>(Config::Io_base);
   s = (v & 0xf0) << 8;
   e = (v & 0xf000) | 0xfff;
 
@@ -1205,17 +1206,14 @@ Bus::dump(int) const
 void
 Pci_cardbus_bridge::discover_resources(Hw::Device *host)
 {
-  l4_uint32_t v;
-  cfg_read(Config::Subsys_vendor, &v, Cfg_long);
-  subsys_ids = v;
+  auto c = config();
+  subsys_ids = c.read<l4_uint32_t>(Config::Subsys_vendor);
 
   Resource *r = new Resource_provider(Resource::Mmio_res | Resource::F_can_move
                                       | Resource::F_can_resize);
   r->set_id("WIN0");
-  cfg_read(Config::Cb_mem_base_0, &v, Cfg_long);
-  r->start(v);
-  cfg_read(Config::Cb_mem_limit_0, &v, Cfg_long);
-  r->end(v);
+  r->start(c.read<l4_uint32_t>(Config::Cb_mem_base_0));
+  r->end(c.read<l4_uint32_t>(Config::Cb_mem_limit_0));
   if (!r->end())
     r->set_empty();
   r->validate();
@@ -1224,10 +1222,8 @@ Pci_cardbus_bridge::discover_resources(Hw::Device *host)
   r = new Resource_provider(Resource::Mmio_res | Resource::F_can_move
                             | Resource::F_can_resize);
   r->set_id("WIN1");
-  cfg_read(Config::Cb_mem_base_1, &v, Cfg_long);
-  r->start(v);
-  cfg_read(Config::Cb_mem_limit_1, &v, Cfg_long);
-  r->end(v);
+  r->start(c.read<l4_uint32_t>(Config::Cb_mem_base_1));
+  r->end(c.read<l4_uint32_t>(Config::Cb_mem_limit_1));
   if (!r->end())
     r->set_empty();
   r->validate();
@@ -1236,10 +1232,8 @@ Pci_cardbus_bridge::discover_resources(Hw::Device *host)
   r = new Resource_provider(Resource::Io_res | Resource::F_can_move
                             | Resource::F_can_resize);
   r->set_id("WIN2");
-  cfg_read(Config::Cb_io_base_0, &v, Cfg_long);
-  r->start(v);
-  cfg_read(Config::Cb_io_limit_0, &v, Cfg_long);
-  r->end(v);
+  r->start(c.read<l4_uint32_t>(Config::Cb_io_base_0));
+  r->end(c.read<l4_uint32_t>(Config::Cb_io_limit_0));
   if (!r->end())
     r->set_empty();
   r->validate();
@@ -1248,10 +1242,8 @@ Pci_cardbus_bridge::discover_resources(Hw::Device *host)
   r = new Resource_provider(Resource::Io_res | Resource::F_can_move
                             | Resource::F_can_resize);
   r->set_id("WIN3");
-  cfg_read(Config::Cb_io_base_1, &v, Cfg_long);
-  r->start(v);
-  cfg_read(Config::Cb_io_limit_1, &v, Cfg_long);
-  r->end(v);
+  r->start(c.read<l4_uint32_t>(Config::Cb_io_base_1));
+  r->end(c.read<l4_uint32_t>(Config::Cb_io_limit_1));
   if (!r->end())
     r->set_empty();
   r->validate();
@@ -1301,7 +1293,7 @@ Saved_config::find_cap(l4_uint8_t type)
 void
 Saved_config::save(If *dev)
 {
-  Cfg_ptr cfg(dev, 0);
+  auto cfg = dev->config();
   for (unsigned i = 0; i < 16; ++i)
     cfg.read(i * 4, &_regs.w[i]);
 
@@ -1310,7 +1302,7 @@ Saved_config::save(If *dev)
 }
 
 static void
-restore_cfg_word(Cfg_ptr cfg, l4_uint32_t value, int retry)
+restore_cfg_word(Config cfg, l4_uint32_t value, int retry)
 {
   l4_uint32_t v;
   cfg.read(0, &v);
@@ -1332,7 +1324,7 @@ restore_cfg_word(Cfg_ptr cfg, l4_uint32_t value, int retry)
 }
 
 static void
-restore_cfg_range(Cfg_ptr cfg, l4_uint32_t *saved,
+restore_cfg_range(Config cfg, l4_uint32_t *saved,
                   unsigned start, unsigned end, unsigned retry = 0)
 {
   for (unsigned i = start; i <= end; ++i)
@@ -1344,7 +1336,7 @@ Saved_config::restore(If *dev)
 {
   Saved_cap *pcie = find_cap(Cap::Pcie);
 
-  Cfg_ptr cfg(dev, 0);
+  auto cfg = dev->config();
 
   // PCI express state must be restored first
   if (pcie)

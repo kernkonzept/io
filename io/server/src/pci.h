@@ -50,175 +50,6 @@ template<> struct Cfg_type<Cfg_byte>  { typedef l4_uint8_t Type; };
 template<> struct Cfg_type<Cfg_short> { typedef l4_uint16_t Type; };
 template<> struct Cfg_type<Cfg_long>  { typedef l4_uint32_t Type; };
 
-class Cfg_addr
-{
-public:
-
-  // we store the config space address as specified in the PCI Express spec
-  Cfg_addr(unsigned char bus, unsigned char dev, unsigned char fn, unsigned reg)
-  : _a(  ((l4_uint32_t)bus << 20)
-       | ((l4_uint32_t)dev << 15)
-       | ((l4_uint32_t)fn  << 12)
-       | ((l4_uint32_t)reg))
-  {}
-
-  Cfg_addr(Cfg_addr const &dev, unsigned reg)
-  : _a((dev._a & ~0xfff) | (reg & 0xfff))
-  {}
-
-  l4_uint32_t to_compat_addr() const
-  { return (_a & 0xff) | ((_a >> 4) & 0xffff00); }
-
-  l4_uint32_t reg_offs(Cfg_width w = Cfg_byte) const
-  { return (_a & 3) & (~0UL << (unsigned long)w); }
-
-  unsigned bus() const { return (_a >> 20) & 0xff; }
-  unsigned dev() const { return (_a >> 15) & 0x1f; }
-  unsigned fn() const { return (_a >> 12) & 0x7; }
-  unsigned devfn() const { return (_a >> 12) & 0xff; }
-  unsigned reg() const { return _a & 0xfff; }
-
-  Cfg_addr operator + (unsigned reg_offs) const
-  { return Cfg_addr(_a + reg_offs); }
-
-  l4_uint32_t addr() const { return _a; }
-
-private:
-  explicit Cfg_addr(l4_uint32_t raw) : _a(raw) {}
-
-  l4_uint32_t _a;
-};
-
-class Bus : public virtual Hw::Dev_feature
-{
-public:
-  unsigned char num;
-  unsigned char subordinate;
-  enum Bus_type : unsigned char { Pci_bus, Pci_express_bus };
-  Bus_type bus_type = Pci_bus;
-  Resource *irq_router = 0;
-
-  explicit Bus(unsigned char bus, Bus_type bus_type)
-  : num(bus), subordinate(bus), bus_type(bus_type), irq_router(0)
-  {}
-
-  virtual int cfg_read(Cfg_addr addr, l4_uint32_t *value, Cfg_width) = 0;
-  virtual int cfg_write(Cfg_addr addr, l4_uint32_t value, Cfg_width) = 0;
-
-  int cfg_read(unsigned bus, l4_uint32_t devfn, l4_uint32_t reg, l4_uint32_t *value, Cfg_width w)
-  { return cfg_read(Cfg_addr(bus, devfn >> 16, devfn & 0xffff, reg), value, w); }
-
-  int cfg_write(unsigned bus, l4_uint32_t devfn, l4_uint32_t reg, l4_uint32_t value, Cfg_width w)
-  { return cfg_write(Cfg_addr(bus, devfn >> 16, devfn & 0xffff, reg), value, w); }
-
-  bool discover_bus(Hw::Device *host);
-  void dump(int) const override;
-
-  virtual void increase_subordinate(int s) = 0;
-
-  virtual ~Bus() {}
-};
-
-
-class If : public virtual Dev_feature
-{
-public:
-
-  virtual Resource *bar(int) const = 0;
-  virtual Resource *rom() const = 0;
-  virtual bool is_64bit_high_bar(int) const = 0;
-  virtual bool supports_msi() const = 0;
-  virtual bool is_bridge() const = 0;
-
-  virtual int cfg_read(l4_uint32_t reg, l4_uint32_t *value, Cfg_width) = 0;
-  virtual int cfg_write(l4_uint32_t reg, l4_uint32_t value, Cfg_width) = 0;
-  template<typename T>
-  int cfg_read(l4_uint32_t reg, T *val)
-  {
-    union
-    {
-      l4_uint32_t v;
-      T t;
-    } x;
-
-    int r = cfg_read(reg, &x.v, cfg_width<T>::width);
-    *val = x.t;
-    return r;
-  }
-
-  template<typename T>
-  int cfg_write(l4_uint32_t reg, T const &val)
-  {
-    union
-    {
-      l4_uint32_t v;
-      T t;
-    } x;
-
-    x.t = val;
-    return cfg_write(reg, x.v, cfg_width<T>::width);
-  }
-
-  template<typename T> T cfg_read(unsigned reg) { T v; cfg_read(reg, &v); return v; }
-
-  virtual l4_uint32_t vendor_device_ids() const = 0;
-  virtual l4_uint32_t class_rev() const = 0;
-  virtual l4_uint32_t subsys_vendor_ids() const = 0;
-  virtual l4_uint32_t recheck_bars(unsigned decoders) = 0;
-  virtual l4_uint32_t checked_cmd_read() = 0;
-  virtual l4_uint16_t checked_cmd_write(l4_uint16_t mask, l4_uint16_t cmd) = 0;
-  virtual bool enable_rom() = 0;
-
-  virtual unsigned bus_nr() const = 0;
-  virtual unsigned devfn() const = 0;
-  unsigned device_nr() const { return devfn() >> 3; }
-  unsigned function_nr() const { return devfn() & 7; }
-  virtual unsigned phantomfn_bits() const = 0;
-  virtual Bus *bus() const = 0;
-  virtual Io_irq_pin::Msi_src *get_msi_src() = 0;
-
-  virtual ~If() = 0;
-};
-
-inline If::~If() {}
-
-struct Pm_cap
-{
-  struct Pmc
-  {
-    l4_uint16_t raw;
-    CXX_BITFIELD_MEMBER( 0,  2, version, raw);
-    CXX_BITFIELD_MEMBER( 3,  3, pme_clock, raw);
-    CXX_BITFIELD_MEMBER( 5,  5, dsi, raw);
-    CXX_BITFIELD_MEMBER( 6,  8, aux_current, raw);
-    CXX_BITFIELD_MEMBER( 9,  9, d1, raw);
-    CXX_BITFIELD_MEMBER(10, 10, d2, raw);
-    CXX_BITFIELD_MEMBER(11, 15, pme, raw);
-    CXX_BITFIELD_MEMBER(11, 11, pme_d0, raw);
-    CXX_BITFIELD_MEMBER(12, 12, pme_d1, raw);
-    CXX_BITFIELD_MEMBER(13, 13, pme_d2, raw);
-    CXX_BITFIELD_MEMBER(14, 14, pme_d3hot, raw);
-    CXX_BITFIELD_MEMBER(15, 15, pme_d3cold, raw);
-  };
-
-  struct Pmcsr
-  {
-    l4_uint16_t raw;
-    CXX_BITFIELD_MEMBER( 0,  2, state, raw);
-    CXX_BITFIELD_MEMBER( 3,  3, no_soft_reset, raw);
-    CXX_BITFIELD_MEMBER( 8,  8, pme_enable, raw);
-    CXX_BITFIELD_MEMBER( 9, 12, data_sel, raw);
-    CXX_BITFIELD_MEMBER(13, 14, data_scale, raw);
-    CXX_BITFIELD_MEMBER(15, 15, pme_status, raw);
-  };
-
-  static l4_uint32_t pmcsr_reg(l4_uint32_t cap)
-  { return cap + 4; }
-
-  static l4_uint32_t pmc_reg(l4_uint32_t cap)
-  { return cap + 2; }
-};
-
 /**
  * Mixin for PCI config space accessors to allow typed
  * read and write.
@@ -266,6 +97,68 @@ public:
   }
 };
 
+
+class Cfg_addr
+{
+public:
+
+  // we store the config space address as specified in the PCI Express spec
+  Cfg_addr(unsigned char bus, unsigned char dev, unsigned char fn, unsigned reg)
+  : _a(  ((l4_uint32_t)bus << 20)
+       | ((l4_uint32_t)dev << 15)
+       | ((l4_uint32_t)fn  << 12)
+       | ((l4_uint32_t)reg))
+  {}
+
+  Cfg_addr(Cfg_addr const &dev, unsigned reg)
+  : _a((dev._a & ~0xfff) | (reg & 0xfff))
+  {}
+
+  l4_uint32_t to_compat_addr() const
+  { return (_a & 0xff) | ((_a >> 4) & 0xffff00); }
+
+  l4_uint32_t reg_offs(Cfg_width w = Cfg_byte) const
+  { return (_a & 3) & (~0UL << (unsigned long)w); }
+
+  unsigned bus() const { return (_a >> 20) & 0xff; }
+  unsigned dev() const { return (_a >> 15) & 0x1f; }
+  unsigned fn() const { return (_a >> 12) & 0x7; }
+  unsigned devfn() const { return (_a >> 12) & 0xff; }
+  unsigned reg() const { return _a & 0xfff; }
+
+  Cfg_addr operator + (unsigned reg_offs) const
+  { return Cfg_addr(_a + reg_offs); }
+
+  l4_uint32_t addr() const { return _a; }
+  Cfg_addr base() const { return Cfg_addr(bus(), dev(), fn(), 0); }
+
+private:
+  explicit Cfg_addr(l4_uint32_t raw) : _a(raw) {}
+
+  l4_uint32_t _a;
+};
+
+class Bus : public virtual Hw::Dev_feature
+{
+public:
+  unsigned char num;
+  unsigned char subordinate;
+  enum Bus_type : unsigned char { Pci_bus, Pci_express_bus };
+  Bus_type bus_type = Pci_bus;
+  Resource *irq_router = 0;
+
+  explicit Bus(unsigned char bus, Bus_type bus_type)
+  : num(bus), subordinate(bus), bus_type(bus_type), irq_router(0)
+  {}
+
+  virtual int cfg_read(Cfg_addr addr, l4_uint32_t *value, Cfg_width) = 0;
+  virtual int cfg_write(Cfg_addr addr, l4_uint32_t value, Cfg_width) = 0;
+  virtual void increase_subordinate(int s) = 0;
+  virtual ~Bus() {}
+
+  bool discover_bus(Hw::Device *host);
+  void dump(int) const override;
+};
 
 /**
  * Encapsulate the config space of a PCI device (without a device).
@@ -366,6 +259,7 @@ public:
 
   Bus *bus() const { return _bus; }
   Cfg_addr addr() const { return _addr; }
+  unsigned reg() const { return _addr.reg(); }
 
 private:
   Cfg_addr _addr;
@@ -373,38 +267,82 @@ private:
 };
 
 /**
- * Encapsulate the config space of PCI device object.
+ * Abstrcat interface of a generic PCI device
  */
-class Cfg_ptr : public Cfg_rw_mixin<Cfg_ptr>
+class If : public virtual Dev_feature
 {
 public:
-  explicit Cfg_ptr(If *dev, l4_uint16_t reg = 0) : _dev(dev), _reg(reg) {}
-  Cfg_ptr() = default;
+  virtual Resource *bar(int) const = 0;
+  virtual Resource *rom() const = 0;
+  virtual bool is_64bit_high_bar(int) const = 0;
+  virtual bool supports_msi() const = 0;
 
-  bool is_valid() const { return _dev; }
+  virtual int cfg_read(l4_uint32_t reg, l4_uint32_t *value, Cfg_width) = 0;
+  virtual int cfg_write(l4_uint32_t reg, l4_uint32_t value, Cfg_width) = 0;
 
-  int read(unsigned offset, l4_uint32_t *value, Cfg_width w) const
-  { return _dev->cfg_read(_reg + offset, value, w); }
+  virtual l4_uint32_t vendor_device_ids() const = 0;
+  virtual l4_uint32_t class_rev() const = 0;
+  virtual l4_uint32_t subsys_vendor_ids() const = 0;
+  virtual l4_uint32_t recheck_bars(unsigned decoders) = 0;
+  virtual l4_uint32_t checked_cmd_read() = 0;
+  virtual l4_uint16_t checked_cmd_write(l4_uint16_t mask, l4_uint16_t cmd) = 0;
+  virtual bool enable_rom() = 0;
 
-  using Cfg_rw_mixin<Cfg_ptr>::read;
+  virtual unsigned bus_nr() const = 0;
+  virtual unsigned devfn() const = 0;
+  unsigned device_nr() const { return devfn() >> 3; }
+  unsigned function_nr() const { return devfn() & 7; }
+  virtual unsigned phantomfn_bits() const = 0;
+  virtual Bus *bus() const = 0;
+  virtual Io_irq_pin::Msi_src *get_msi_src() = 0;
 
-  int write(unsigned offset, l4_uint32_t value, Cfg_width w) const
-  { return _dev->cfg_write(_reg + offset, value, w); }
+  virtual ~If() = 0;
 
-  using Cfg_rw_mixin<Cfg_ptr>::write;
+  Cfg_addr cfg_addr(unsigned reg = 0) const
+  { return Cfg_addr(bus_nr(), device_nr(), function_nr(), reg); }
 
-  Cfg_ptr operator + (unsigned offset) const
-  { return Cfg_ptr(_dev, _reg + offset); }
-
-  If *dev() const { return _dev; }
-  l4_uint16_t reg() const { return _reg; }
-
-private:
-  If *_dev = nullptr;
-  l4_uint16_t _reg = 0;
+  Config config(unsigned reg = 0)
+  { return Config(cfg_addr(reg), bus()); }
 };
 
-class Cap : public Cfg_ptr
+inline If::~If() {}
+
+struct Pm_cap
+{
+  struct Pmc
+  {
+    l4_uint16_t raw;
+    CXX_BITFIELD_MEMBER( 0,  2, version, raw);
+    CXX_BITFIELD_MEMBER( 3,  3, pme_clock, raw);
+    CXX_BITFIELD_MEMBER( 5,  5, dsi, raw);
+    CXX_BITFIELD_MEMBER( 6,  8, aux_current, raw);
+    CXX_BITFIELD_MEMBER( 9,  9, d1, raw);
+    CXX_BITFIELD_MEMBER(10, 10, d2, raw);
+    CXX_BITFIELD_MEMBER(11, 15, pme, raw);
+    CXX_BITFIELD_MEMBER(11, 11, pme_d0, raw);
+    CXX_BITFIELD_MEMBER(12, 12, pme_d1, raw);
+    CXX_BITFIELD_MEMBER(13, 13, pme_d2, raw);
+    CXX_BITFIELD_MEMBER(14, 14, pme_d3hot, raw);
+    CXX_BITFIELD_MEMBER(15, 15, pme_d3cold, raw);
+  };
+
+  struct Pmcsr
+  {
+    l4_uint16_t raw;
+    CXX_BITFIELD_MEMBER( 0,  2, state, raw);
+    CXX_BITFIELD_MEMBER( 3,  3, no_soft_reset, raw);
+    CXX_BITFIELD_MEMBER( 8,  8, pme_enable, raw);
+    CXX_BITFIELD_MEMBER( 9, 12, data_sel, raw);
+    CXX_BITFIELD_MEMBER(13, 14, data_scale, raw);
+    CXX_BITFIELD_MEMBER(15, 15, pme_status, raw);
+  };
+
+  static l4_uint32_t pmc_reg(l4_uint32_t cap)
+  { return cap + 2; }
+};
+
+
+class Cap : public Config
 {
 public:
   enum Types
@@ -429,20 +367,19 @@ public:
     l4_uint8_t r;
     read(1, &r);
     if (r)
-      return Cap(dev(), r);
+      return Cap(Config(addr().base() + r, bus()));
 
     return Cap();
   }
 
   Cap() = default;
-  Cap(Cfg_ptr const &cfg) : Cfg_ptr(cfg) {}
-  Cap(If *dev, l4_uint16_t reg) : Cfg_ptr(dev, reg) {}
+  Cap(Config const &cfg) : Config(cfg) {}
 };
 
 /**
  * Wrapper class to work with PCIe extended capabilities
  */
-class Extended_cap : public Cfg_ptr
+class Extended_cap : public Config
 {
 public:
   enum Types
@@ -454,8 +391,7 @@ public:
   };
 
   Extended_cap() = default;
-  Extended_cap(Cfg_ptr const &cfg) : Cfg_ptr(cfg) {}
-  Extended_cap(If *dev, l4_uint16_t offset) : Cfg_ptr(dev, offset) {}
+  Extended_cap(Config const &cfg) : Config(cfg) {}
 
   bool is_valid()
   {
@@ -502,8 +438,8 @@ class Saved_cap : public cxx::H_list_item_t<Saved_cap>
 public:
   Saved_cap(l4_uint8_t type, unsigned pos) : _type(type), _reg(pos) {}
   virtual ~Saved_cap() = 0;
-  void save(Cfg_ptr cfg) { _save(cfg + _reg); }
-  void restore(Cfg_ptr cfg) { _restore(cfg + _reg); }
+  void save(Config cfg) { _save(cfg + _reg); }
+  void restore(Config cfg) { _restore(cfg + _reg); }
 
   l4_uint8_t type() const { return _type; }
   unsigned cap_offset() const { return _reg; }
@@ -512,9 +448,8 @@ private:
   l4_uint8_t _type;
   unsigned   _reg;
 
-  virtual void _save(Cfg_ptr cfg) = 0;
-  virtual void _restore(Cfg_ptr cfg) = 0;
-
+  virtual void _save(Config cfg) = 0;
+  virtual void _restore(Config cfg) = 0;
 };
 
 class Saved_config
@@ -689,8 +624,6 @@ public:
     CC_int_disable = 0x0400,
   };
 
-
-
   Resource *bar(int b) const override
   {
     if (is_64bit_high_bar(b))
@@ -726,10 +659,10 @@ public:
   { return flags.msi(); }
 
   Cfg_addr cfg_addr(unsigned reg = 0) const;
-  Cap find_pci_cap(unsigned char id);
+  Config config(unsigned reg = 0) const
+  { return Config(cfg_addr(reg), _bus); }
 
-  bool is_bridge() const override
-  { return (cls_rev >> 16) == 0x0604 && (hdr_type & 0x7f) == 1; }
+  Cap find_pci_cap(unsigned char id);
 
   using If::cfg_read;
   using If::cfg_write;
@@ -766,7 +699,7 @@ public:
   { _phantomfn_bits = bits & 3; }
 
   unsigned disable_decoders();
-  void restore_decoders(unsigned cmd);
+  void restore_decoders(l4_uint16_t cmd);
 
   bool check_pme_status();
 
@@ -855,11 +788,8 @@ class Pci_pci_bridge_basic : public Bus, public Dev
 {
 public:
   unsigned char pri;
-
   using Dev::cfg_write;
   using Dev::cfg_read;
-  using Bus::cfg_write;
-  using Bus::cfg_read;
 
   /**
    * Constructor to create a new Pci_pci_bridge_basic object
@@ -875,9 +805,9 @@ public:
   {
     if (subordinate < x)
       {
-	subordinate = x;
-	cfg_write(Config::Subordinate, x, Cfg_byte);
-	_bus->increase_subordinate(x);
+        subordinate = x;
+        config().write<l4_uint8_t>(Config::Subordinate, x);
+        _bus->increase_subordinate(x);
       }
   }
 

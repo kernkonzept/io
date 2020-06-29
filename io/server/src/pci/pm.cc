@@ -15,8 +15,8 @@ Hw::Pci::Dev::check_pme_status()
   if (!_pm_cap)
     return false;
 
-  Pm_cap::Pmcsr pmcsr;
-  cfg_read(Pm_cap::pmcsr_reg(_pm_cap), &pmcsr);
+  auto pm = config(_pm_cap);
+  Pm_cap::Pmcsr pmcsr = { pm.read<l4_uint16_t>(4) };
 
   if (!pmcsr.pme_status())
     return false;
@@ -30,7 +30,7 @@ Hw::Pci::Dev::check_pme_status()
       res = true;
     }
 
-  cfg_write(Pm_cap::pmcsr_reg(_pm_cap), pmcsr);
+  pm.write<l4_uint16_t>(4, pmcsr.raw);
   return res;
 }
 

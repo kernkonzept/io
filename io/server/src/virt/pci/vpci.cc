@@ -130,13 +130,11 @@ Pci_dev_feature::dispatch(l4_umword_t, l4_uint32_t func, L4::Ipc::Iostream& ios)
 bool
 Pci_proxy_dev::scan_pci_caps()
 {
-  l4_uint8_t pci_cap;
-  _hwf->cfg_read(Hw::Pci::Config::Capability_ptr, &pci_cap);
+  l4_uint8_t pci_cap = _hwf->config().read<l4_uint8_t>(Hw::Pci::Config::Capability_ptr);
   bool is_pci_express = false;
   while (pci_cap)
     {
-      l4_uint16_t cap;
-      _hwf->cfg_read(pci_cap, &cap);
+      l4_uint16_t cap = _hwf->config().read<l4_uint16_t>(pci_cap);
       switch (cap & 0xff)
         {
         case Hw::Pci::Cap::Pcie:
@@ -162,7 +160,7 @@ Pci_proxy_dev::scan_pcie_caps()
   l4_uint16_t offset = 0x100;
   for (;;)
     {
-      Hw::Pci::Extended_cap cap(_hwf, offset);
+      Hw::Pci::Extended_cap cap = _hwf->config(offset);
 
       // the device doesn't have extended capabilities
       if (offset == 0x100 && !cap.is_valid())
@@ -412,7 +410,7 @@ Pci_proxy_dev::cfg_read(int reg, l4_uint32_t *v, Cfg_width order)
     case 0x08: buf = p->class_rev(); break;
     case 0x04: buf = p->checked_cmd_read(); break;
     /* simulate multi function on hdr type */
-    case 0x0c: p->cfg_read(dw_reg, &buf); buf |= 0x00800000; break;
+    case 0x0c: buf = p->config().read<l4_uint32_t>(dw_reg) | 0x00800000; break;
     case 0x10: /* bars 0 to 5 */
     case 0x14:
     case 0x18:
@@ -437,7 +435,7 @@ Pci_proxy_dev::cfg_read(int reg, l4_uint32_t *v, Cfg_width order)
     case 0x28:
     case 0x3c:
                /* pass through the rest ... */
-               p->cfg_read(dw_reg, &buf);
+               buf = p->config().read<l4_uint32_t>(dw_reg);
                break;
     }
 
