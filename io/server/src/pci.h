@@ -718,6 +718,7 @@ public:
   { return Config(cfg_addr(reg), _bus); }
 
   Cap find_pci_cap(unsigned char id);
+  Extended_cap find_ext_cap(unsigned id);
 
   bool is_pcie() const
   { return cfg.pcie_cap != 0; }

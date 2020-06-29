@@ -610,6 +610,29 @@ Dev::find_pci_cap(unsigned char id)
   return Cap();
 }
 
+Extended_cap
+Dev::find_ext_cap(unsigned id)
+{
+  if (!is_pcie())
+    return Extended_cap();
+
+  l4_uint16_t offset = 0x100;
+  for (;;)
+    {
+      Hw::Pci::Extended_cap cap = config(offset);
+
+      if (!cap.is_valid())
+        return Extended_cap();
+
+      if (cap.id() == id)
+        return cap;
+
+      offset = cap.next();
+      if (!offset)
+        return Extended_cap();
+    }
+}
+
 int
 Dev::discover_bar(int bar)
 {
