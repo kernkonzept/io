@@ -38,8 +38,8 @@ static std::vector<Root_bridge *> __pci_root_bridge;
 class Pci_cardbus_bridge : public Pci_pci_bridge_basic
 {
 public:
-  Pci_cardbus_bridge(Hw::Device *host, Bus *bus, l4_uint8_t hdr_type)
-  : Pci_pci_bridge_basic(host, bus, hdr_type)
+  Pci_cardbus_bridge(Hw::Device *host, Bus *bus, Config_cache const &cfg)
+  : Pci_pci_bridge_basic(host, bus, cfg)
   {}
 
   void discover_resources(Hw::Device *host) override;
@@ -177,8 +177,209 @@ devfn(unsigned dev, unsigned fn)
 
 } // end of local stuff
 
+void
+Config_cache::_discover_pci_caps(Config const &c)
+{
+  if (!cap_list)
+    return;
 
-bool
+  l4_uint8_t cap_ptr = c.read<l4_uint8_t>(cap_list) & ~0x3;
+  while (cap_ptr)
+    {
+      l4_uint16_t cl = c.read<l4_uint16_t>(cap_ptr);
+      l4_uint8_t id  = cl & 0xff;
+
+      switch (id)
+        {
+        case Hw::Pci::Cap::Pm:
+          pm_cap = cap_ptr;
+          break;
+
+        case Hw::Pci::Cap::Pcie:
+          pcie_cap = cap_ptr;
+          pcie_type = (c.read<l4_uint16_t>(pcie_cap + 2) >> 4) & 0xf;
+          break;
+
+        default:
+          break;
+        }
+
+      cap_ptr = (cl >> 8) & 0xfc;
+    }
+}
+
+
+void
+Config_cache::fill(l4_uint32_t _vendor_device, Config const &c)
+{
+  vendor_device = _vendor_device;
+
+  cls_rev    = c.read<l4_uint32_t>(Config::Class_rev);
+  hdr_type   = c.read<l4_uint8_t>(Config::Header_type);
+
+  switch (type())
+    {
+    case 0:
+      subsys_ids = c.read<l4_uint32_t>(Config::Subsys_vendor);
+      cap_list = 0x34;
+      break;
+
+    case 1: // PCI-PCI bridge
+      cap_list = 0x34;
+      break;
+
+    case 2: // PCI-CardBus bridge
+      subsys_ids = c.read<l4_uint32_t>(0x40);
+      cap_list = 0x14;
+      break;
+    }
+
+  l4_uint16_t status = c.read<l4_uint16_t>(Config::Status);
+
+  if (!(status & 0x10))
+    cap_list = 0; // no PCI caps if this bit is zero...
+
+  irq_pin    = c.read<l4_uint8_t>(Config::Irq_pin);
+  _discover_pci_caps(c);
+}
+
+static Pci_pci_bridge_basic *
+create_pci_pci_bridge(Bus *bus, Config const &cfg, Config_cache const &cc, Hw::Device *hw)
+{
+  if (cc.type() != 1)
+    {
+      d_printf(DBG_WARN,
+               "ignoring PCI-PCI bridge with invalid header type: %u (%08x)\n",
+               (unsigned)cc.type(), hw->adr());
+      return nullptr;
+    }
+
+  Pci_pci_bridge_basic *b = nullptr;
+  if (cc.pcie_cap)
+    {
+      switch (cc.pcie_type)
+        {
+        case 0x4: // Root Port of PCI Express Root Complex
+        case 0x6: // Downstream Port of PCI Express Switch
+        case 0x5: // Upstream Port of PCI Express Switch
+          b = new Pci_pci_bridge(hw, bus, cc);
+          b->bus_type = Bus::Pci_express_bus;
+          break;
+
+        default:
+          // all other ids are either no busses or
+          // legacy PCI/PCI-X busses
+          b = new Pci_pci_bridge(hw, bus, cc);
+          break;
+        }
+    }
+  else
+    b = new Pci_pci_bridge(hw, bus, cc);
+
+  b->check_bus_config();
+  hw->set_name_if_empty("PCI-to-PCI bridge");
+  return b;
+}
+
+static Pci_pci_bridge_basic *
+create_pci_cardbus_bridge(Bus *bus, Config const &cfg, Config_cache const &cc, Hw::Device *hw)
+{
+  if (cc.type() != 2)
+    {
+      d_printf(DBG_WARN,
+               "ignoring PCI-Cardbus bridge with invalid header type: %u (%08x)\n",
+               (unsigned)cc.type(), hw->adr());
+      return nullptr;
+    }
+
+  hw->set_name_if_empty("PCI-to-Cardbus bridge");
+  auto b = new Pci_cardbus_bridge(hw, bus, cc);
+  b->check_bus_config();
+  return b;
+}
+
+static Dev *
+create_pci_bridge(Bus *bus, Config const &cfg, Config_cache const &cc, Hw::Device *hw)
+{
+  switch (cc.sub_class())
+    {
+    case 0x4: return create_pci_pci_bridge(bus, cfg, cc, hw);
+    case 0x7: return create_pci_cardbus_bridge(bus, cfg, cc, hw);
+    default:
+      if (cc.type() != 0)
+        {
+          d_printf(DBG_WARN,
+                   "ignoring PCI bridge with invalid header type: %u (%08x)\n",
+                   (unsigned)cc.type(), hw->adr());
+          return nullptr;
+        }
+
+      hw->set_name_if_empty("PCI device");
+      return new Dev(hw, bus, cc);
+    }
+}
+
+void
+Bus::discover_device(Hw::Device *host_bus, int devnum)
+{
+  Dev *d = discover_func(host_bus, devnum, 0);
+  if (!d)
+    return;
+
+  // look for functions in PCI style
+  if (d->cfg.is_multi_function())
+    for (int function = 1; function < 8; ++function)
+      discover_func(host_bus, devnum, function);
+}
+
+Dev *
+Bus::discover_func(Hw::Device *host_bus, int device, int function)
+{
+  Config config(Cfg_addr(num, device, function, 0), this);
+
+  l4_uint32_t vendor = config.read<l4_uint32_t>(Config::Vendor);
+  if ((vendor & 0xffff) == 0xffff)
+    return nullptr;
+
+  Hw::Device *child = host_bus->get_child_dev_adr(devfn(device, function), true);
+
+  // skip device if we already were here
+  if (Dev *dev = child->find_feature<Dev>())
+    return dev;
+
+  Config_cache cc;
+  cc.fill(vendor, config);
+
+  Dev *d;
+  if (cc.base_class() == 0x6) // bridge
+    {
+      d = create_pci_bridge(this, config, cc, child);
+      if (!d)
+        return nullptr;
+    }
+  else
+    {
+      child->set_name_if_empty("PCI device");
+      d = new Dev(child, this, cc);
+    }
+
+  child->add_feature(d);
+
+  // discover the resources of the new PCI device
+  // NOTE: we do this here to have all child resources discovered and
+  // requested before the call to allocate_pending_resources in
+  // hw_device.cc which can then recursively try to allocate resources
+  // that were not preset
+  d->discover_resources(child);
+
+  // go down the PCI hierarchy recursively,
+  // to assign bus numbers (if not yet assigned) the right way
+  d->discover_bus(child);
+
+  return d;
+}
+
+void
 Bus::discover_bus(Hw::Device *host)
 {
   if (!irq_router)
@@ -189,130 +390,28 @@ Bus::discover_bus(Hw::Device *host)
       irq_router = r;
     }
 
-  bool found = false;
+  discover_devices(host);
+}
 
-  for (int device = 0; device < 32; ++device)
-    {
-      int funcs = 1;
-      for (int function = 0; function < funcs; ++function)
-	{
-          Config config(Cfg_addr(num, device, function, 0), this);
-	  l4_uint32_t vendor = config.read<l4_uint32_t>(Config::Vendor);
-	  if ((vendor & 0xffff) == 0xffff)
-            {
-              if (function == 0)
-                break;
-              else
-	        continue;
-            }
-
-          l4_uint32_t _class = config.read<l4_uint32_t>(Config::Class_rev);
-
-          l4_uint8_t hdr_type = config.read<l4_uint8_t>(Config::Header_type);
-
-          if (hdr_type & 0x80)
-            funcs = 8;
-
-	  Hw::Device *child = host->get_child_dev_adr(devfn(device, function), true);
-
-          // skip device if we already were here
-          if (child->find_feature<Dev>())
-            continue;
-
-          found |= true;
-
-	  Dev *d;
-	  if ((_class >> 16) == 0x0604 || (_class >> 16) == 0x0607)
-	    {
-	      Pci_pci_bridge_basic *b = 0;
-	      if ((hdr_type & 0x7f) == 1)
-                {
-                  child->set_name_if_empty("PCI-to-PCI bridge");
-                  b = new Pci_pci_bridge(child, this, hdr_type);
-                }
-	      else if((hdr_type & 0x7f) == 2)
-                {
-                  child->set_name_if_empty("PCI-to-Cardbus bridge");
-                  b = new Pci_cardbus_bridge(child, this, hdr_type);
-                }
-              else
-                {
-                  d_printf(DBG_WARN, "Ignoring unknown PCI bridge type %02x at %08x\n",
-                           hdr_type, devfn(device, function));
-                  continue;
-                }
-
-	      l4_uint32_t buses;
-	      bool reassign_buses = false;
-
-	      buses = config.read<l4_uint32_t>(Config::Primary);
-
-	      if ((buses & 0xff) != num
-	          || ((buses >> 8) & 0xff) <= num)
-		reassign_buses = true;
-
-	      if (reassign_buses)
-		{
-		  unsigned new_so = subordinate + 1;
-		  b->pri = num;
-		  b->num = new_so;
-		  b->subordinate = b->num;
-
-		  buses = (buses & 0xff000000)
-		    | ((l4_uint32_t)(b->pri))
-		    | ((l4_uint32_t)(b->num) << 8)
-		    | ((l4_uint32_t)(b->subordinate) << 16);
-
-		  config.write(Config::Primary, buses);
-		  increase_subordinate(new_so);
-		}
-	      else
-		{
-		  b->pri = buses & 0xff;
-		  b->num = (buses >> 8) & 0xff;
-		  b->subordinate = (buses >> 16) & 0xff;
-		}
-
-	      d = b;
-	    }
-	  else
-            {
-              child->set_name_if_empty("PCI device");
-              d = new Dev(child, this, hdr_type);
-            }
-
-	  child->add_feature(d);
-
-	  d->vendor_device = vendor;
-	  d->cls_rev = _class;
-
-          // discover the resources of the new PCI device
-          // NOTE: we do this here to have all child resources discovered and
-          // requested before the call to allocate_pending_resources in
-          // hw_device.cc which can then recursively try to allocate resources
-          // that were not preset
-          d->discover_resources(child);
-
-          // go down the PCI hierarchy recursively,
-          // to assign bus numbers (if not yet assigned) the right way
-          d->discover_bus(child);
-	}
-    }
-  return found;
+void
+Bus::discover_devices(Hw::Device *host)
+{
+  for (int device = 0; device <= 31; ++device)
+    discover_device(host, device);
 }
 
 
 l4_uint32_t
 Dev::vendor_device_ids() const
-{ return vendor_device; }
+{ return cfg.vendor_device; }
 
 l4_uint32_t
 Dev::class_rev() const
-{ return cls_rev; }
+{ return cfg.cls_rev; }
 
 l4_uint32_t
 Dev::subsys_vendor_ids() const
-{ return subsys_ids; }
+{ return cfg.subsys_ids; }
 
 unsigned
 Dev::bus_nr() const
@@ -485,7 +584,7 @@ Dev::find_pci_cap(unsigned char id)
 {
   l4_uint32_t cap_ptr;
 
-  switch (hdr_type & 0x7f)
+  switch (cfg.type())
     {
     case 0:
     case 1:
@@ -496,7 +595,7 @@ Dev::find_pci_cap(unsigned char id)
       break;
     default:
       d_printf(DBG_WARN, "warning: %s: unknown hdr_type: %u\n",
-                         __func__, hdr_type);
+                         __func__, cfg.type());
       return Cap();
     }
 
@@ -618,7 +717,7 @@ Dev::discover_expansion_rom()
     return;
 
   l4_uint32_t v, x;
-  unsigned rom_register = ((hdr_type & 0x7f) == 0) ? 12 * 4 : 14 * 4;
+  unsigned rom_register = (cfg.type() == 0) ? 12 * 4 : 14 * 4;
 
   auto c = config();
 
@@ -706,10 +805,6 @@ Dev::discover_pci_caps()
                system_icu()->info.supports_msi() ? "yes" : "no" );
       switch (id)
         {
-        case Hw::Pci::Cap::Pm:
-          _pm_cap = cap_ptr;
-          break;
-
         case Hw::Pci::Cap::Msi:
           parse_msi_cap(cfg_addr(cap_ptr));
           break;
@@ -731,21 +826,16 @@ Dev::discover_resources(Hw::Device *host)
   if (0)
     printf("survey ... %x.%x\n", bus()->num, host->adr());
 
-  auto c = config();
-
-  subsys_ids = c.read<l4_uint32_t>(Config::Subsys_vendor);
-  irq_pin = c.read<l4_uint8_t>(Config::Irq_pin);
-
-  if (irq_pin)
+  if (cfg.irq_pin)
     {
       Resource * r = new Resource(Resource::Irq_res | Resource::F_relative
                                   | Resource::F_hierarchical,
-                                  irq_pin - 1, irq_pin - 1);
+                                  cfg.irq_pin - 1, cfg.irq_pin - 1);
       r->set_id("PIN");
       host->add_resource_rq(r);
     }
 
-  int bars = ((hdr_type & 0x7f) == 0) ? 6 : 2;
+  int bars = cfg.nbars();
 
   for (int bar = 0; bar < bars;)
     bar = discover_bar(bar);
@@ -863,7 +953,7 @@ Dev::match_cid(cxx::String const &_cid) const
 	  if (l < 0 || l > 6 || l % 2)
 	    return false;
 
-	  if ((cls_rev >> (8 + (6-l) * 4)) == _csr)
+	  if ((cfg.cls_rev >> (8 + (6-l) * 4)) == _csr)
 	    continue;
 	  else
 	    return false;
@@ -875,7 +965,7 @@ Dev::match_cid(cxx::String const &_cid) const
 	  if (tok.len() != 2 || tok.from_hex(&r) != 2)
 	    return false;
 
-	  if (r != (cls_rev & 0xff))
+	  if (r != (cfg.cls_rev & 0xff))
 	    return false;
 	}
       else if (tok.starts_with("VEN_"))
@@ -885,7 +975,7 @@ Dev::match_cid(cxx::String const &_cid) const
 	  if (tok.len() != 4 || tok.from_hex(&v) != 4)
 	    return false;
 
-	  if ((vendor_device & 0xffff) != v)
+	  if ((cfg.vendor_device & 0xffff) != v)
 	    return false;
 	}
       else if (tok.starts_with("DEV_"))
@@ -895,7 +985,7 @@ Dev::match_cid(cxx::String const &_cid) const
 	  if (tok.len() != 4 || tok.from_hex(&d) != 4)
 	    return false;
 
-	  if (((vendor_device >> 16) & 0xffff) != d)
+	  if (((cfg.vendor_device >> 16) & 0xffff) != d)
 	    return false;
 	}
       else if (tok.starts_with("SUBSYS_"))
@@ -904,7 +994,7 @@ Dev::match_cid(cxx::String const &_cid) const
 	  tok = tok.substr(7);
 	  if (tok.len() != 8 || tok.from_hex(&s) != 8)
 	    return false;
-	  if (subsys_ids != s)
+	  if (cfg.subsys_ids != s)
 	    return false;
 	}
       else if (tok.starts_with("ADR_"))
@@ -962,32 +1052,39 @@ Dev::match_cid(cxx::String const &_cid) const
   return true;
 }
 
-Pci_pci_bridge_basic::Pci_pci_bridge_basic(Hw::Device *host, Bus *bus,
-                                           l4_uint8_t hdr_type)
-: Bus(0, Pci_bus), Dev(host, bus, hdr_type), pri(0)
+void
+Pci_pci_bridge_basic::check_bus_config()
 {
-  if (bus->bus_type == Pci_express_bus)
-    {
-      Cap pcie = find_pci_cap(Cap::Pcie);
-      if (pcie.is_valid())
-        {
-          l4_uint16_t r2; pcie.read(2, &r2);
-          switch ((r2 >> 4) & 0xf) // device/type
-            {
-            case 0x4: // Root Port of PCI Express Root Complex
-            case 0x5: // Upstream Port of PCI Express Switch
-            case 0x6: // Downstream Port of PCI Express Switch
-              bus_type = Bus::Pci_express_bus;
-              break;
-            default:
-              // all other ids are either no busses or
-              // legacy PCI/PCI-X busses
-              break;
-            }
-        }
-    }
-}
+  auto c = config();
 
+  // the config space address for bus config is the same in
+  // type 1 and type 2
+  l4_uint32_t b = c.read<l4_uint32_t>(Config::Primary);
+
+  l4_uint8_t pb = b & 0xff;
+  l4_uint8_t sb = (b >> 8) & 0xff;
+  l4_uint8_t so = (b >> 16) & 0xff;
+
+  // set internal attributes
+  pri = pb;
+  num = sb;
+  subordinate = so;
+
+  if (pb == bus()->num && sb > bus()->num)
+    return; // nothing to do primary and secondary bus numbers are sane.
+
+  unsigned new_so = bus()->subordinate + 1;
+  pri = bus()->num;
+  num = new_so;
+  subordinate = new_so;
+  b &= 0xff000000;
+  b |= static_cast<l4_uint32_t>(pri);
+  b |= static_cast<l4_uint32_t>(num) << 8;
+  b |= static_cast<l4_uint32_t>(subordinate) << 16;
+
+  c.write(Config::Primary, b);
+  bus()->increase_subordinate(new_so);
+}
 
 void
 Pci_pci_bridge::setup_children(Hw::Device *)
@@ -1159,24 +1256,24 @@ Dev::dump(int indent) const
 {
   char const *classname = "";
 
-  if (cls_rev >> 24 < sizeof(pci_classes)/sizeof(pci_classes[0]))
-    classname = pci_classes[cls_rev >> 24];
+  if (cfg.cls_rev >> 24 < sizeof(pci_classes)/sizeof(pci_classes[0]))
+    classname = pci_classes[cfg.cls_rev >> 24];
 
-  if ((cls_rev >> 24) == 0x06)
+  if ((cfg.cls_rev >> 24) == 0x06)
     {
-      unsigned sc = (cls_rev >> 16) & 0xff;
+      unsigned sc = (cfg.cls_rev >> 16) & 0xff;
       if (sc < sizeof(pci_bridges)/sizeof(pci_bridges[0]))
 	classname = pci_bridges[sc];
     }
 
   printf("%*.s%04x:%02x:%02x.%x: %s (0x%06x) [%d]\n", indent, " ",
          0, (int)_bus->num, _host->adr() >> 16, _host->adr() & 0xffff,
-         classname, cls_rev >> 8, (int)hdr_type);
+         classname, cfg.cls_rev >> 8, (int)cfg.hdr_type);
 
-  printf("%*.s0x%04x 0x%04x\n", indent + 14, " ", vendor(), device());
+  printf("%*.s0x%04x 0x%04x\n", indent + 14, " ", cfg.vendor(), cfg.device());
 #ifdef CONFIG_L4IO_PCIID_DB
   char buf[130];
-  libpciids_name_device(buf, sizeof(buf), vendor(), device());
+  libpciids_name_device(buf, sizeof(buf), cfg.vendor(), cfg.device());
   printf("%*.s%s\n", indent + 14, " ", buf);
 #endif
 #if 0
@@ -1207,7 +1304,6 @@ void
 Pci_cardbus_bridge::discover_resources(Hw::Device *host)
 {
   auto c = config();
-  subsys_ids = c.read<l4_uint32_t>(Config::Subsys_vendor);
 
   Resource *r = new Resource_provider(Resource::Mmio_res | Resource::F_can_move
                                       | Resource::F_can_resize);

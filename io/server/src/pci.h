@@ -138,6 +138,8 @@ private:
   l4_uint32_t _a;
 };
 
+class Dev;
+
 class Bus : public virtual Hw::Dev_feature
 {
 public:
@@ -156,8 +158,13 @@ public:
   virtual void increase_subordinate(int s) = 0;
   virtual ~Bus() {}
 
-  bool discover_bus(Hw::Device *host);
+  void discover_bus(Hw::Device *host);
   void dump(int) const override;
+
+protected:
+  virtual void discover_devices(Hw::Device *host);
+  void discover_device(Hw::Device *host_bus, int devnum);
+  Dev *discover_func(Hw::Device *host_bus, int devnum, int func);
 };
 
 /**
@@ -388,6 +395,7 @@ public:
     Dsn = 0x03, ///< Device Serial Number
     Pbe = 0x04, ///< Power Budgeting
     Acs = 0x0d, ///< Access Control Services
+    Ari = 0x0e, ///< Alternative Routing-ID
   };
 
   Extended_cap() = default;
@@ -521,6 +529,58 @@ struct Transparent_msi
   virtual ~Transparent_msi() = default;
 };
 
+/**
+ * Cache for often needed PCI config space infos.
+ *
+ * This cache is created and filled during device scan, and
+ * in particular, before the device node is allocated.
+ * This helps to use the PCI config space of a device node
+ * to device which kind of object needs to be allocated.
+ *
+ * Usually the config cahe is then passed to the new Pci::Dev node
+ * during construction and store in the device node.
+ */
+class Config_cache
+{
+public:
+  l4_uint32_t vendor_device = 0;
+  l4_uint32_t cls_rev = 0;
+  l4_uint32_t subsys_ids = 0;
+  l4_uint8_t  hdr_type = 0;
+  l4_uint8_t  irq_pin = 0;
+  l4_uint8_t  cap_list = 0; ///< offset of the capability pointer register
+
+  l4_uint8_t  pm_cap = 0; ///< offset of power managment cap
+  l4_uint8_t  pcie_cap = 0; ///< offset of PCIe cap
+  l4_uint8_t  pcie_type = 0; ///< type from PCIe cap if available
+
+  int vendor() const { return vendor_device & 0xffff; }
+  int device() const { return (vendor_device >> 16) & 0xffff; }
+  bool is_multi_function() const { return hdr_type & 0x80; }
+
+  int type() const { return hdr_type & 0x7f; }
+  int nbars() const
+  {
+    switch (type())
+      {
+      case 0: return 6;
+      case 1: return 2;
+      case 2: return 1;
+      default: return 0;
+      }
+  }
+
+  l4_uint8_t base_class() const { return cls_rev >> 24; }
+  l4_uint8_t sub_class() const { return (cls_rev >> 16) & 0xff; }
+  l4_uint8_t interface() const { return (cls_rev >> 8) & 0xff; }
+  l4_uint8_t rev_id() const { return cls_rev & 0xff; }
+
+  void fill(l4_uint32_t vendor_device, Config const &c);
+
+private:
+  void _discover_pci_caps(Config const &c);
+};
+
 class Dev :
   public virtual If,
   private Io_irq_pin::Msi_src
@@ -574,11 +634,7 @@ protected:
   Bus *_bus;
 
 public:
-  l4_uint32_t vendor_device;
-  l4_uint32_t cls_rev;
-  l4_uint32_t subsys_ids;
-  l4_uint8_t  hdr_type;
-  l4_uint8_t  irq_pin;
+  Config_cache const cfg;
   Flags flags;
 
 private:
@@ -586,7 +642,6 @@ private:
   Resource *_bars[6];
   Resource *_rom;
 
-  l4_uint8_t _pm_cap;
   Transparent_msi *_transp_msi = 0;
 
   Saved_config _saved_state;
@@ -645,9 +700,9 @@ public:
     return l4_addr_t(_bars[b]) == 1;
   }
 
-  explicit Dev(Hw::Device *host, Bus *bus, l4_uint8_t hdr_type)
-  : _host(host), _bus(bus), vendor_device(0), cls_rev(0), hdr_type(hdr_type),
-    _rom(0), _pm_cap(0)
+  explicit Dev(Hw::Device *host, Bus *bus, Config_cache const &cfg)
+  : _host(host), _bus(bus), cfg(cfg),
+    _rom(0)
   {
     for (unsigned i = 0; i < sizeof(_bars)/sizeof(_bars[0]); ++i)
       _bars[i] = 0;
@@ -663,6 +718,12 @@ public:
   { return Config(cfg_addr(reg), _bus); }
 
   Cap find_pci_cap(unsigned char id);
+
+  bool is_pcie() const
+  { return cfg.pcie_cap != 0; }
+
+  Cap pcie_cap()
+  { return cfg.pcie_cap ? Cap(config(cfg.pcie_cap)) : Cap(); }
 
   using If::cfg_read;
   using If::cfg_write;
@@ -682,9 +743,6 @@ public:
 
   bool match_cid(cxx::String const &cid) const override;
   void dump(int indent) const override;
-
-  int vendor() const { return vendor_device & 0xffff; }
-  int device() const { return (vendor_device >> 16) & 0xffff; }
 
   unsigned devfn() const override
   {
@@ -799,7 +857,9 @@ public:
    * \param     hdr_type  Header type that defines the layout of the PCI config
    *                      header.
    */
-  Pci_pci_bridge_basic(Hw::Device *host, Bus *bus, l4_uint8_t hdr_type);
+  Pci_pci_bridge_basic(Hw::Device *host, Bus *bus, Config_cache const &cfg)
+  : Bus(0, Pci_bus), Dev(host, bus, cfg), pri(0)
+  {}
 
   void increase_subordinate(int x) override
   {
@@ -810,6 +870,8 @@ public:
         _bus->increase_subordinate(x);
       }
   }
+
+  void check_bus_config();
 
   int cfg_read(Cfg_addr addr, l4_uint32_t *value, Cfg_width width) override
   { return _bus->cfg_read(addr, value, width); }
@@ -839,8 +901,8 @@ public:
   Resource *pref_mmio;
   Resource *io;
 
-  explicit Pci_pci_bridge(Hw::Device *host, Bus *bus, l4_uint8_t hdr_type)
-  : Pci_pci_bridge_basic(host, bus, hdr_type), mmio(0), pref_mmio(0), io(0)
+  explicit Pci_pci_bridge(Hw::Device *host, Bus *bus, Config_cache const &cfg)
+  : Pci_pci_bridge_basic(host, bus, cfg), mmio(0), pref_mmio(0), io(0)
   {}
 
   void setup_children(Hw::Device *host) override;
