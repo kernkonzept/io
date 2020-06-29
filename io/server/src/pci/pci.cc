@@ -243,6 +243,58 @@ Config_cache::fill(l4_uint32_t _vendor_device, Config const &c)
   _discover_pci_caps(c);
 }
 
+class Pcie_downstream_port : public Pci_pci_bridge
+{
+public:
+  explicit Pcie_downstream_port(Hw::Device *host, Bus *bus, Config_cache const &cfg)
+  : Pci_pci_bridge(host, bus, cfg)
+  {
+    bus_type = Bus::Pci_express_bus;
+    Cap pcie = pcie_cap();
+  }
+
+  void discover_devices(Hw::Device *host_bus)
+  {
+    Dev *d = discover_func(host_bus, 0, 0);
+    if (!d)
+      return;
+
+    Extended_cap ari = d->find_ext_cap(Extended_cap::Ari);
+    // we must check if we are the root complex or some ordinary PCIe BUS.
+    if (ari.Config::is_valid())
+      {
+        Cap pcie = pcie_cap();
+        l4_uint32_t v = pcie.read<l4_uint32_t>(0x24);
+        if (!(v & (1UL << 5)))
+          ari = Extended_cap();
+        else
+          {
+            v = pcie.read<l4_uint16_t>(0x28);
+            v |= (1UL << 5); // enable ARI forwarding
+            pcie.write<l4_uint16_t>(0x28, v);
+          }
+      }
+
+    while (ari.Config::is_valid())
+      {
+        l4_uint8_t next_func = ari.read<l4_uint8_t>(0x5);
+        if (!next_func)
+          return;
+
+        d = discover_func(host_bus, 0, next_func);
+        if (!d)
+          return;
+
+        ari = d->find_ext_cap(Extended_cap::Ari);
+      }
+
+    // look for functions in PCI style
+    if (d->cfg.is_multi_function())
+      for (int function = 1; function < 8; ++function)
+        discover_func(host_bus, 0, function);
+  }
+};
+
 static Pci_pci_bridge_basic *
 create_pci_pci_bridge(Bus *bus, Config const &cfg, Config_cache const &cc, Hw::Device *hw)
 {
@@ -261,6 +313,9 @@ create_pci_pci_bridge(Bus *bus, Config const &cfg, Config_cache const &cc, Hw::D
         {
         case 0x4: // Root Port of PCI Express Root Complex
         case 0x6: // Downstream Port of PCI Express Switch
+          b = new Pcie_downstream_port(hw, bus, cc);
+          break;
+
         case 0x5: // Upstream Port of PCI Express Switch
           b = new Pci_pci_bridge(hw, bus, cc);
           b->bus_type = Bus::Pci_express_bus;
