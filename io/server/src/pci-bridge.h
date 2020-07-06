@@ -100,7 +100,7 @@ public:
   }
 };
 
-class Pci_pci_bridge_basic : public Bridge_base, public Dev
+class Generic_bridge : public Bridge_base, public Dev
 {
 public:
   unsigned char pri;
@@ -108,16 +108,16 @@ public:
   using Dev::cfg_read;
 
   /**
-   * Constructor to create a new Pci_pci_bridge_basic object
+   * Constructor to create a new Generic_bridge object
    *
    * \param[in] host      Parent device
    * \param[in] bus       PCI bus
    * \param     hdr_type  Header type that defines the layout of the PCI config
    *                      header.
    */
-  Pci_pci_bridge_basic(Hw::Device *host, Bridge_if *bridge,
-                       Io_irq_pin::Msi_src *ext_msi,
-                       Config_cache const &cfg)
+  Generic_bridge(Hw::Device *host, Bridge_if *bridge,
+                 Io_irq_pin::Msi_src *ext_msi,
+                 Config_cache const &cfg)
   : Dev(host, bridge, ext_msi, cfg), pri(0)
   {}
 
@@ -148,17 +148,17 @@ public:
 
 };
 
-class Pci_pci_bridge : public Pci_pci_bridge_basic
+class Bridge : public Generic_bridge
 {
 public:
-  Resource *mmio;
-  Resource *pref_mmio;
-  Resource *io;
+  Resource *mmio = nullptr;
+  Resource *pref_mmio = nullptr;
+  Resource *io = nullptr;
 
-  explicit Pci_pci_bridge(Hw::Device *host, Bridge_if *bridge,
-                          Io_irq_pin::Msi_src *ext_msi,
-                          Config_cache const &cfg)
-  : Pci_pci_bridge_basic(host, bridge, ext_msi, cfg), mmio(0), pref_mmio(0), io(0)
+  explicit Bridge(Hw::Device *host, Bridge_if *bridge,
+                  Io_irq_pin::Msi_src *ext_msi,
+                  Config_cache const &cfg)
+  : Generic_bridge(host, bridge, ext_msi, cfg)
   {}
 
   void setup_children(Hw::Device *host) override;

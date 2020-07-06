@@ -47,7 +47,7 @@ Pci_pci_bridge_irq_router_rs::request(Resource *parent, ::Device *pdev,
   return res;
 }
 void
-Pci_pci_bridge_basic::check_bus_config()
+Generic_bridge::check_bus_config()
 {
   auto c = config();
 
@@ -84,7 +84,7 @@ Pci_pci_bridge_basic::check_bus_config()
 }
 
 void
-Pci_pci_bridge::setup_children(Hw::Device *)
+Bridge::setup_children(Hw::Device *)
 {
   auto c = config();
   if (!mmio->empty() && mmio->valid())
@@ -111,7 +111,7 @@ Pci_pci_bridge::setup_children(Hw::Device *)
 }
 
 void
-Pci_pci_bridge::discover_resources(Hw::Device *host)
+Bridge::discover_resources(Hw::Device *host)
 {
   if (flags.discovered())
     return;
@@ -185,12 +185,12 @@ Pci_pci_bridge::discover_resources(Hw::Device *host)
   Dev::discover_resources(host);
 }
 
-class Pcie_downstream_port : public Pci_pci_bridge
+class Pcie_downstream_port : public Bridge
 {
 public:
   explicit Pcie_downstream_port(Hw::Device *host, Bridge_if *bridge,
                                 Config_cache const &cfg)
-  : Pci_pci_bridge(host, bridge, nullptr, cfg)
+  : Bridge(host, bridge, nullptr, cfg)
   {
   }
 
@@ -242,7 +242,7 @@ public:
   }
 };
 
-class Pci_express_pci_bridge : public Pci_pci_bridge
+class Pcie_bridge : public Bridge
 {
 private:
   struct Secondary_msi_src : Io_irq_pin::Msi_src
@@ -262,14 +262,14 @@ private:
   Secondary_msi_src _bus_msi_src;
 
 public:
-  explicit Pci_express_pci_bridge(Hw::Device *host, Bridge_if *bridge,
-                                  Config_cache const &cfg)
-  : Pci_pci_bridge(host, bridge, nullptr, cfg)
+  explicit Pcie_bridge(Hw::Device *host, Bridge_if *bridge,
+                       Config_cache const &cfg)
+  : Bridge(host, bridge, nullptr, cfg)
   {}
 
   void check_bus_config() override
   {
-    Pci_pci_bridge::check_bus_config();
+    Bridge::check_bus_config();
     _bus_msi_src.secondary = num;
   }
 
@@ -283,7 +283,7 @@ public:
   {
     // using 'nullptr' triggers DMAR domains to use downstream_src_id().
     host->set_downstream_dma_domain(host->dma_domain_for(nullptr));
-    Pci_pci_bridge::discover_resources(host);
+    Bridge::discover_resources(host);
   }
 
   void discover_bus(Hw::Device *host) override
@@ -293,19 +293,20 @@ public:
   }
 };
 
-class Pci_cardbus_bridge : public Pci_pci_bridge_basic
+class Cardbus_bridge : public Generic_bridge
 {
 public:
-  Pci_cardbus_bridge(Hw::Device *host, Bridge_if *bridge,
-                     Io_irq_pin::Msi_src *ext_msi,
-                     Config_cache const &cfg)
-  : Pci_pci_bridge_basic(host, bridge, ext_msi, cfg)
+  Cardbus_bridge(Hw::Device *host, Bridge_if *bridge,
+                 Io_irq_pin::Msi_src *ext_msi,
+                 Config_cache const &cfg)
+  : Generic_bridge(host, bridge, ext_msi, cfg)
   {}
 
   void discover_resources(Hw::Device *host) override;
 };
+
 void
-Pci_cardbus_bridge::discover_resources(Hw::Device *host)
+Cardbus_bridge::discover_resources(Hw::Device *host)
 {
   if (flags.discovered())
     return ;
@@ -356,7 +357,7 @@ Pci_cardbus_bridge::discover_resources(Hw::Device *host)
 }
 
 
-static Pci_pci_bridge_basic *
+static Generic_bridge *
 create_pci_pci_bridge(Bridge_if *bridge, Io_irq_pin::Msi_src *ext_msi,
                       Config const &,
                       Config_cache const &cc,
@@ -370,7 +371,7 @@ create_pci_pci_bridge(Bridge_if *bridge, Io_irq_pin::Msi_src *ext_msi,
       return nullptr;
     }
 
-  Pci_pci_bridge_basic *b = nullptr;
+  Generic_bridge *b = nullptr;
   if (cc.pcie_cap)
     {
       switch (cc.pcie_type)
@@ -381,29 +382,29 @@ create_pci_pci_bridge(Bridge_if *bridge, Io_irq_pin::Msi_src *ext_msi,
           break;
 
         case 0x5: // Upstream Port of PCI Express Switch
-          b = new Pci_pci_bridge(hw, bridge, nullptr, cc);
+          b = new Bridge(hw, bridge, nullptr, cc);
           break;
 
         case 0x7: // PCI Express to PCI/PCI-X bridge
-          b = new Pci_express_pci_bridge(hw, bridge, cc);
+          b = new Pcie_bridge(hw, bridge, cc);
           break;
 
         default:
           // all other ids are either no busses or
           // legacy PCI/PCI-X busses
-          b = new Pci_pci_bridge(hw, bridge, ext_msi, cc);
+          b = new Bridge(hw, bridge, ext_msi, cc);
           break;
         }
     }
   else
-    b = new Pci_pci_bridge(hw, bridge, ext_msi, cc);
+    b = new Bridge(hw, bridge, ext_msi, cc);
 
   b->check_bus_config();
   hw->set_name_if_empty("PCI-to-PCI bridge");
   return b;
 }
 
-static Pci_pci_bridge_basic *
+static Generic_bridge *
 create_pci_cardbus_bridge(Bridge_if *bridge,
                           Io_irq_pin::Msi_src *ext_msi,
                           Config const &,
@@ -419,7 +420,7 @@ create_pci_cardbus_bridge(Bridge_if *bridge,
     }
 
   hw->set_name_if_empty("PCI-to-Cardbus bridge");
-  auto b = new Pci_cardbus_bridge(hw, bridge, ext_msi, cc);
+  auto b = new Cardbus_bridge(hw, bridge, ext_msi, cc);
   b->check_bus_config();
   return b;
 }
