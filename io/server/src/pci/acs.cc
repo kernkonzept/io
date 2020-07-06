@@ -7,7 +7,7 @@
  * License, version 2. Please see the COPYING-GPL-2 file for details.
  */
 
-#include "pci.h"
+#include <pci-dev.h>
 
 #include "cfg.h"
 #include "debug.h"

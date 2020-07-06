@@ -18,7 +18,8 @@
 #include <l4/sys/err.h>
 
 #include "debug.h"
-#include "pci.h"
+#include <pci-if.h>
+#include <pci-dev.h>
 #ifdef CONFIG_L4IO_PCIID_DB
 # include "pciids.h"
 #endif

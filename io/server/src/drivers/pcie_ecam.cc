@@ -89,8 +89,9 @@
 
 #include "hw_device.h"
 #include "hw_mmio_register_block.h"
-#include "pci.h"
+#include <pci-root.h>
 #include "resource_provider.h"
+#include <l4/util/util.h>
 
 namespace {
 

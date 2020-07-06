@@ -7,7 +7,7 @@
  */
 #include "cfg.h"
 #include "debug.h"
-#include "pci.h"
+#include <pci-driver.h>
 
 namespace {
 

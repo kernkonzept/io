@@ -32,7 +32,7 @@
 #include "cfg.h"
 #include "res.h"
 #include "debug.h"
-#include "pci.h"
+#include <pci-driver.h>
 #include "hw_mmio_register_block.h"
 
 namespace {

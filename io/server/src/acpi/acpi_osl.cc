@@ -16,7 +16,7 @@ __BEGIN_DECLS
 #include "acpiosxf.h"
 __END_DECLS
 
-#include "pci.h"
+#include <pci-root.h>
 #include "res.h"
 
 ACPI_STATUS

@@ -10,7 +10,7 @@
 
 #include "hw_device.h"
 #include "irqs.h"
-#include "pci.h"
+#include <pci-root.h>
 #include <functional>
 
 extern "C" {

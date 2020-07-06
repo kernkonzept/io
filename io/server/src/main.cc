@@ -23,7 +23,6 @@
 #include "hw_device.h"
 #include "server.h"
 #include "res.h"
-#include "pci.h"
 #include "platform_control.h"
 #include "__acpi.h"
 #include "virt/vbus.h"

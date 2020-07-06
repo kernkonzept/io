@@ -1,7 +1,9 @@
 #include "debug.h"
 #include "io_acpi.h"
-#include "pci.h"
 #include "__acpi.h"
+
+#include <pci-dev.h>
+#include <pci-bridge.h>
 
 #include <l4/cxx/list>
 

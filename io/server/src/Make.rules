@@ -20,7 +20,11 @@ SRC_CC-$(CONFIG_L4IO_ACPI) += $(addprefix acpi/,$(SRC_CC_ACPI))
 SRC_CC-$(CONFIG_L4IO_PCI)  += virt/pci/vpci.cc \
                               virt/pci/vpci_virtual_root.cc \
                               virt/pci/vpci_pci_bridge.cc \
-                              pci/pci.cc \
+                              pci/pci-bridge.cc \
+                              pci/pci-dev.cc \
+                              pci/pci-driver.cc \
+                              pci/pci-root.cc \
+                              pci/pci-saved-config.cc \
                               pci/msi.cc \
                               pci/pm.cc \
                               pci/acs.cc
