@@ -262,22 +262,21 @@ Resource *discover_prt(Acpi_dev *adev)
   return r;
 }
 
-struct Acpi_pci_bridge_handler : Hw::Feature_manager<Hw::Pci::Bus, Acpi_dev>
+struct Acpi_pci_bridge_handler : Hw::Feature_manager<Acpi_dev>
 {
-  bool setup(Hw::Device *dev, Hw::Pci::Bus *pci_bus,
-             Acpi_dev *acpi_dev) const override
+  bool setup(Hw::Device *dev, Acpi_dev *acpi_dev) const override
   {
-    Resource *router = discover_prt(acpi_dev);
-    if (router && !pci_bus->irq_router)
+    if (Resource *router = discover_prt(acpi_dev))
       {
-        pci_bus->irq_router = router;
+        if (dev->resources()->find_if(Resource::is_irq_provider_s))
+          {
+            d_printf(DBG_WARN, "warning: multiple IRQ routing tables for device: %s\n",
+                     dev->get_full_path().c_str());
+            delete router;
+            return false;
+          }
+
         dev->add_resource_rq(router);
-      }
-    else if(router)
-      {
-        d_printf(DBG_WARN, "warning: multiple IRQ routing tables for device: %s\n",
-                 dev->get_full_path().c_str());
-        delete router;
       }
 
     return false;

@@ -43,6 +43,16 @@ public:
    * \return The first resource with the given ID, or null_ptr if non found.
    */
   Resource *find(char const *id) const;
+
+  template<typename PRED>
+  Resource *find_if(PRED &&p) const
+  {
+    for (auto i: *this)
+      if (p(i))
+        return i;
+
+    return nullptr;
+  }
 };
 
 class Resource_space
@@ -108,6 +118,18 @@ public:
     Irq_type_falling_edge = L4_IRQ_F_NEG_EDGE   * Irq_type_base,
     Irq_type_both_edges   = L4_IRQ_F_BOTH_EDGE  * Irq_type_base,
   };
+
+  bool is_irq() const
+  { return type() == Irq_res; }
+
+  static bool is_irq_s(Resource const *r)
+  { return r && r->is_irq(); }
+
+  bool is_irq_provider() const
+  { return type() == Irq_res && provided(); }
+
+  static bool is_irq_provider_s(Resource const *r)
+  { return r && r->is_irq_provider(); }
 
   bool irq_is_level_triggered() const
   { return (_f & Irq_type_mask) & (L4_IRQ_F_LEVEL * Irq_type_base); }

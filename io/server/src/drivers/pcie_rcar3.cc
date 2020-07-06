@@ -632,7 +632,6 @@ Rcar3_pcie_bridge::init()
 
   auto *ir = new Hw::Pci::Irq_router_res<Irq_router_rs>();
   ir->set_id("IRQR");
-  irq_router = ir;
   add_resource_rq(ir);
 
   discover_bus(this);

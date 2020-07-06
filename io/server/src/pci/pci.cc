@@ -437,12 +437,13 @@ Bus::discover_func(Hw::Device *host_bus, int device, int function)
 void
 Bus::discover_bus(Hw::Device *host)
 {
-  if (!irq_router)
+  Resource *r = host->resources()->find_if(Resource::is_irq_provider_s);
+
+  if (!r)
     {
-      Resource *r = new Pci::Irq_router_res<Pci::Pci_pci_bridge_irq_router_rs>();
+      r = new Pci::Irq_router_res<Pci::Pci_pci_bridge_irq_router_rs>();
       r->set_id("IRQR");
       host->add_resource_rq(r);
-      irq_router = r;
     }
 
   discover_devices(host);

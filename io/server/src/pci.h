@@ -147,10 +147,9 @@ public:
   unsigned char subordinate;
   enum Bus_type : unsigned char { Pci_bus, Pci_express_bus };
   Bus_type bus_type = Pci_bus;
-  Resource *irq_router = 0;
 
   explicit Bus(unsigned char bus, Bus_type bus_type)
-  : num(bus), subordinate(bus), bus_type(bus_type), irq_router(0)
+  : num(bus), subordinate(bus), bus_type(bus_type)
   {}
 
   virtual int cfg_read(Cfg_addr addr, l4_uint32_t *value, Cfg_width) = 0;
