@@ -138,33 +138,59 @@ private:
   l4_uint32_t _a;
 };
 
-class Dev;
-
-class Bus : public virtual Hw::Dev_feature
+class Config_space
 {
 public:
-  unsigned char num;
-  unsigned char subordinate;
-  enum Bus_type : unsigned char { Pci_bus, Pci_express_bus };
-  Bus_type bus_type = Pci_bus;
-
-  explicit Bus(unsigned char bus, Bus_type bus_type)
-  : num(bus), subordinate(bus), bus_type(bus_type)
-  {}
-
   virtual int cfg_read(Cfg_addr addr, l4_uint32_t *value, Cfg_width) = 0;
   virtual int cfg_write(Cfg_addr addr, l4_uint32_t value, Cfg_width) = 0;
-  virtual void increase_subordinate(int s) = 0;
-  virtual ~Bus() {}
+  virtual ~Config_space() = 0;
+};
 
-  void discover_bus(Hw::Device *host, Io_irq_pin::Msi_src *ext_msi = nullptr);
-  void dump(int) const override;
+inline Config_space::~Config_space() = default;
+
+class Dev;
+
+class Bridge_if
+{
+protected:
+  ~Bridge_if() = default;
+
+public:
+  virtual unsigned alloc_bus_number() = 0;
+  virtual bool check_bus_number(unsigned bus) = 0;
+};
+
+
+class Bridge_base : public Bridge_if
+{
+public:
+  unsigned char num = 0;
+  unsigned char subordinate = 0;
+
+  Bridge_base() = default;
+
+  explicit Bridge_base(unsigned char num)
+  : num(num), subordinate(num)
+  {}
+
+  bool check_bus_number(unsigned bus_num) override
+  {
+    return bus_num <= subordinate;
+  }
+
+  virtual ~Bridge_base() = default;
+
+  void discover_bus(Hw::Device *host, Config_space *cfg,
+                    Io_irq_pin::Msi_src *ext_msi = nullptr);
+  void dump(int) const;
 
 protected:
-  virtual void discover_devices(Hw::Device *host, Io_irq_pin::Msi_src *ext_msi);
-  void discover_device(Hw::Device *host_bus, Io_irq_pin::Msi_src *ext_msi,
-                       int devnum);
-  Dev *discover_func(Hw::Device *host_bus, Io_irq_pin::Msi_src *ext_msi,
+  virtual void discover_devices(Hw::Device *host, Config_space *cfg,
+                                Io_irq_pin::Msi_src *ext_msi);
+  void discover_device(Hw::Device *host_bus, Config_space *cfg,
+                       Io_irq_pin::Msi_src *ext_msi, int devnum);
+  Dev *discover_func(Hw::Device *host_bus, Config_space *cfg,
+                     Io_irq_pin::Msi_src *ext_msi,
                      int devnum, int func);
 };
 
@@ -247,31 +273,31 @@ public:
     Cb_legacy_mode_base = 0x44,
   };
 
-  Config(Cfg_addr addr, Bus *bus) : _addr(addr), _bus(bus) {}
-  Config() : _addr(0, 0, 0, 0), _bus(0) {}
+  Config(Cfg_addr addr, Config_space *cfg) : _cfg(cfg), _addr(addr) {}
+  Config() : _addr(0, 0, 0, 0) {}
 
-  bool is_valid() const { return _bus; }
+  bool is_valid() const { return _cfg; }
 
   int read(unsigned reg, l4_uint32_t *value, Cfg_width w) const
-  { return _bus->cfg_read(_addr + reg, value, w); }
+  { return _cfg->cfg_read(_addr + reg, value, w); }
 
   using Cfg_rw_mixin<Config>::read;
 
   int write(unsigned reg, l4_uint32_t value, Cfg_width w) const
-  { return _bus->cfg_write(_addr + reg, value, w); }
+  { return _cfg->cfg_write(_addr + reg, value, w); }
 
   using Cfg_rw_mixin<Config>::write;
 
   Config operator + (unsigned offset) const
-  { return Config(_addr + offset, _bus); }
+  { return Config(_addr + offset, _cfg); }
 
-  Bus *bus() const { return _bus; }
+  Config_space *cfg_spc() const { return _cfg; }
   Cfg_addr addr() const { return _addr; }
   unsigned reg() const { return _addr.reg(); }
 
 private:
+  Config_space *_cfg = nullptr;
   Cfg_addr _addr;
-  Bus *_bus;
 };
 
 /**
@@ -301,7 +327,7 @@ public:
   unsigned device_nr() const { return devfn() >> 3; }
   unsigned function_nr() const { return devfn() & 7; }
   virtual unsigned phantomfn_bits() const = 0;
-  virtual Bus *bus() const = 0;
+  virtual Config_space *config_space() const = 0;
   virtual Io_irq_pin::Msi_src *get_msi_src() = 0;
 
   virtual ~If() = 0;
@@ -310,7 +336,7 @@ public:
   { return Cfg_addr(bus_nr(), device_nr(), function_nr(), reg); }
 
   Config config(unsigned reg = 0)
-  { return Config(cfg_addr(reg), bus()); }
+  { return Config(cfg_addr(reg), config_space()); }
 };
 
 inline If::~If() {}
@@ -375,7 +401,7 @@ public:
     l4_uint8_t r;
     read(1, &r);
     if (r)
-      return Cap(Config(addr().base() + r, bus()));
+      return Cap(Config(addr().base() + r, cfg_spc()));
 
     return Cap();
   }
@@ -496,15 +522,14 @@ private:
 
 inline Saved_cap::~Saved_cap() {};
 
-class Root_bridge : public Bus
+class Root_bridge : public Dev_feature, public Bridge_base, public Config_space
 {
 private:
   Hw::Device *_host;
 
 public:
-  explicit Root_bridge(int segment, unsigned bus_nr,
-                       Bus_type bus_type, Hw::Device *host)
-  : Bus(bus_nr, bus_type), _host(host), segment(segment)
+  explicit Root_bridge(int segment, unsigned bus_nr, Hw::Device *host)
+  : Bridge_base(bus_nr), _host(host), segment(segment)
   {}
 
 
@@ -514,10 +539,9 @@ public:
 
   void setup(Hw::Device *host) override;
 
-  void increase_subordinate(int x) override
+  unsigned alloc_bus_number() override
   {
-    if (x > subordinate)
-      subordinate = x;
+    return ++subordinate;
   }
 
   int segment;
@@ -541,7 +565,7 @@ struct Transparent_msi
  * Usually the config cahe is then passed to the new Pci::Dev node
  * during construction and store in the device node.
  */
-class Config_cache
+class Config_cache : public Config
 {
 public:
   l4_uint32_t vendor_device = 0;
@@ -623,8 +647,7 @@ protected:
   cxx::H_list_t<Msi_mgr> _msi_mgrs;
 
   Hw::Device *_host;
-  Bus *_bus;
-
+  Bridge_if *_bridge = nullptr;
   Io_irq_pin::Msi_src *_external_msi_src = nullptr;
 
 public:
@@ -694,9 +717,10 @@ public:
     return l4_addr_t(_bars[b]) == 1;
   }
 
-  explicit Dev(Hw::Device *host, Bus *bus, Msi_src *ext_msi,
-               Config_cache const &cfg)
-  : _host(host), _bus(bus), _external_msi_src(ext_msi), cfg(cfg),
+  explicit Dev(Hw::Device *host, Bridge_if *bridge,
+               Msi_src *ext_msi, Config_cache const &cfg)
+  : _host(host), _bridge(bridge),
+    _external_msi_src(ext_msi), cfg(cfg),
     _rom(0)
   {
     for (unsigned i = 0; i < sizeof(_bars)/sizeof(_bars[0]); ++i)
@@ -710,7 +734,7 @@ public:
 
   Cfg_addr cfg_addr(unsigned reg = 0) const;
   Config config(unsigned reg = 0) const
-  { return Config(cfg_addr(reg), _bus); }
+  { return cfg + reg; }
 
   Cap find_pci_cap(unsigned char id);
   Extended_cap find_ext_cap(unsigned id);
@@ -730,8 +754,8 @@ public:
   l4_uint32_t class_rev() const override;
   l4_uint32_t subsys_vendor_ids() const override;
   unsigned bus_nr() const override;
-  Bus *bus() const override
-  { return _bus; }
+  Config_space *config_space() const override
+  { return cfg.cfg_spc(); }
 
   void setup(Hw::Device *host) override;
   virtual void discover_resources(Hw::Device *host);
@@ -838,7 +862,7 @@ public:
 };
 
 
-class Pci_pci_bridge_basic : public Bus, public Dev
+class Pci_pci_bridge_basic : public Bridge_base, public Dev
 {
 public:
   unsigned char pri;
@@ -853,40 +877,35 @@ public:
    * \param     hdr_type  Header type that defines the layout of the PCI config
    *                      header.
    */
-  Pci_pci_bridge_basic(Hw::Device *host, Bus *bus,
+  Pci_pci_bridge_basic(Hw::Device *host, Bridge_if *bridge,
                        Io_irq_pin::Msi_src *ext_msi,
                        Config_cache const &cfg)
-  : Bus(0, Pci_bus), Dev(host, bus, ext_msi, cfg), pri(0)
+  : Dev(host, bridge, ext_msi, cfg), pri(0)
   {}
 
-  void increase_subordinate(int x) override
+  unsigned alloc_bus_number() override
   {
-    if (subordinate < x)
-      {
-        subordinate = x;
-        config().write<l4_uint8_t>(Config::Subordinate, x);
-        _bus->increase_subordinate(x);
-      }
+    unsigned n = _bridge->alloc_bus_number();
+    if (n == 0)
+      return 0;
+
+    subordinate = n;
+    config().write<l4_uint8_t>(Config::Subordinate, n);
+    return n;
   }
 
   virtual void check_bus_config();
 
-  int cfg_read(Cfg_addr addr, l4_uint32_t *value, Cfg_width width) override
-  { return _bus->cfg_read(addr, value, width); }
-
-  int cfg_write(Cfg_addr addr, l4_uint32_t value, Cfg_width width) override
-  { return _bus->cfg_write(addr, value, width); }
-
   void discover_bus(Hw::Device *host) override
   {
-    Bus::discover_bus(host, _external_msi_src);
+    Bridge_base::discover_bus(host, cfg.cfg_spc(), _external_msi_src);
     Dev::discover_bus(host);
   }
 
   void dump(int indent) const override
   {
     Dev::dump(indent);
-    Bus::dump(indent);
+    Bridge_base::dump(indent);
   }
 
 };
@@ -899,10 +918,10 @@ public:
   Resource *pref_mmio;
   Resource *io;
 
-  explicit Pci_pci_bridge(Hw::Device *host, Bus *bus,
+  explicit Pci_pci_bridge(Hw::Device *host, Bridge_if *bridge,
                           Io_irq_pin::Msi_src *ext_msi,
                           Config_cache const &cfg)
-  : Pci_pci_bridge_basic(host, bus, ext_msi, cfg), mmio(0), pref_mmio(0), io(0)
+  : Pci_pci_bridge_basic(host, bridge, ext_msi, cfg), mmio(0), pref_mmio(0), io(0)
   {}
 
   void setup_children(Hw::Device *host) override;
@@ -912,8 +931,8 @@ public:
 struct Port_root_bridge : public Root_bridge
 {
   explicit Port_root_bridge(int segment, unsigned bus_nr,
-                            Bus_type bus_type, Hw::Device *host)
-  : Root_bridge(segment, bus_nr, bus_type, host) {}
+                            Hw::Device *host)
+  : Root_bridge(segment, bus_nr, host) {}
 
   int cfg_read(Cfg_addr addr, l4_uint32_t *value, Cfg_width) override;
   int cfg_write(Cfg_addr addr, l4_uint32_t value, Cfg_width) override;
@@ -925,9 +944,9 @@ private:
 struct Mmio_root_bridge : public Root_bridge
 {
   explicit Mmio_root_bridge(int segment, unsigned bus_nr,
-                            Bus_type bus_type, Hw::Device *host,
+                            Hw::Device *host,
                             l4_uint64_t phys_base, unsigned num_busses)
-  : Root_bridge(segment, bus_nr, bus_type, host)
+  : Root_bridge(segment, bus_nr, host)
   {
     _mmio = res_map_iomem(phys_base, num_busses * (1 << 20));
     if (!_mmio)
@@ -953,21 +972,21 @@ inline
 int
 Dev::cfg_read(l4_uint32_t reg, l4_uint32_t *value, Cfg_width width)
 {
-  return _bus->cfg_read(cfg_addr(reg), value, width);
+  return cfg.cfg_spc()->cfg_read(cfg_addr(reg), value, width);
 }
 
 inline
 int
 Dev::cfg_write(l4_uint32_t reg, l4_uint32_t value, Cfg_width width)
 {
-  return _bus->cfg_write(cfg_addr(reg), value, width);
+  return cfg.cfg_spc()->cfg_write(cfg_addr(reg), value, width);
 }
 
 inline
 Hw::Pci::Cfg_addr
 Dev::cfg_addr(unsigned reg) const
 {
-  return Cfg_addr(bus()->num, host()->adr() >> 16, host()->adr() & 0xff, reg);
+  return cfg.addr() + reg;
 }
 
 

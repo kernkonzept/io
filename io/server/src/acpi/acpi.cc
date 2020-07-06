@@ -65,7 +65,7 @@ static unsigned _acpi_debug_level =
 static Hw::Pci::Root_bridge *
 create_port_bridge(int segment, int busnum, Hw::Device *dev)
 {
-  return new Hw::Pci::Port_root_bridge(segment, busnum, Hw::Pci::Bus::Pci_bus, dev);
+  return new Hw::Pci::Port_root_bridge(segment, busnum, dev);
 }
 
 Hw::Pci::Root_bridge *(*acpi_create_pci_root_bridge)(int segment,
@@ -750,7 +750,6 @@ setup_pci_root_mmconfig()
       unsigned num_busses = e->EndBusNumber - e->StartBusNumber + 1;
       Hw::Pci::register_root_bridge(
           new Hw::Pci::Mmio_root_bridge(e->PciSegment, e->StartBusNumber,
-                                        Hw::Pci::Bus::Pci_express_bus,
                                         0, e->Address, num_busses));
 
       acpi_create_pci_root_bridge = create_additional_mmio_bridge;
@@ -781,7 +780,7 @@ static void setup_pci_root()
 
   // fall-back to port-based bridge
   Hw::Pci::register_root_bridge(
-      new Hw::Pci::Port_root_bridge(0, 0, Hw::Pci::Bus::Pci_bus, 0));
+      new Hw::Pci::Port_root_bridge(0, 0, 0));
 }
 
 

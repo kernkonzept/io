@@ -259,7 +259,7 @@ Dev::parse_msi_cap(Cfg_addr cap_ptr)
     }
 
   d_printf(DBG_DEBUG, "Use MSI PCI device %02x:%02x:%x: pin=%x\n",
-           bus()->num, host()->adr() >> 16, host()->adr() & 0xff, msi);
+           bus_nr(), host()->adr() >> 16, host()->adr() & 0xff, msi);
 
   auto *res = new Msi_res(msi, this, cap_ptr.reg());
   flags.msi() = true;

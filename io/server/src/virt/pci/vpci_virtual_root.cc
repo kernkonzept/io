@@ -227,13 +227,11 @@ Pci_vroot_id::add_child(Device *d)
 
   if (Pci_proxy_dev *proxy = dynamic_cast<Pci_proxy_dev*>(vp))
     {
-      Hw::Pci::Pci_pci_bridge_basic const *hw_br
-	= dynamic_cast<Hw::Pci::Pci_pci_bridge_basic const *>(proxy->hwf()->bus());
-
       unsigned dn = proxy->hwf()->device_nr() & (Bus::Devs-1);
       unsigned fn = proxy->hwf()->function_nr() & (Dev::Fns-1);
+      unsigned bus_num = proxy->hwf()->bus_nr();
 
-      if (!hw_br)
+      if (bus_num == 0)
 	{
 	  // MUST be a device on the root PCI bus
 	  _bus.dev(dn)->fn(fn, vp);
@@ -241,18 +239,17 @@ Pci_vroot_id::add_child(Device *d)
 	  return;
 	}
 
-      Pci_bridge *sw_br = find_bridge(hw_br->num);
+      Pci_bridge *sw_br = find_bridge(bus_num);
       if (!sw_br)
 	{
 	  Pci_to_pci_bridge *b = new Pci_to_pci_bridge();
 	  sw_br = b;
-	  sw_br->primary(hw_br->pri);
-	  sw_br->secondary(hw_br->num);
-	  sw_br->subordinate(hw_br->subordinate);
 
-	  unsigned dn = hw_br->device_nr() & (Bus::Devs-1);
-	  unsigned fn = hw_br->function_nr() & (Dev::Fns-1);
-	  _bus.dev(dn)->fn(fn, b);
+	  b->primary(0);
+	  b->secondary(bus_num);
+	  b->subordinate(bus_num);
+
+	  _bus.dev(31)->fn(0, b);
 	  Device::add_child(b);
 	}
 

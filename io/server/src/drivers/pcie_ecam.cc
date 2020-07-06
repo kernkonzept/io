@@ -101,7 +101,7 @@ class Ecam_pcie_bridge
 public:
   explicit Ecam_pcie_bridge(int segment = 0, unsigned bus_nr = 0)
   : Hw::Device(0xffee0000), // just don't use the default 0xffffffff ID
-    Hw::Pci::Root_bridge(segment, bus_nr, Pci_express_bus, this)
+    Hw::Pci::Root_bridge(segment, bus_nr, this)
   {
     // the set of mandatory properties
     register_property("regs_base", &_regs_base);        // mandatory
@@ -364,7 +364,7 @@ Ecam_pcie_bridge::init()
   ir->set_id("IRQR");
   add_resource_rq(ir);
 
-  discover_bus(this);
+  discover_bus(this, this);
 
   Hw::Device::init();
 }
