@@ -571,9 +571,8 @@ using namespace Hw;
 class Dmar_dma_domain : public Dma_domain
 {
 public:
-  Dmar_dma_domain(Pci::Bus const *bus, Hw::Device const *dev)
-  : _bus(bus),
-    _dev(dev ? const_cast<Hw::Device*>(dev)->find_feature<Hw::Pci::Dev>() : 0)
+  Dmar_dma_domain(Io_irq_pin::Msi_src *src)
+  : _src(src)
   {}
 
   static void init()
@@ -581,11 +580,48 @@ public:
     _supports_remapping = true;
   }
 
-  void iommu_bind(L4::Cap<L4::Iommu> iommu, l4_uint64_t src)
+  int iommu_bind(L4::Cap<L4::Iommu> iommu, l4_uint64_t src)
   {
-    int r = l4_error(iommu->bind(src, _kern_dma_space));
-    if (r < 0)
-      d_printf(DBG_ERR, "error: setting DMA for device: %d\n", r);
+    ::Device::Msi_src_info src_inf(src);
+
+    unsigned phantomfn = 0;
+    if (src_inf.svt() == 1) // bind specific device
+      phantomfn = src_inf.sq();
+
+    for (unsigned i = 0; i < (1u << phantomfn); ++i)
+      {
+        int r = l4_error(iommu->bind(src | (i << (3 - phantomfn)),
+                                     _kern_dma_space));
+        if (r < 0)
+          {
+            d_printf(DBG_ERR, "error: setting DMA for device: %d\n", r);
+            return r;
+          }
+      }
+
+    return 0;
+  }
+
+  int iommu_unbind(L4::Cap<L4::Iommu> iommu, l4_uint64_t src)
+  {
+    ::Device::Msi_src_info src_inf(src);
+
+    unsigned phantomfn = 0;
+    if (src_inf.svt() == 1) // bind specific device
+      phantomfn = src_inf.sq();
+
+    for (unsigned i = 0; i < (1u << phantomfn); ++i)
+      {
+        int r = l4_error(iommu->unbind(src | (i << (3 - phantomfn)),
+                                       _kern_dma_space));
+        if (r < 0)
+          {
+            d_printf(DBG_ERR, "error: unbinding DMA for device: %d\n", r);
+            return r;
+          }
+      }
+
+    return 0;
   }
 
   void set_managed_kern_dma_space(L4::Cap<L4::Task> s) override
@@ -599,21 +635,7 @@ public:
         return;
       }
 
-    if (_dev)
-      {
-        unsigned phantomfn = _dev->phantomfn_bits();
-        unsigned devfn     = _dev->devfn();
-        devfn &= (7 >> phantomfn) | 0xf8;
-        for (unsigned i = 0; i < (1u << phantomfn); ++i)
-          {
-            iommu_bind(iommu, 0x40000
-                              | (_bus->num << 8)
-                              | devfn | (i << (3 - phantomfn)));
-          }
-      }
-    else
-      iommu_bind(iommu, 0x80000
-                        | (_bus->num << 8) | _bus->num);
+    iommu_bind(iommu, _src->get_src_info(nullptr));
   }
 
   int create_managed_kern_dma_space() override
@@ -652,35 +674,14 @@ public:
     if (set)
       {
         _kern_dma_space = dma_task;
-        int r;
-        if (_dev)
-          r = l4_error(iommu->bind(0x40000
-                                   | (_bus->num << 8)
-                                   | (_dev->device_nr() << 3)
-                                   | _dev->function_nr(), _kern_dma_space));
-        else
-          r = l4_error(iommu->bind(0x80000
-                                   | (_bus->num << 8) | _bus->num,
-                                   _kern_dma_space));
-
-        return r;
+        return iommu_bind(iommu, _src->get_src_info(nullptr));
       }
     else
       {
         if (!_kern_dma_space)
           return 0;
 
-        int r;
-        if (_dev)
-          r = l4_error(iommu->unbind(0x40000
-                                     | (_bus->num << 8)
-                                     | (_dev->device_nr() << 3)
-                                     | _dev->function_nr(), _kern_dma_space));
-        else
-          r = l4_error(iommu->unbind(0x80000
-                                     | (_bus->num << 8) | _bus->num,
-                                     _kern_dma_space));
-
+        int r = iommu_unbind(iommu, _src->get_src_info(nullptr));
         if (r < 0)
           return r;
 
@@ -691,8 +692,7 @@ public:
   }
 
 private:
-  Pci::Bus const *_bus = 0;
-  Hw::Pci::Dev const *_dev = 0;
+  Io_irq_pin::Msi_src *_src = nullptr;
 };
 
 class Dmar_dma_domain_factory : public Dma_domain_factory
@@ -700,14 +700,22 @@ class Dmar_dma_domain_factory : public Dma_domain_factory
 public:
   Dmar_dma_domain *create(Hw::Device *bridge, Hw::Device *dev) override
   {
-    Pci::Bus *pbus = bridge->find_feature<Pci::Bus>();
-    assert (pbus);
-
+    Io_irq_pin::Msi_src *s = nullptr;
     if (!dev)
-      // downstream Domain requested, only allowed for non-pcie bus
-      assert (pbus->bus_type != Hw::Pci::Bus::Pci_express_bus);
+      {
+        Pci::Dev *p = bridge->find_feature<Pci::Dev>();
+        if (!p)
+          return nullptr;
 
-    return new Dmar_dma_domain(pbus, dev);
+        s = p->get_downstream_src_id();
+      }
+    else if (Pci::Dev *p = dev->find_feature<Pci::Dev>())
+      s = p->get_msi_src();
+
+    if (!s)
+      return nullptr;
+
+    return new Dmar_dma_domain(s);
   }
 };
 

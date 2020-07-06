@@ -608,10 +608,15 @@ public:
 
   l4_uint64_t get_src_info(Msi_mgr *mgr) override
   {
-    assert (mgr);
-
-    _msi_mgrs.add(mgr);
+    if (mgr)
+      _msi_mgrs.add(mgr);
     return 0x40000 | (bus_nr() << 8) | devfn() | (_phantomfn_bits << 16);
+  }
+
+  /// Get the Msi_src for devices downstream if this is a bridge
+  virtual Msi_src *get_downstream_src_id()
+  {
+    return get_msi_src();
   }
 
 protected:

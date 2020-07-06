@@ -310,8 +310,9 @@ private:
 
     l4_uint64_t get_src_info(Msi_mgr *mgr) override
     {
-      assert (mgr);
-      _msi_mgrs.add(mgr);
+      if (mgr)
+        _msi_mgrs.add(mgr);
+
       return 0x80000 | (secondary << 8) | secondary;
     }
   };
@@ -329,9 +330,16 @@ public:
     _bus_msi_src.secondary = num;
   }
 
+  /// Devices downstream use the secondary Bus src-id
+  Io_irq_pin::Msi_src *get_downstream_src_id() override
+  {
+    return &_bus_msi_src;
+  }
+
   void discover_resources(Hw::Device *host) override
   {
-    host->set_downstream_dma_domain(host->dma_domain_for(0));
+    // using 'nullptr' triggers DMAR domains to use downstream_src_id().
+    host->set_downstream_dma_domain(host->dma_domain_for(nullptr));
     Pci_pci_bridge::discover_resources(host);
   }
 
