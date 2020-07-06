@@ -38,8 +38,10 @@ static std::vector<Root_bridge *> __pci_root_bridge;
 class Pci_cardbus_bridge : public Pci_pci_bridge_basic
 {
 public:
-  Pci_cardbus_bridge(Hw::Device *host, Bus *bus, Config_cache const &cfg)
-  : Pci_pci_bridge_basic(host, bus, cfg)
+  Pci_cardbus_bridge(Hw::Device *host, Bus *bus,
+                     Io_irq_pin::Msi_src *ext_msi,
+                     Config_cache const &cfg)
+  : Pci_pci_bridge_basic(host, bus, ext_msi, cfg)
   {}
 
   void discover_resources(Hw::Device *host) override;
@@ -247,15 +249,18 @@ class Pcie_downstream_port : public Pci_pci_bridge
 {
 public:
   explicit Pcie_downstream_port(Hw::Device *host, Bus *bus, Config_cache const &cfg)
-  : Pci_pci_bridge(host, bus, cfg)
+  : Pci_pci_bridge(host, bus, nullptr, cfg)
   {
     bus_type = Bus::Pci_express_bus;
     Cap pcie = pcie_cap();
   }
 
-  void discover_devices(Hw::Device *host_bus)
+  void discover_devices(Hw::Device *host_bus, Io_irq_pin::Msi_src *ext_msi)
   {
-    Dev *d = discover_func(host_bus, 0, 0);
+    (void) ext_msi;
+    assert (ext_msi == nullptr);
+
+    Dev *d = discover_func(host_bus, nullptr, 0, 0);
     if (!d)
       return;
 
@@ -281,7 +286,7 @@ public:
         if (!next_func)
           return;
 
-        d = discover_func(host_bus, 0, next_func);
+        d = discover_func(host_bus, nullptr, 0, next_func);
         if (!d)
           return;
 
@@ -291,12 +296,58 @@ public:
     // look for functions in PCI style
     if (d->cfg.is_multi_function())
       for (int function = 1; function < 8; ++function)
-        discover_func(host_bus, 0, function);
+        discover_func(host_bus, nullptr, 0, function);
+  }
+};
+
+class Pci_express_pci_bridge : public Pci_pci_bridge
+{
+private:
+  struct Secondary_msi_src : Io_irq_pin::Msi_src
+  {
+    cxx::H_list_t<Msi_mgr> _msi_mgrs;
+    l4_uint8_t secondary;
+
+    l4_uint64_t get_src_info(Msi_mgr *mgr) override
+    {
+      assert (mgr);
+      _msi_mgrs.add(mgr);
+      return 0x80000 | (secondary << 8) | secondary;
+    }
+  };
+
+  Secondary_msi_src _bus_msi_src;
+
+public:
+  explicit Pci_express_pci_bridge(Hw::Device *host, Bus *bus, Config_cache const &cfg)
+  : Pci_pci_bridge(host, bus, nullptr, cfg)
+  {}
+
+  void check_bus_config() override
+  {
+    Pci_pci_bridge::check_bus_config();
+    _bus_msi_src.secondary = num;
+  }
+
+  void discover_resources(Hw::Device *host) override
+  {
+    host->set_downstream_dma_domain(host->dma_domain_for(0));
+    Pci_pci_bridge::discover_resources(host);
+  }
+
+  void discover_bus(Hw::Device *host) override
+  {
+    Bus::discover_bus(host, &_bus_msi_src);
+    Dev::discover_bus(host);
   }
 };
 
 static Pci_pci_bridge_basic *
-create_pci_pci_bridge(Bus *bus, Config const &cfg, Config_cache const &cc, Hw::Device *hw)
+create_pci_pci_bridge(Bus *bus,
+                      Io_irq_pin::Msi_src *ext_msi,
+                      Config const &cfg,
+                      Config_cache const &cc,
+                      Hw::Device *hw)
 {
   if (cc.type() != 1)
     {
@@ -317,19 +368,23 @@ create_pci_pci_bridge(Bus *bus, Config const &cfg, Config_cache const &cc, Hw::D
           break;
 
         case 0x5: // Upstream Port of PCI Express Switch
-          b = new Pci_pci_bridge(hw, bus, cc);
+          b = new Pci_pci_bridge(hw, bus, nullptr, cc);
           b->bus_type = Bus::Pci_express_bus;
+          break;
+
+        case 0x7: // PCI Express to PCI/PCI-X bridge
+          b = new Pci_express_pci_bridge(hw, bus, cc);
           break;
 
         default:
           // all other ids are either no busses or
           // legacy PCI/PCI-X busses
-          b = new Pci_pci_bridge(hw, bus, cc);
+          b = new Pci_pci_bridge(hw, bus, ext_msi, cc);
           break;
         }
     }
   else
-    b = new Pci_pci_bridge(hw, bus, cc);
+    b = new Pci_pci_bridge(hw, bus, ext_msi, cc);
 
   b->check_bus_config();
   hw->set_name_if_empty("PCI-to-PCI bridge");
@@ -337,7 +392,11 @@ create_pci_pci_bridge(Bus *bus, Config const &cfg, Config_cache const &cc, Hw::D
 }
 
 static Pci_pci_bridge_basic *
-create_pci_cardbus_bridge(Bus *bus, Config const &cfg, Config_cache const &cc, Hw::Device *hw)
+create_pci_cardbus_bridge(Bus *bus,
+                          Io_irq_pin::Msi_src *ext_msi,
+                          Config const &cfg,
+                          Config_cache const &cc,
+                          Hw::Device *hw)
 {
   if (cc.type() != 2)
     {
@@ -348,18 +407,22 @@ create_pci_cardbus_bridge(Bus *bus, Config const &cfg, Config_cache const &cc, H
     }
 
   hw->set_name_if_empty("PCI-to-Cardbus bridge");
-  auto b = new Pci_cardbus_bridge(hw, bus, cc);
+  auto b = new Pci_cardbus_bridge(hw, bus, ext_msi, cc);
   b->check_bus_config();
   return b;
 }
 
 static Dev *
-create_pci_bridge(Bus *bus, Config const &cfg, Config_cache const &cc, Hw::Device *hw)
+create_pci_bridge(Bus *bus,
+                  Io_irq_pin::Msi_src *ext_msi,
+                  Config const &cfg,
+                  Config_cache const &cc,
+                  Hw::Device *hw)
 {
   switch (cc.sub_class())
     {
-    case 0x4: return create_pci_pci_bridge(bus, cfg, cc, hw);
-    case 0x7: return create_pci_cardbus_bridge(bus, cfg, cc, hw);
+    case 0x4: return create_pci_pci_bridge(bus, ext_msi, cfg, cc, hw);
+    case 0x7: return create_pci_cardbus_bridge(bus, ext_msi, cfg, cc, hw);
     default:
       if (cc.type() != 0)
         {
@@ -370,25 +433,25 @@ create_pci_bridge(Bus *bus, Config const &cfg, Config_cache const &cc, Hw::Devic
         }
 
       hw->set_name_if_empty("PCI device");
-      return new Dev(hw, bus, cc);
+      return new Dev(hw, bus, ext_msi, cc);
     }
 }
 
 void
-Bus::discover_device(Hw::Device *host_bus, int devnum)
+Bus::discover_device(Hw::Device *host_bus, Io_irq_pin::Msi_src *ext_msi, int devnum)
 {
-  Dev *d = discover_func(host_bus, devnum, 0);
+  Dev *d = discover_func(host_bus, ext_msi, devnum, 0);
   if (!d)
     return;
 
   // look for functions in PCI style
   if (d->cfg.is_multi_function())
     for (int function = 1; function < 8; ++function)
-      discover_func(host_bus, devnum, function);
+      discover_func(host_bus, ext_msi, devnum, function);
 }
 
 Dev *
-Bus::discover_func(Hw::Device *host_bus, int device, int function)
+Bus::discover_func(Hw::Device *host_bus, Io_irq_pin::Msi_src *ext_msi, int device, int function)
 {
   Config config(Cfg_addr(num, device, function, 0), this);
 
@@ -408,14 +471,14 @@ Bus::discover_func(Hw::Device *host_bus, int device, int function)
   Dev *d;
   if (cc.base_class() == 0x6) // bridge
     {
-      d = create_pci_bridge(this, config, cc, child);
+      d = create_pci_bridge(this, ext_msi, config, cc, child);
       if (!d)
         return nullptr;
     }
   else
     {
       child->set_name_if_empty("PCI device");
-      d = new Dev(child, this, cc);
+      d = new Dev(child, this, ext_msi, cc);
     }
 
   child->add_feature(d);
@@ -435,7 +498,7 @@ Bus::discover_func(Hw::Device *host_bus, int device, int function)
 }
 
 void
-Bus::discover_bus(Hw::Device *host)
+Bus::discover_bus(Hw::Device *host, Io_irq_pin::Msi_src *ext_msi)
 {
   Resource *r = host->resources()->find_if(Resource::is_irq_provider_s);
 
@@ -446,14 +509,14 @@ Bus::discover_bus(Hw::Device *host)
       host->add_resource_rq(r);
     }
 
-  discover_devices(host);
+  discover_devices(host, ext_msi);
 }
 
 void
-Bus::discover_devices(Hw::Device *host)
+Bus::discover_devices(Hw::Device *host, Io_irq_pin::Msi_src *ext_msi)
 {
   for (int device = 0; device <= 31; ++device)
-    discover_device(host, device);
+    discover_device(host, ext_msi, device);
 }
 
 
@@ -1261,9 +1324,6 @@ Pci_pci_bridge::discover_resources(Hw::Device *host)
   io = r;
   r->validate();
   _host->add_resource_rq(r);
-
-  if (cfg.pcie_type == 7) // PCIe -> PCI-X/PCI
-    host->set_downstream_dma_domain(host->dma_domain_for(0));
 
   Dev::discover_resources(host);
 }

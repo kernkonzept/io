@@ -157,13 +157,15 @@ public:
   virtual void increase_subordinate(int s) = 0;
   virtual ~Bus() {}
 
-  void discover_bus(Hw::Device *host);
+  void discover_bus(Hw::Device *host, Io_irq_pin::Msi_src *ext_msi = nullptr);
   void dump(int) const override;
 
 protected:
-  virtual void discover_devices(Hw::Device *host);
-  void discover_device(Hw::Device *host_bus, int devnum);
-  Dev *discover_func(Hw::Device *host_bus, int devnum, int func);
+  virtual void discover_devices(Hw::Device *host, Io_irq_pin::Msi_src *ext_msi);
+  void discover_device(Hw::Device *host_bus, Io_irq_pin::Msi_src *ext_msi,
+                       int devnum);
+  Dev *discover_func(Hw::Device *host_bus, Io_irq_pin::Msi_src *ext_msi,
+                     int devnum, int func);
 };
 
 /**
@@ -598,32 +600,18 @@ public:
 
   Msi_src *get_msi_src() override
   {
-    assert (bus());
+    if (_external_msi_src)
+      return _external_msi_src;
 
-    if (bus()->bus_type == Bus::Pci_express_bus)
-      return this;
-
-    // block MSI as we have a host-bridge that is not PCIe
-    Dev *bus_dev = dynamic_cast<Dev *>(bus());
-    if (!bus_dev || !bus_dev->bus())
-      return 0;
-
-    if (bus_dev->bus()->bus_type == Bus::Pci_express_bus)
-      return this;
-
-    return bus_dev->get_msi_src();
+    return this;
   }
 
   l4_uint64_t get_src_info(Msi_mgr *mgr) override
   {
     assert (mgr);
-    assert (bus());
 
     _msi_mgrs.add(mgr);
-    if (bus()->bus_type == Bus::Pci_express_bus)
-      return 0x40000 | (bus()->num << 8) | devfn() | (_phantomfn_bits << 16);
-
-    return 0x80000 | (bus()->num << 8) | bus()->subordinate;
+    return 0x40000 | (bus_nr() << 8) | devfn() | (_phantomfn_bits << 16);
   }
 
 protected:
@@ -631,6 +619,8 @@ protected:
 
   Hw::Device *_host;
   Bus *_bus;
+
+  Io_irq_pin::Msi_src *_external_msi_src = nullptr;
 
 public:
   Config_cache const cfg;
@@ -699,8 +689,9 @@ public:
     return l4_addr_t(_bars[b]) == 1;
   }
 
-  explicit Dev(Hw::Device *host, Bus *bus, Config_cache const &cfg)
-  : _host(host), _bus(bus), cfg(cfg),
+  explicit Dev(Hw::Device *host, Bus *bus, Msi_src *ext_msi,
+               Config_cache const &cfg)
+  : _host(host), _bus(bus), _external_msi_src(ext_msi), cfg(cfg),
     _rom(0)
   {
     for (unsigned i = 0; i < sizeof(_bars)/sizeof(_bars[0]); ++i)
@@ -857,8 +848,10 @@ public:
    * \param     hdr_type  Header type that defines the layout of the PCI config
    *                      header.
    */
-  Pci_pci_bridge_basic(Hw::Device *host, Bus *bus, Config_cache const &cfg)
-  : Bus(0, Pci_bus), Dev(host, bus, cfg), pri(0)
+  Pci_pci_bridge_basic(Hw::Device *host, Bus *bus,
+                       Io_irq_pin::Msi_src *ext_msi,
+                       Config_cache const &cfg)
+  : Bus(0, Pci_bus), Dev(host, bus, ext_msi, cfg), pri(0)
   {}
 
   void increase_subordinate(int x) override
@@ -871,7 +864,7 @@ public:
       }
   }
 
-  void check_bus_config();
+  virtual void check_bus_config();
 
   int cfg_read(Cfg_addr addr, l4_uint32_t *value, Cfg_width width) override
   { return _bus->cfg_read(addr, value, width); }
@@ -881,7 +874,7 @@ public:
 
   void discover_bus(Hw::Device *host) override
   {
-    Bus::discover_bus(host);
+    Bus::discover_bus(host, _external_msi_src);
     Dev::discover_bus(host);
   }
 
@@ -901,8 +894,10 @@ public:
   Resource *pref_mmio;
   Resource *io;
 
-  explicit Pci_pci_bridge(Hw::Device *host, Bus *bus, Config_cache const &cfg)
-  : Pci_pci_bridge_basic(host, bus, cfg), mmio(0), pref_mmio(0), io(0)
+  explicit Pci_pci_bridge(Hw::Device *host, Bus *bus,
+                          Io_irq_pin::Msi_src *ext_msi,
+                          Config_cache const &cfg)
+  : Pci_pci_bridge_basic(host, bus, ext_msi, cfg), mmio(0), pref_mmio(0), io(0)
   {}
 
   void setup_children(Hw::Device *host) override;
