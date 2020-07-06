@@ -1262,15 +1262,8 @@ Pci_pci_bridge::discover_resources(Hw::Device *host)
   r->validate();
   _host->add_resource_rq(r);
 
-  if (bus_type != Pci_express_bus)
-    {
-      if (bus()->bus_type != Pci_express_bus)
-        // use the DMA domain of the bridge device itself as downstream DMA
-        // domain
-        host->set_downstream_dma_domain(host->parent()->dma_domain_for(host));
-      else
-        host->set_downstream_dma_domain(host->dma_domain_for(0));
-    }
+  if (cfg.pcie_type == 7) // PCIe -> PCI-X/PCI
+    host->set_downstream_dma_domain(host->dma_domain_for(0));
 
   Dev::discover_resources(host);
 }
