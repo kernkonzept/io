@@ -323,21 +323,14 @@ Dev::find_ext_cap(unsigned id)
 int
 Dev::discover_bar(int bar)
 {
-  auto c = config();
-  l4_uint32_t v, x;
+  Cfg_bar c = config(Config::Bar_0 + bar * 4);
 
   _bars[bar] = 0;
-  int r = Config::Bar_0 + bar * 4;
   l4_uint16_t cmd = disable_decoders();
-
-  v = c.read<l4_uint32_t>(r);
-  c.write<l4_uint32_t>(r, ~0U);
-  x = c.read<l4_uint32_t>(r);
-  c.write(r, v);
-
+  bool valid = c.parse();
   restore_decoders(cmd);
 
-  if (!x)
+  if (!valid) // skip invalid (empty) BAR
     return bar + 1;
 
   unsigned io_flags = (cmd & CC_io) ? 0 : Resource::F_disabled;
@@ -354,65 +347,32 @@ Dev::discover_bar(int bar)
             | Resource::F_can_move;
 
   Resource *res = 0;
-  if (!(x & 1))
+  switch (c.type())
     {
-      if (0)
-        printf("%08x: BAR[%d] mmio ... %x\n", host()->adr(), bar, x );
+    case Cfg_bar::T_mmio:
       res = new Resource(mem_flags);
       // set ID to 'BARx', x == bar
       res->set_id(0x00524142 + (((l4_uint32_t)('0' + bar)) << 24));
-      if ((x & 0x6) == 0x4)
-        res->add_flags(Resource::F_width_64bit);
+      _bars[bar] = res;
 
-      if (x & 0x8)
-        res->add_flags(Resource::F_prefetchable);
-
-      l4_uint64_t size = x & ~0x7f;
-      l4_uint64_t a = v & ~0x7f;
-      if (res->is_64bit())
+      if (c.is_64bit())
         {
-          ++bar;
-          r = 0x10 + bar * 4;
-          cmd = disable_decoders();
-          v = c.read<l4_uint32_t>(r);
-          c.write<l4_uint32_t>(r, ~0U);
-          x = c.read<l4_uint32_t>(r);
-          c.write(r, v);
-          restore_decoders(cmd);
-          a |= l4_uint64_t(v) << 32;
-          size |= l4_uint64_t(x) << 32;
+          res->add_flags(Resource::F_width_64bit);
+          _bars[++bar] = (Resource*)1;
         }
 
-      for (int s = 7; s < 64; ++s)
-        if ((size >> s) & 1)
-          {
-            size = 1 << s;
-            break;
-          }
+      if (c.is_prefetchable())
+        res->add_flags(Resource::F_prefetchable);
 
-      res->start_size(a, size);
-
-      if (0)
-        printf("%08x: BAR[%d] mem ...\n", host()->adr(), bar*4 + 10 );
-      _bars[bar - res->is_64bit()] = res;
-      if (res->is_64bit())
-        _bars[bar] = (Resource*)1;
-    }
-  else
-    {
-      if (0)
-        printf("%08x: BAR[%d] io ...\n", host()->adr(), bar );
-      int s;
-      for (s = 2; s < 32; ++s)
-        if ((x >> s) & 1)
-          break;
-
+      res->start_size(c.base(), c.size());
+      break;
+    case Cfg_bar::T_io:
       res = new Resource(io_flags);
       // set ID to 'BARx', x == bar
       res->set_id(0x00524142 + (((l4_uint32_t)('0' + bar)) << 24));
 
       _bars[bar] = res;
-      res->start_size(v & ~3, 1 << s);
+      res->start_size(c.base(), c.size());
     }
 
   res->validate();

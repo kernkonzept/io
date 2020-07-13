@@ -316,6 +316,80 @@ public:
   Cap(Config const &cfg) : Config(cfg) {}
 };
 
+/**
+ * Helper class to parse normal PCI type 0 BARs.
+ *
+ * This class is usually used as temporary object.
+ */
+class Cfg_bar : public Config
+{
+private:
+  l4_uint64_t _base; ///< base address from the BAR
+  l4_uint64_t _size; ///< size of the BAR
+  l4_uint8_t _type;  ///< type
+  l4_uint8_t _flags; ///< flags
+
+public:
+  enum Type
+  {
+    T_mmio, T_io
+  };
+
+  Cfg_bar() = default;
+  Cfg_bar(Config const &c) : Config(c) {}
+
+  /**
+   * Parse a PCI BAR register (including size etc.)
+   *
+   * \pre must be called with disabled decoders
+   */
+  bool parse()
+  {
+    auto v = read<l4_uint32_t>(0);
+    // do the BAR sizing
+    write<l4_uint32_t>(0, ~(l4_uint32_t)0);
+    auto s = read<l4_uint32_t>(0);
+    write(0, v); // restore
+
+    if (s == 0) // undefined
+      return false;
+
+    if ((s & 1) == 1) // IO
+      {
+        _type = T_io;
+        _base = v & ~(l4_uint32_t)1;
+        _size = (~(s & ~(l4_uint32_t)1) + 1) & s;
+        _flags = 0;
+        return true;
+      }
+
+    // MMIO
+    _base = (v & ~(l4_uint32_t)0xf);
+    _type = T_mmio;
+    _flags = s & 0x8; // prefetchable
+
+    if ((s & 0x7) == 0x4) // 64bit MMIO
+      {
+        auto u = read<l4_uint32_t>(4);
+        write<l4_uint32_t>(4, ~(l4_uint32_t)0);
+        auto us = read<l4_uint32_t>(4);
+        write(4, u);
+        _base |= static_cast<l4_uint64_t>(u) << 32;
+        _size = ~((static_cast<l4_uint64_t>(us) << 32) | (s & ~(l4_uint32_t)0xf)) + 1;
+        _flags |= 1; // 64bit
+      }
+    else
+      _size = ~(s & ~(l4_uint32_t)0xf) + 1;
+
+    return true;
+  }
+
+  Type type() const { return static_cast<Type>(_type); }
+  bool is_64bit() const { return _flags & 1; }
+  bool is_prefetchable() const { return _flags & 8; }
+  l4_uint64_t base() const  { return _base; }
+  l4_uint64_t size() const { return _size; }
+};
 
 /**
  * Wrapper class to work with PCIe extended capabilities
