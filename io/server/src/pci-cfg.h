@@ -87,6 +87,32 @@ public:
     x.t = val;
     return _this()->write(offset, x.v, cfg_width<T>::width);
   }
+
+  /**
+   * Read for special 'config register' type data types.
+   *
+   * 'config register' data types have a constexpr member Ofs, that
+   * defines the config space offset of the given register and a single
+   * 8, 16, or 32 bit data member that stores the data of the config
+   * config space register.
+   */
+  template<typename T>
+  typename cxx::enable_if<(T::Ofs >= 0), T>::type
+  read() const
+  {  return this->read<T>(T::Ofs);  }
+
+  /**
+   * Write for special 'config register' type data types.
+   *
+   * 'config register' data types have a constexpr member Ofs, that
+   * defines the config space offset of the given register and a single
+   * 8, 16, or 32 bit data member that stores the data of the config
+   * config space register.
+   */
+  template<typename T>
+  typename cxx::enable_if<(T::Ofs >= 0), int>::type
+  write(T const &val)
+  { return this->write(T::Ofs, val); }
 };
 
 
