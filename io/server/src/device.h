@@ -78,10 +78,10 @@ private:
       _c = d;
     else
       {
-	D *p;
-	for (p = _c; p->next(); p = p->next())
-	  ;
-	p->add_sibling(d);
+        D *p;
+        for (p = _c; p->next(); p = p->next())
+          ;
+        p->add_sibling(d);
       }
   }
 
@@ -106,7 +106,7 @@ public:
     bool operator == (iterator const &i) const
     {
       if (!_c && !i._c)
-	return true;
+        return true;
 
       return _p == i._p && _c == i._c && _d == i._d;
     }
@@ -123,23 +123,23 @@ public:
         return *this;
 
       if (_d > _c->depth() && _c->children())
-	// go to a child if not at max depth and there are children
-	_c = _c->children();
+        // go to a child if not at max depth and there are children
+        _c = _c->children();
       else if (_c->next())
-	// go to the next sibling
-	_c = _c->next();
+        // go to the next sibling
+        _c = _c->next();
       else if (_c == _p)
         _c = 0;
       else
-	{
-	  for (D *x = _c->parent(); x && x != _p; x = x->parent())
-	    if (x->next())
-	      {
-		_c = x->next();
-		return *this;
-	      }
-	  _c = 0;
-	}
+        {
+          for (D *x = _c->parent(); x && x != _p; x = x->parent())
+            if (x->next())
+              {
+                _c = x->next();
+                return *this;
+              }
+          _c = 0;
+        }
 
       return *this;
     }
