@@ -28,6 +28,8 @@ public:
     return bus_num <= subordinate;
   }
 
+  bool ari_forwarding_enable() override { return false; }
+
   virtual ~Bridge_base() = default;
 
   void discover_bus(Hw::Device *host, Config_space *cfg,

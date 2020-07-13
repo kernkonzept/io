@@ -5,6 +5,7 @@
  *            Alexander Warg <warg@os.inf.tu-dresden.de>
  */
 #include <pci-bridge.h>
+#include <pci-caps.h>
 #include <pci-driver.h>
 #include <resource_provider.h>
 
@@ -188,11 +189,32 @@ Bridge::discover_resources(Hw::Device *host)
 
 class Pcie_downstream_port : public Bridge
 {
+private:
+  bool _ari = false;
+
 public:
   explicit Pcie_downstream_port(Hw::Device *host, Bridge_if *bridge,
                                 Config_cache const &cfg)
   : Bridge(host, bridge, nullptr, cfg)
   {
+  }
+
+  bool ari_forwarding_enable() override
+  {
+    if (_ari)
+      return true;
+
+    Cap pcie = pcie_cap();
+    l4_uint32_t v = pcie.read<l4_uint32_t>(0x24);
+    if (v & (1UL << 5))
+      {
+        v = pcie.read<l4_uint16_t>(0x28);
+        v |= (1UL << 5); // enable ARI forwarding
+        pcie.write<l4_uint16_t>(0x28, v);
+
+        _ari = true;
+      }
+    return _ari;
   }
 
   void discover_devices(Hw::Device *host_bus, Config_space *cfg,
@@ -205,27 +227,14 @@ public:
     if (!d)
       return;
 
-    Extended_cap ari = d->find_ext_cap(Extended_cap::Ari);
+    Extended_cap ari = d->find_ext_cap(Ari_cap::Id);
     // we must check if we are the root complex or some ordinary PCIe BUS.
-    if (ari.Config::is_valid())
-      {
-        Cap pcie = pcie_cap();
-        l4_uint32_t v = pcie.read<l4_uint32_t>(0x24);
-        if (!(v & (1UL << 5)))
-          {
-            ari = Extended_cap();
-          }
-        else
-          {
-            v = pcie.read<l4_uint16_t>(0x28);
-            v |= (1UL << 5); // enable ARI forwarding
-            pcie.write<l4_uint16_t>(0x28, v);
-          }
-      }
+    if (ari_forwarding_enable() && !ari.Config::is_valid())
+      ari = Extended_cap();
 
     while (ari.Config::is_valid())
       {
-        l4_uint8_t next_func = ari.read<l4_uint8_t>(0x5);
+        l4_uint8_t next_func = ari.read<Ari_cap::Caps>().next_func();
         if (!next_func)
           return;
 
@@ -233,7 +242,7 @@ public:
         if (!d)
           return;
 
-        ari = d->find_ext_cap(Extended_cap::Ari);
+        ari = d->find_ext_cap(Ari_cap::Id);
       }
 
     // look for functions in PCI style

@@ -61,6 +61,7 @@ protected:
 public:
   virtual unsigned alloc_bus_number() = 0;
   virtual bool check_bus_number(unsigned bus) = 0;
+  virtual bool ari_forwarding_enable() = 0;
 };
 
 class Transparent_msi
