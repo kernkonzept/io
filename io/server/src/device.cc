@@ -44,35 +44,35 @@ Device::alloc_child_resource(Resource *r, Device *cld)
   // The second run allows to assign a prefetchable MMIO client region to a
   // non-prefetchable MMIO parent resource.
   bool exact = true;
+  auto const *rl = resources();
   while (true)
     {
-      for (Resource_list::const_iterator br = resources()->begin();
-           br != resources()->end(); ++br)
+      for (auto *br: *rl)
         {
-          if (!*br)
+          if (!br)
             continue;
 
-          if ((*br)->disabled())
+          if (br->disabled())
             continue;
 
-          if (!(*br)->provided())
+          if (!br->provided())
             continue;
 
-          if (!(*br)->compatible(r, exact))
+          if (!br->compatible(r, exact))
             continue;
 
           found_as = true;
 
-          if (parent() && !parent()->resource_allocated(*br))
+          if (parent() && !parent()->resource_allocated(br))
             {
-              (*br)->provided()->assign(*br, r);
+              br->provided()->assign(br, r);
               d_printf(DBG_ALL, "assigned resource: ");
               if (dlevel(DBG_ALL))
                 r->dump();
 
               return true;
             }
-          else if ((*br)->provided()->alloc(*br, this, r, cld, false))
+          else if (br->provided()->alloc(br, this, r, cld, false))
             {
               r->enable();
               d_printf(DBG_ALL, "allocated resource: ");
@@ -187,28 +187,28 @@ static bool _allocate_pending_resources(Device *dev, UAD *to_allocate)
 {
   Device *p = dev->parent();
   assert (p);
-  for (Resource_list::const_iterator r = dev->resources()->begin();
-       r != dev->resources()->end(); ++r)
+  auto const *rl = dev->resources();
+  for (auto *r: *rl)
     {
-      if (!*r)
+      if (!r)
         continue;
 
-      if ((*r)->empty())
+      if (r->empty())
         continue;
 
-      if (p->resource_allocated(*r))
+      if (p->resource_allocated(r))
         continue;
 
-      if ((*r)->fixed_addr())
+      if (r->fixed_addr())
         continue;
 
       if (0)
         {
-          printf("unallocated resource: %s ", typeid(**r).name());
-          (*r)->dump(0);
+          printf("unallocated resource: %s ", typeid(*r).name());
+          r->dump(0);
         }
 
-      to_allocate->insert(Res_dev(*r, dev));
+      to_allocate->insert(Res_dev(r, dev));
     }
   return true;
 }
@@ -268,28 +268,28 @@ Device::request_child_resource(Resource *r, Device *cld)
   // The second run allows to assign a prefetchable MMIO client region to a
   // non-prefetchable MMIO parent resource.
   bool exact = true;
+  auto const *rl = resources();
   while (true)
     {
       // scan through all our resources and try to find a
       // provided resource that is consumed by resource 'r'
-      for (Resource_list::const_iterator br = resources()->begin();
-	   br != resources()->end(); ++br)
+      for (auto *br: *rl)
 	{
-          if (!*br)
+          if (!br)
             continue;
 
-	  if ((*br)->disabled())
+	  if (br->disabled())
 	    continue;
 
-	  if (!(*br)->provided())
+	  if (!br->provided())
 	    continue;
 
-	  if (!(*br)->compatible(r, exact))
+	  if (!br->compatible(r, exact))
 	    continue;
 
 	  found_as = true;
 
-	  if ((*br)->provided()->request(*br, this, r, cld))
+	  if (br->provided()->request(br, this, r, cld))
 	    return true;
 	}
 
