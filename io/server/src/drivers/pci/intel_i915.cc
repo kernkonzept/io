@@ -1,5 +1,5 @@
 /*
- * (c) 2014 Steffen Liebergeld <steffen.liebergeld@kernkonzept.com>
+ * (c) 2014-2020 Steffen Liebergeld <steffen.liebergeld@kernkonzept.com>
  *
  * This file is part of TUD:OS and distributed under the terms of the
  * GNU General Public License 2.

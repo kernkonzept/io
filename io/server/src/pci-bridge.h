@@ -110,10 +110,11 @@ public:
   /**
    * Constructor to create a new Generic_bridge object
    *
-   * \param[in] host      Parent device
-   * \param[in] bus       PCI bus
-   * \param     hdr_type  Header type that defines the layout of the PCI config
-   *                      header.
+   * \param[in] host     Parent device
+   * \param[in] bridge   The PCI bridge interface to use for this generic
+   *                     bridge.
+   * \param[in] ext_msi  MSI source object.
+   * \param[in] cfg      Config cache object for this generic bridge.
    */
   Generic_bridge(Hw::Device *host, Bridge_if *bridge,
                  Io_irq_pin::Msi_src *ext_msi,

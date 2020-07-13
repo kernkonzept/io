@@ -20,10 +20,10 @@ namespace Hw { namespace Pci {
  * This cache is created and filled during device scan, and
  * in particular, before the device node is allocated.
  * This helps to use the PCI config space of a device node
- * to device which kind of object needs to be allocated.
+ * to decide which kind of object needs to be allocated.
  *
- * Usually the config cahe is then passed to the new Pci::Dev node
- * during construction and store in the device node.
+ * Usually the config cache is then passed to the new Pci::Dev node
+ * during construction and stored in the device node.
  */
 class Config_cache : public Config
 {

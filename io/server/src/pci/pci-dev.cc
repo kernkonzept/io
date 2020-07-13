@@ -7,11 +7,11 @@
 
 #include <pci-dev.h>
 
-// for the printf in discover_pci_cpas
 #include "main.h"
 #include "cfg.h"
 // -----
 
+// for the printf in discover_pci_caps
 #include <cstdio>
 
 #ifdef CONFIG_L4IO_PCIID_DB

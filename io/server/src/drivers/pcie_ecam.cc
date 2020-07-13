@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019 Kernkonzept GmbH.
+ * Copyright (C) 2019-2020 Kernkonzept GmbH.
  * Author(s): Frank Mehnert <frank.mehnert@kernkonzept.com>
  *
  * This file is distributed under the terms of the GNU General Public
@@ -91,7 +91,6 @@
 #include "hw_mmio_register_block.h"
 #include <pci-root.h>
 #include "resource_provider.h"
-#include <l4/util/util.h>
 
 namespace {
 

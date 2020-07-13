@@ -16,7 +16,7 @@ static inline l4_uint32_t
 devfn(unsigned dev, unsigned fn)
 { return (dev << 16) | fn; }
 
-} // end of local stuff
+}
 
 void
 Irq_router::dump(int indent) const
@@ -41,11 +41,12 @@ Pci_pci_bridge_irq_router_rs::request(Resource *parent, ::Device *pdev,
       child->start((child->start() + (cd->adr() >> 16)) & 3);
       res = pdev->parent()->request_child_resource(child, cdev);
       if (res)
-	child->parent(parent);
+        child->parent(parent);
     }
 
   return res;
 }
+
 void
 Generic_bridge::check_bus_config()
 {
@@ -309,7 +310,7 @@ void
 Cardbus_bridge::discover_resources(Hw::Device *host)
 {
   if (flags.discovered())
-    return ;
+    return;
 
   auto c = config();
 
@@ -553,7 +554,7 @@ Bridge_base::dump(int) const
   printf("PCI bus type: %d: ", bus_type);
   "bridge %04x:%02x:%02x.%x\n",
          b->num, 0, b->parent() ? (int)static_cast<Hw::Pci::Bus*>(b->parent())->num : 0,
-	 b->adr() >> 16, b->adr() & 0xffff);
+         b->adr() >> 16, b->adr() & 0xffff);
 #endif
 #if 0
   //dump_res_rec(resources(), 0);

@@ -207,8 +207,8 @@ AcpiOsReadPciConfiguration (
       return AE_OK;
     }
 
-  int r = rb->cfg_read(Hw::Pci::Cfg_addr(PciId->Bus, PciId->Device, PciId->Function,
-                                         Register),
+  int r = rb->cfg_read(Hw::Pci::Cfg_addr(PciId->Bus, PciId->Device,
+                                         PciId->Function, Register),
                        (l4_uint32_t *)Value,
                        Hw::Pci::cfg_w_to_o(Width));
 
@@ -262,8 +262,8 @@ AcpiOsWritePciConfiguration (
       return AE_OK;
     }
 
-  int r = rb->cfg_write(Hw::Pci::Cfg_addr(PciId->Bus, PciId->Device, PciId->Function,
-                                          Register),
+  int r = rb->cfg_write(Hw::Pci::Cfg_addr(PciId->Bus, PciId->Device,
+                                          PciId->Function, Register),
                         Value, Hw::Pci::cfg_w_to_o(Width));
 
   if (r < 0)

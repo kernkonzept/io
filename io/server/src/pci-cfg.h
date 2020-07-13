@@ -149,11 +149,9 @@ inline Config_space::~Config_space() = default;
 
 
 /**
- * Encapsulate the config space of a PCI device (without a device).
+ * Encapsulate the config space of a PCI device.
  *
- * This class is used to access the config space of the PCI bus
- * without having a PCI device object allocated yet. If there
- * is already a PCI device object use Cfg_ptr instead.
+ * This class is used to access the config space of the PCI bus.
  */
 class Config : public Cfg_rw_mixin<Config>
 {

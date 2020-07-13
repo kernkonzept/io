@@ -1,5 +1,5 @@
 /*
- * (c) 2010 Adam Lackorzynski <adam@os.inf.tu-dresden.de>,
+ * (c) 2010-2020 Adam Lackorzynski <adam@os.inf.tu-dresden.de>,
  *          Alexander Warg <warg@os.inf.tu-dresden.de>
  *     economic rights: Technische Universität Dresden (Germany)
  *
