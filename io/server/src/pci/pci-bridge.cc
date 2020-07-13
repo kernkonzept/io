@@ -218,7 +218,7 @@ public:
   }
 
   void discover_devices(Hw::Device *host_bus, Config_space *cfg,
-                        Io_irq_pin::Msi_src *ext_msi)
+                        Io_irq_pin::Msi_src *ext_msi) override
   {
     (void) ext_msi;
     assert (ext_msi == nullptr);
