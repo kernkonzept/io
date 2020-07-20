@@ -409,40 +409,40 @@ public:
   Extended_cap() = default;
   Extended_cap(Config const &cfg) : Config(cfg) {}
 
-  bool is_valid()
+  bool is_valid() const
   {
     return id() != 0 && id() < 0xffff && version() > 0;
   }
 
-  l4_uint32_t header()
+  l4_uint32_t header() const
   {
     l4_uint32_t hdr;
     read(0, &hdr);
     return hdr;
   }
 
-  l4_uint16_t id()
+  l4_uint16_t id() const
   {
     l4_uint16_t id;
     read(0, &id);
     return id;
   }
 
-  l4_uint8_t version()
+  l4_uint8_t version() const
   {
     l4_uint8_t v;
     read(2, &v);
     return v & 0xf;
   }
 
-  l4_uint16_t next()
+  l4_uint16_t next() const
   {
     l4_uint16_t n;
     read(2, &n);
     return (n & 0xffc0) >> 4;
   }
 
-  void dump()
+  void dump() const
   {
     printf("Extended Cap: id=%x, version=%x, next=%x\n", id(), version(), next());
   }
