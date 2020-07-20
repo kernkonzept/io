@@ -32,7 +32,7 @@ Proxy_dev::Proxy_dev(Hw::Device *d)
       if (!*i)
         continue;
 
-      if ((*i)->disabled())
+      if ((*i)->disabled() || (*i)->internal())
 	continue;
 
       Resource *vr = Resource_factory::match(*i);

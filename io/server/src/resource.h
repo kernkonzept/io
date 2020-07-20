@@ -106,6 +106,7 @@ public:
     F_width_64bit   = 0x010000,
     F_cached_mem    = 0x020000,
     F_relative      = 0x040000,
+    F_internal      = 0x080000, ///< Internal resource not exported to vBUS
 
     Mem_type_read_only    = 0x100000,
 
@@ -164,6 +165,7 @@ public:
   bool fixed_addr() const { return !(_f & F_can_move); }
   bool fixed_size() const { return !(_f & F_can_resize); }
   bool relative() const { return _f & F_relative; }
+  bool internal() const { return _f & F_internal; }
   unsigned type() const { return _f & F_type_mask; }
 
   virtual bool lt_compare(Resource const *o) const
