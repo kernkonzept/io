@@ -10,6 +10,7 @@
 #include <pci-cfg.h>
 #include <pci-saved-config.h>
 
+#include <l4/cxx/hlist>
 #include <cassert>
 
 namespace Hw { namespace Pci {
@@ -68,6 +69,8 @@ public:
 private:
   void _discover_pci_caps(Config const &c);
 };
+
+class Extended_cap_handler;
 
 class Dev :
   public virtual If,
@@ -251,11 +254,39 @@ public:
   void pm_save_state(Hw::Device *) override;
   void pm_restore_state(Hw::Device *) override;
 
+  static void add_ext_cap_handler(Extended_cap_handler *h)
+  { _ext_cap_handlers.add(h); }
+
 private:
   int discover_bar(int bar);
   void discover_expansion_rom();
   void discover_pci_caps();
   void discover_pcie_caps();
+
+  static cxx::H_list_t<Extended_cap_handler> _ext_cap_handlers;
+};
+
+class Extended_cap_handler : public cxx::H_list_item_t<Extended_cap_handler>
+{
+public:
+  virtual bool handle_cap(Dev *dev, Extended_cap cap) const = 0;
+  virtual bool match(l4_uint32_t hdr) const = 0;
+
+protected:
+  Extended_cap_handler() = default;
+  ~Extended_cap_handler() = default;
+};
+
+template<unsigned CAP_ID>
+class Extended_cap_handler_t : public Extended_cap_handler
+{
+public:
+  bool match(l4_uint32_t hdr) const override
+  {
+    return (hdr & 0xffff) == CAP_ID;
+  }
+
+  Extended_cap_handler_t() { Dev::add_ext_cap_handler(this); }
 };
 
 } }

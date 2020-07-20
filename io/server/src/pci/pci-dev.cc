@@ -20,6 +20,8 @@
 
 namespace Hw { namespace Pci {
 
+cxx::H_list_t<Extended_cap_handler> Dev::_ext_cap_handlers;
+
 void
 Config_cache::_discover_pci_caps(Config const &c)
 {
@@ -441,7 +443,15 @@ Dev::discover_pcie_caps()
       if (offset == 0x100 && !cap.is_valid())
         return;
 
-      switch (cap.id())
+      l4_uint32_t hdr = cap.header();
+
+      for (auto h: _ext_cap_handlers)
+        {
+          if (h->match(hdr & 0xfffff))
+            h->handle_cap(this, cap);
+        }
+
+      switch (hdr & 0xffff)
         {
         case Hw::Pci::Extended_cap::Acs:
           parse_acs_cap(cap);
