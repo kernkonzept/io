@@ -97,6 +97,11 @@ public:
     return this;
   }
 
+  Msi_src *external_msi_src() const
+  {
+    return _external_msi_src;
+  }
+
   l4_uint64_t get_src_info(Msi_mgr *mgr) override
   {
     if (mgr)
