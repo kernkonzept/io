@@ -69,12 +69,16 @@ l4vbus_get_device_by_hid(l4_cap_idx_t vbus, l4vbus_device_handle_t parent,
 
 /**
  * \copybrief L4vbus::Device::next_device()
- * \param  vbus         Capability of the system bus
- * \param  parent       Handle to the parent device (use 0 for the system bus)
- * \param  child        Handle to the child device (use 0 to get the first
- *                      child)
- * \param  depth        Depth to look for
- * \param[out] devinfo  device information (might be NULL)
+ * \param           vbus     Capability of the system bus
+ * \param           parent   Handle to the parent device (use #L4VBUS_ROOT_BUS
+ *                           for the system bus)
+ * \param[in, out]  child    Handle of the device that precedes the device
+ *                           that shall be returned. To start from the
+ *                           beginning, `child` must be initialized with
+ *                           #L4VBUS_NULL. If a device is found, its handle is
+ *                           returned through this parameter.
+ * \param           depth    Depth to look for
+ * \param[out]      devinfo  Device information (might be NULL)
  *
  * \return 0 on success, else failure
  */

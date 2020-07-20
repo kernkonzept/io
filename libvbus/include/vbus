@@ -133,12 +133,13 @@ public:
   /**
    * Find next child following `child`.
    *
-   * \param[in, out] child    Handle of the device that precedes the device
-   *                          that shall be found. To start from the beginning
-   *                          `child` must be initialized using the default
-   *                          (#L4VBUS_NULL).
-   * \param      depth        Depth to look for
-   * \param[out] devinfo      device information (might be NULL)
+   * \param[in, out]  child   Handle of the device that precedes the device
+   *                          that shall be returned. To start from the
+   *                          beginning, `child` must be initialized with
+   *                          #L4VBUS_NULL. If a device is found, its handle is
+   *                          returned through this parameter.
+   * \param          depth    Depth to look for
+   * \param[out]     devinfo  Device information (might be NULL)
    *
    * \return 0 on success, else failure
    */
