@@ -66,7 +66,11 @@ struct Pm_cap : Capability
 
 struct Sr_iov_cap : Capability
 {
-  enum { Id = 0x10 };
+  enum
+  {
+    Id   = 0x10,
+    Size = 0x40,
+  };
 
   struct Caps : R<4, l4_uint32_t>
   {
@@ -104,7 +108,11 @@ struct Sr_iov_cap : Capability
 
 struct Ari_cap : Capability
 {
-  enum { Id = 0x0e };
+  enum
+  {
+    Id   = 0x0e,
+    Size = 0x08,
+  };
 
   struct Caps : R<0x04, l4_uint16_t>
   {

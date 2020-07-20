@@ -18,6 +18,7 @@
 #include <l4/sys/err.h>
 
 #include "debug.h"
+#include <pci-caps.h>
 #include <pci-if.h>
 #include <pci-dev.h>
 #ifdef CONFIG_L4IO_PCIID_DB
@@ -155,11 +156,43 @@ Pci_proxy_dev::scan_pci_caps()
   return is_pci_express;
 }
 
+namespace {
+    struct Pcie_dummy_cap : Pcie_capability
+    {
+      Pcie_dummy_cap(unsigned offset, unsigned sz)
+      : Pcie_capability(offset)
+      {
+        set_cap(0xfe); // reserved ID
+        set_size(sz);
+      }
+
+      int cap_read(int, l4_uint32_t *v, Cfg_width) override
+      {
+        *v = 0xffffffff;
+        return 0;
+      }
+
+      int cap_write(int, l4_uint32_t, Cfg_width) override
+      {
+        return 0;
+      }
+    };
+}
+
+l4_uint16_t
+Pci_proxy_dev::_skip_pcie_cap(Hw::Pci::Extended_cap const &cap, unsigned sz)
+{
+  // create "fake" capability with a reserved ID, according to
+  // PCI-SIG IDs >0x2c are reserved
+  add_pcie_cap(new Pcie_dummy_cap(cap.reg(), sz));
+  return cap.next();
+}
+
 void
 Pci_proxy_dev::scan_pcie_caps()
 {
   l4_uint16_t offset = 0x100;
-  for (;;)
+  while (offset)
     {
       Hw::Pci::Extended_cap cap = _hwf->config(offset);
 
@@ -168,37 +201,21 @@ Pci_proxy_dev::scan_pcie_caps()
         return;
 
       // hide the ACS capability
-      if (cap.id() == Hw::Pci::Extended_cap::Acs)
+      switch (cap.id())
         {
-          // if this is the first capability there are two possibilities
-          // 1. it's the only extended capability
-          // 2. other extended capabilities follow
-          if (offset == 0x100)
-            {
-              // the only extended capability, just return
-              if (cap.next() == 0)
-                return;
+        default:
+          break;
 
-              // create "fake" capability with a reserved ID, according to
-              // PCI-SIG IDs >0x2c are reserved
-              l4_uint32_t hdr = cap.header();
-              hdr = (hdr & 0xffffff00) | 0xfe;
-              add_pcie_cap(new Pcie_proxy_cap(_hwf, hdr, offset, offset));
-            }
-
-          // skip extended capability
-          offset = cap.next();
-          if (!offset)
-            break;
-
+        case Hw::Pci::Sr_iov_cap::Id:
+          offset = _skip_pcie_cap(cap, Hw::Pci::Sr_iov_cap::Size);
+          continue;
+        case Hw::Pci::Extended_cap::Acs:
+          offset = _skip_pcie_cap(cap, 8);
           continue;
         }
 
       add_pcie_cap(new Pcie_proxy_cap(_hwf, cap.header(), offset, offset));
-
       offset = cap.next();
-      if (!offset)
-        break;
     }
 
   // if the device has extended capabilities there must be one at offset 0x100

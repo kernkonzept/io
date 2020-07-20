@@ -448,6 +448,8 @@ private:
   l4_uint32_t _vbars[6];
   l4_uint32_t _rom;
 
+  l4_uint16_t _skip_pcie_cap(Hw::Pci::Extended_cap const &cap, unsigned sz);
+
   int _do_status_cmd_write(l4_uint32_t mask, l4_uint32_t value);
   void _do_cmd_write(unsigned mask,unsigned value);
 
