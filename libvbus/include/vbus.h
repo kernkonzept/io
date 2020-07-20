@@ -59,6 +59,7 @@ __BEGIN_DECLS
  * \copybrief L4vbus::Device::device_by_hid()
  * \param  vbus         Capability of the system bus
  * \param  parent       Handle to the parent to start the search
+ *
  * \copydetails L4vbus::Device::device_by_hid()
  */
 int L4_CV

@@ -115,7 +115,7 @@ public:
    * \param          depth    Maximum depth for the recursive lookup
    * \param[out]     devinfo  Device information structure (might be NULL)
    *
-   * \retval >= 0        A device with the given HID was found.
+   * \retval >=0         A device with the given HID was found.
    * \retval -L4_ENOENT  No device with the given HID could be found on
    *                     the vbus.
    * \retval -L4_EINVAL  Invalid or no HID provided.
