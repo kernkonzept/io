@@ -358,7 +358,7 @@ Dev::discover_bar(int bar)
       if (c.is_64bit())
         {
           res->add_flags(Resource::F_width_64bit);
-          _bars[++bar] = (Resource*)1;
+          _bars[++bar] = nullptr;
         }
 
       if (c.is_prefetchable())

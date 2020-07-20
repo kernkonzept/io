@@ -20,7 +20,6 @@ class If : public virtual Dev_feature
 public:
   virtual Resource *bar(int) const = 0;
   virtual Resource *rom() const = 0;
-  virtual bool is_64bit_high_bar(int) const = 0;
   virtual bool supports_msi() const = 0;
 
   virtual int cfg_read(l4_uint32_t reg, l4_uint32_t *value, Cfg_width) = 0;

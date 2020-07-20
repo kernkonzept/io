@@ -159,10 +159,7 @@ public:
 
   Resource *bar(int b) const override
   {
-    if (is_64bit_high_bar(b))
-      return _bars[b-1];
-    else
-      return _bars[b];
+    return _bars[b];
   }
 
   Resource *rom() const override
@@ -172,11 +169,6 @@ public:
   l4_uint32_t checked_cmd_read() override;
   l4_uint16_t checked_cmd_write(l4_uint16_t mask, l4_uint16_t cmd) override;
   bool enable_rom() override;
-
-  bool is_64bit_high_bar(int b) const override
-  {
-    return l4_addr_t(_bars[b]) == 1;
-  }
 
   explicit Dev(Hw::Device *host, Bridge_if *bridge,
                Msi_src *ext_msi, Config_cache const &cfg)

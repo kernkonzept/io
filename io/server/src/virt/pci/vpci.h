@@ -17,6 +17,210 @@
 namespace Vi {
 namespace Pci {
   typedef Hw::Pci::Config Config;
+
+  /**
+   * A virtual PCI config space register backed with some 8,
+   * 16, or 32 bit memory type.
+   *
+   * This implementation encapsulates all kinds of smaller than
+   * sizeof(T) accesses and allows to specify some read-only bits
+   * as argiment to the write function.
+   */
+  template<typename T>
+  class Cfg_reg
+  {
+  public:
+    Cfg_reg() = default;
+
+    /**
+     * Encapsulates config-space read access.
+     *
+     * \param  offs  The offset (in bytes) inside this register
+     *               (must be < `sizeof(T)`, and aligned to `w`).
+     * \param  w     The access width (in terms of 2**`w`).
+     */
+    l4_uint32_t read(unsigned offs, Hw::Pci::Cfg_width w) const
+    {
+      offs >>= w;
+      if (offs > sizeof(T))
+        return ~0;
+
+      offs <<= w + 3; // now offs is aligned to 'w'
+      l4_uint32_t m = 0xffffffffU >> (32 - (8U << w));
+      return (_v >> offs) & m;
+    }
+
+    /**
+     * Encapsulates config-space write accesses.
+     *
+     * \param  offs  The offset (in bytes) inside this register
+     *               (must be < `sizeof(T)`, and aligned to `w`).
+     * \param  v     The value to be written (only LSB according to `w`
+     *               are used in the operation).
+     * \param  w     The access width (in terms of 2^`w`).
+     * \param  ro    Bit set in this value are read-only in the register.
+     *               The value is reltive to the full register.
+     */
+    void write(unsigned offs, l4_uint32_t v, Hw::Pci::Cfg_width w, T ro = 0)
+    {
+      offs >>= w;
+      if (offs > sizeof(T))
+        return;
+
+      offs <<= w + 3; // now offs is aligned to 'w'
+      l4_uint32_t m = 0xffffffffU >> (32 - (8U << w));
+
+      _v = (_v & (ro | ~(m << offs))) | (((v & m) << offs) & ~ro);
+    }
+
+    /// Get the raw value
+    T get() const
+    { return _v; }
+
+    /// Set the raw value (no read-only checking).
+    void set(T v)
+    { _v = v; }
+
+  private:
+    T _v;
+  };
+
+  /**
+   * Array of virtual PCI config-space Base Address Registers (BARs).
+   *
+   * \tparam BARS  The number of Base Address Registers.
+   */
+  template<unsigned BARS = 6>
+  class Bar_array
+  {
+  public:
+    using Cfg_width = Hw::Pci::Cfg_width;
+
+    /**
+     * Read from the BAR array.
+     *
+     * \param offs  The offset relative to the beginning of the first BAR.
+     * \param w     The access width (in termal of 2^`w`).
+     */
+    l4_uint32_t read(unsigned offs, Cfg_width w) const
+    {
+      if (offs < (BARS * 4))
+        return _b[offs / 4].read(offs & 3, w);
+      else
+        return ~0;
+    }
+
+    /**
+     * Write to the BAR array.
+     *
+     * \param offs  The offset relative to the beginning of the first BAR.
+     * \param v     The value that shall be written to the BAR.
+     * \param w     The access width (in termal of 2^`w`).
+     *
+     * This function handles read-only parts of BAR registers
+     * according to BAR size and type.
+     */
+    void write(unsigned offs, l4_uint32_t v, Cfg_width w)
+    {
+      if (offs < (BARS * 4))
+        _b[offs / 4].write(offs & 3, v, w, ~(~0U << _s[offs / 4]));
+    }
+
+    /**
+     * Set initial value of a BAR including the size.
+     *
+     * \param bar    The BAR number (0 .. BARS-1).#
+     * \param v      The initial value including BAR type bits
+     *               and upper 32bits of address if it is a 64bit BAR.
+     * \param order  The size of the BAR in terms of 2^`order`.
+     *
+     * If `v` denotes a 64bit MMIO bar then the upper 32bit of the
+     * address are written into `bar`+1.
+     */
+    void set(unsigned bar, l4_uint64_t v, unsigned order)
+    {
+      _b[bar].set(v);
+      _s[bar] = order;
+
+      if ((v & 7) == 4) // 64bit MMIO BAR
+        {
+          _b[bar + 1].set(v >> 32);
+          _s[bar + 1] = 0;
+        }
+    }
+
+    /**
+     * Set the given BAR as invalid (empty).
+     *
+     * \param bar  The number of the BAR (0 .. BARS-1).
+     */
+    void set_invalid(unsigned bar)
+    {
+      _b[bar].set(~0U);
+      _s[bar] = 4;
+    }
+
+    /**
+     * Set a BAR for a resource.
+     *
+     * \tparam RESOURCE  The type of the resource.
+     * \param  bar  The BAR number (0 .. BARS-1).
+     * \param  r    Pointer to the resource.
+     *
+     * This function set the BAR as invalid if `r == nullptr`,
+     * or if `r` is not valid or not compatible with PCI BARs.
+     * Otherwise the BAR address is taken from r->start(). The size
+     * is calculated from r->alignment(). The type from r->type(),
+     * r->is_64bit(), and r->prefetchable().
+     */
+    template<typename RESOURCE>
+    unsigned from_resource(unsigned bar, RESOURCE *r)
+    {
+      if (!r || !r->valid())
+        {
+          set_invalid(bar);
+          return 1;
+        }
+
+      l4_uint32_t type = 0;
+      unsigned order = 2;
+
+      switch (r->type())
+        {
+        case RESOURCE::Io_res:
+          type = 1;
+          order = 2;
+          break;
+
+        case RESOURCE::Mmio_res:
+          type = 0;
+          if (r->is_64bit())
+            type |= 4;
+
+          if (r->prefetchable())
+            type |= 8;
+
+          order = 4;
+          break;
+
+        default:
+          set_invalid(bar);
+          return 1;
+        }
+
+      l4_uint32_t a = r->alignment();
+      for (; order < 32 && (a >> order); ++order)
+        ;
+
+      set(bar, type | r->start(), order);
+      return r->is_64bit() ? 2 : 1;
+    }
+
+  private:
+    Cfg_reg<l4_uint32_t> _b[BARS];
+    l4_uint8_t _s[BARS];
+  };
+
 }
 
 /**
@@ -401,9 +605,6 @@ public:
   int cfg_write(int reg, l4_uint32_t v, Cfg_width) override;
   int irq_enable(Irq_info *irq) override;
 
-  l4_uint32_t read_bar(int bar);
-  void write_bar(int bar, l4_uint32_t v);
-
   l4_uint32_t read_rom() const { return _rom; }
   void write_rom(l4_uint32_t v);
 
@@ -445,7 +646,7 @@ private:
   Pci_capability *_pci_caps = 0;
   Pcie_capability *_pcie_caps = 0;
 
-  l4_uint32_t _vbars[6];
+  Pci::Bar_array<6> _vbars;
   l4_uint32_t _rom;
 
   l4_uint16_t _skip_pcie_cap(Hw::Pci::Extended_cap const &cap, unsigned sz);
