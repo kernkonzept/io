@@ -123,9 +123,10 @@ Device::vbus_get_device(L4::Ipc::Iostream &ios)
   else
     *inf.name = 0;
   inf.type = 0;
-  for (Feature_list::const_iterator i = _features.begin();
-       i != _features.end(); ++i)
-    inf.type |= (*i)->interface_type();
+
+  for (auto i: _features)
+    inf.type |= i->interface_type();
+
   inf.flags = 0;
   if (children())
     inf.flags |= L4VBUS_DEVICE_F_CHILDREN;
@@ -257,12 +258,11 @@ Device::vdevice_dispatch(l4_umword_t obj, l4_uint32_t func, L4::Ipc::Iostream &i
       break;
     }
 
-  for (Feature_list::const_iterator i = _features.begin();
-       i != _features.end(); ++i)
+  for (auto *i: _features)
     {
-      int e = (*i)->dispatch(obj, func, ios);
+      int e = i->dispatch(obj, func, ios);
       if (e != -L4_ENOSYS)
-	return e;
+        return e;
     }
 
   return -L4_ENOSYS;

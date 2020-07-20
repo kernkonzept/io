@@ -213,11 +213,9 @@ System_bus::System_bus(Inhibitor_mux *mux)
   add_resource(new Root_resource(Resource::Io_res, x));
   add_resource(new Root_resource(Resource::Dma_domain_res,
                                  new Root_dma_domain_rs(this, &_dma_domain_group)));
-  typedef Root_resource_factory RF;
-  for (RF::Factory_list::Const_iterator i = RF::_factories.begin();
-      i != RF::_factories.end();
-      ++i)
-    add_resource((*i)->create(this));
+
+  for (auto const *i: Root_resource_factory::_factories)
+    add_resource(i->create(this));
 }
 
 System_bus::~System_bus() noexcept
