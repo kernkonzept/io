@@ -235,10 +235,7 @@ public:
   void dump(int indent) const override;
 
   unsigned devfn() const override
-  {
-    unsigned x = _host->adr();
-    return ((x >> 13) & 0xf8) | (x & 7);
-  }
+  { return cfg.addr().devfn(); }
 
   unsigned phantomfn_bits() const override
   { return _phantomfn_bits; }

@@ -781,7 +781,7 @@ Dev::dump(int indent) const
     }
 
   printf("%*.s%04x:%02x:%02x.%x: %s (0x%06x) [%d]\n", indent, " ",
-         0, (int)bus_nr(), _host->adr() >> 16, _host->adr() & 0xffff,
+         0, (int)bus_nr(), cfg.addr().dev(), cfg.addr().fn(),
          classname, cfg.cls_rev >> 8, (int)cfg.hdr_type);
 
   printf("%*.s0x%04x 0x%04x\n", indent + 14, " ", cfg.vendor(), cfg.device());
