@@ -165,6 +165,9 @@ public:
     return _bars[b];
   }
 
+  void set_bar(unsigned bar, Resource *r)
+  { _bars[bar] = r; }
+
   Resource *rom() const override
   { return _rom; }
 
@@ -182,6 +185,8 @@ public:
     for (unsigned i = 0; i < sizeof(_bars)/sizeof(_bars[0]); ++i)
       _bars[i] = 0;
   }
+
+  Bridge_if *bridge() const { return _bridge; }
 
   Hw::Device *host() const { return _host; }
 
