@@ -39,6 +39,9 @@ public:
   l4_uint8_t  pcie_cap = 0; ///< offset of PCIe cap
   l4_uint8_t  pcie_type = 0; ///< type from PCIe cap if available
 
+  Config_cache() = default;
+  explicit Config_cache(Config const &cfg) : Config(cfg) {}
+
   int vendor() const { return vendor_device & 0xffff; }
   int device() const { return (vendor_device >> 16) & 0xffff; }
   bool is_multi_function() const { return hdr_type & 0x80; }
