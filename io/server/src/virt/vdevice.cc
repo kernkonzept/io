@@ -151,7 +151,7 @@ Device::vdevice_dispatch(l4_umword_t obj, l4_uint32_t func, L4::Ipc::Iostream &i
   switch (l4vbus_subinterface(func))
     {
     case L4VBUS_INTERFACE_GENERIC:
-      switch (func)
+      switch ((L4vbus_vdevice_op)func)
 	{
 	case L4vbus_vdevice_hid:
 	    {
