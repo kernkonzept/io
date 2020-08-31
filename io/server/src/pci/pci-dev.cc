@@ -499,7 +499,7 @@ Dev::discover_pci_caps()
 {
   auto c = config();
     {
-      l4_uint32_t status = c.read<l4_uint32_t>(Config::Status);
+      l4_uint16_t status = c.read<l4_uint16_t>(Config::Status);
       if (!(status & CS_cap_list))
         return;
     }
