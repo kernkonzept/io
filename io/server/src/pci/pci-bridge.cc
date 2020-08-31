@@ -92,20 +92,20 @@ Bridge::setup_children(Hw::Device *)
     {
       l4_uint32_t v = (mmio->start() >> 16) & 0xfff0;
       v |= mmio->end() & 0xfff00000;
-      c.write<l4_uint32_t>(0x20, v);
+      c.write<l4_uint32_t>(Config::Mem_base, v);
       if (0)
         printf("%08x: set mmio to %08x\n", host()->adr(), v);
       if (0)
         printf("%08x: mmio =      %08x\n", host()->adr(), c.read<l4_uint32_t>(0x20));
 
-      c.write<l4_uint16_t>(0x4, c.read<l4_uint16_t>(0x04) | 3);
+      c.write<l4_uint16_t>(Config::Command, c.read<l4_uint16_t>(0x04) | 3);
     }
 
   if (!pref_mmio->empty() && pref_mmio->valid())
     {
       l4_uint32_t v = (pref_mmio->start() >> 16) & 0xfff0;
       v |= pref_mmio->end() & 0xfff00000;
-      c.write<l4_uint32_t>(0x24, v);
+      c.write<l4_uint32_t>(Config::Pref_mem_base, v);
       if (0)
         printf("%08x: set pref mmio to %08x\n", host()->adr(), v);
     }
