@@ -115,6 +115,8 @@ public:
     return get_msi_src();
   }
 
+  void add_saved_cap(Saved_cap *cap) { _saved_state.add_cap(cap); }
+
 protected:
   cxx::H_list_t<Msi_mgr> _msi_mgrs;
 
@@ -136,11 +138,6 @@ private:
   Saved_config _saved_state;
 
   void parse_msi_cap(Cfg_addr cap_ptr);
-
-  /*
-   * Configure PCIe ACS
-   */
-  void parse_acs_cap(Extended_cap acs_cap);
 
 public:
   enum Cfg_status

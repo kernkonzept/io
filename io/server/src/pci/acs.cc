@@ -8,6 +8,7 @@
  */
 
 #include <pci-dev.h>
+#include <pci-caps.h>
 
 #include "cfg.h"
 #include "debug.h"
@@ -18,81 +19,77 @@ namespace Hw { namespace Pci {
 
 namespace {
 
-namespace Acs
-{
-  enum Regs
-  {
-    Capabilities = 0x4,
-    Control      = 0x6,
-  };
-
-  enum Ctrl_enable_bits
-  {
-    Src_validation       = 1 << 0,
-    Translation_blocking = 1 << 1,
-    Request_redirect     = 1 << 2,
-    Completion_redirect  = 1 << 3,
-    Upstream_forwarding  = 1 << 4,
-    Egress_ctrl          = 1 << 5,
-    Direct_p2p           = 1 << 6,
-  };
-}
-
 class Saved_acs_cap : public Saved_cap
 {
 public:
   explicit Saved_acs_cap(unsigned offset) : Saved_cap(Extended_cap::Acs, offset) {}
 
 private:
+  enum Regs
+  {
+    Capabilities = 0x4,
+    Control      = 0x6,
+  };
+
   l4_uint16_t control;
 
   void _save(Config cap) override
   {
-    cap.read(Acs::Control, &control);
+    cap.read(Control, &control);
   }
 
   void _restore(Config cap) override
   {
-    cap.write(Acs::Control, control);
+    cap.write(Control, control);
   }
 };
 
-}
-
-
-void
-Dev::parse_acs_cap(Extended_cap acs_cap)
+struct Acs_cap_handler : Extended_cap_handler_t<Acs_cap::Id>
 {
-  l4_uint16_t caps;
-  acs_cap.read(Acs::Capabilities, &caps);
-  d_printf(DBG_DEBUG, "ACS: %02x:%02x.%x: enable ACS, capabilities: %x\n",
-           bus_nr(), device_nr(), function_nr(), caps);
+  bool handle_cap(Dev *dev, Extended_cap acs_cap) const override
+  {
+    if (!acs_cap.is_valid())
+      return false;
 
-  // always disable egress control and direct translated P2P
-  caps &= 0x7f & ~(Acs::Egress_ctrl | Acs::Direct_p2p);
-  // enable all other ACS features if supported
-  caps &=   Acs::Src_validation | Acs::Translation_blocking
-          | Acs::Request_redirect | Acs::Completion_redirect
-          | Acs::Upstream_forwarding;
+    auto caps = acs_cap.read<Acs_cap::Caps>();
+    auto ctrl = acs_cap.read<Acs_cap::Ctrl>();
 
-  acs_cap.write(Acs::Control, caps);
+    // always disable egress control and direct translated P2P
+    ctrl.p2p_egress_ctrl_enable() = 0;
+    ctrl.direct_translated_p2p_enable() = 0;
 
-  // Certain Intel PCIe root ports implement ACS but instead of using words for
-  // the capability and control registers they use dwords. This means the
-  // control register is at offset 8 instead of 6.
-  // We read the control word and compare it with our desired configuration. If
-  // they don't match we print a warning.
-  l4_uint16_t ctrl;
-  acs_cap.read(Acs::Control, &ctrl);
-  if (ctrl != caps)
-    {
-      d_printf(DBG_ERR,
-               "Error: PCI ACS control does not match desired configuration. "
-               "Is this a buggy PCIe root port?\n");
-      return;
-    }
+    // enable all other supported ACS features
+    ctrl.f() = caps.f();
 
-  _saved_state.add_cap(new Saved_acs_cap(acs_cap.reg()));
-}
+    acs_cap.write(ctrl);
 
-}}
+    // Certain Intel PCIe root ports implement ACS but instead of using words
+    // for the capability and control registers they use dwords. This means the
+    // control register is at offset 8 instead of 6. So we hopefully tried to
+    // write into an RO area.
+    // We read the control word and compare it with our desired configuration.
+    // If they don't match we print a warning.
+    auto c = acs_cap.read<Acs_cap::Ctrl>();
+
+    if (c.enabled() != ctrl.enabled())
+      {
+        d_printf(DBG_ERR,
+                 "Error: PCI ACS control does not match desired configuration. "
+                 "Is this a buggy PCIe root port?\n");
+        return false;
+      }
+
+    d_printf(DBG_DEBUG, "ACS: %02x:%02x.%x: enabled ACS (features=0x%x)\n",
+             dev->bus_nr(), dev->device_nr(), dev->function_nr(),
+             ctrl.enabled().get());
+
+    dev->add_saved_cap(new Saved_acs_cap(acs_cap.reg()));
+
+    return true;
+  }
+
+};
+
+static Acs_cap_handler _acs_handler;
+
+}}}

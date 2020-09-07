@@ -129,5 +129,40 @@ struct Ari_cap : Capability
   };
 };
 
+struct Acs_cap : Capability
+{
+  enum
+  {
+    Id = 0x0d,
+  };
+
+  struct Caps : R<0x04, l4_uint16_t>
+  {
+    CXX_BITFIELD_MEMBER( 0, 0, src_validation, v);
+    CXX_BITFIELD_MEMBER( 1, 1, translation_blocking, v);
+    CXX_BITFIELD_MEMBER( 2, 2, p2p_request_redirect, v);
+    CXX_BITFIELD_MEMBER( 3, 3, p2p_completion_redirect, v);
+    CXX_BITFIELD_MEMBER( 4, 4, upstream_fwd, v);
+    CXX_BITFIELD_MEMBER( 0, 4, f, v);
+    CXX_BITFIELD_MEMBER( 5, 5, p2p_egress_ctrl, v);
+    CXX_BITFIELD_MEMBER( 6, 6, direct_translated_p2p, v);
+    CXX_BITFIELD_MEMBER( 0, 6, features, v);
+    CXX_BITFIELD_MEMBER( 8, 15, egress_ctrl_vector_size, v);
+  };
+
+  struct Ctrl : R<0x06, l4_uint16_t>
+  {
+    CXX_BITFIELD_MEMBER( 0, 0, src_validation_enable, v);
+    CXX_BITFIELD_MEMBER( 1, 1, translation_blocking_enable, v);
+    CXX_BITFIELD_MEMBER( 2, 2, p2p_request_redirect_enable, v);
+    CXX_BITFIELD_MEMBER( 3, 3, p2p_completion_redirect_enable, v);
+    CXX_BITFIELD_MEMBER( 4, 4, upstream_fwd_enable, v);
+    CXX_BITFIELD_MEMBER( 0, 4, f, v);
+    CXX_BITFIELD_MEMBER( 5, 5, p2p_egress_ctrl_enable, v);
+    CXX_BITFIELD_MEMBER( 6, 6, direct_translated_p2p_enable, v);
+    CXX_BITFIELD_MEMBER( 0, 6, enabled, v);
+  };
+};
+
 } }
 

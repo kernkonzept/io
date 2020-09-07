@@ -451,13 +451,6 @@ Dev::discover_pcie_caps()
             h->handle_cap(this, cap);
         }
 
-      switch (hdr & 0xffff)
-        {
-        case Hw::Pci::Extended_cap::Acs:
-          parse_acs_cap(cap);
-          break;
-        }
-
       offset = cap.next();
       if (!offset)
         return;
