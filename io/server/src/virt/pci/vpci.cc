@@ -200,7 +200,7 @@ Pci_proxy_dev::scan_pcie_caps()
       if (offset == 0x100 && !cap.is_valid())
         return;
 
-      // hide the ACS capability
+      // hide special extended capabilities from virtual devices
       switch (cap.id())
         {
         default:

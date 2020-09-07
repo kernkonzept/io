@@ -24,13 +24,13 @@ struct Capability
    * Base class for defining a config-space register.
    *
    * \tparam OFS  The offset of the register in bytes relative to
-   *              the PCI Capability.
+   *              the PCI capability.
    * \tparam T    Datatype of the config-space register. Note, this
    *              should be l4_uint8_t, l4_uint16_t, or l4_uint32_t.
    */
   template<unsigned OFS, typename T> struct R
   {
-    enum { Ofs = OFS /**< Byteoffset of the register */ };
+    enum { Ofs = OFS /**< Offset of the register in bytes */ };
     T v; /**< Value container for the register */
   };
 };

@@ -24,7 +24,7 @@ namespace Pci {
    *
    * This implementation encapsulates all kinds of smaller than
    * sizeof(T) accesses and allows to specify some read-only bits
-   * as argiment to the write function.
+   * as argument to the write function.
    */
   template<typename T>
   class Cfg_reg
@@ -37,7 +37,7 @@ namespace Pci {
      *
      * \param  offs  The offset (in bytes) inside this register
      *               (must be < `sizeof(T)`, and aligned to `w`).
-     * \param  w     The access width (in terms of 2**`w`).
+     * \param  w     The access width (in terms of 2^`w`).
      */
     l4_uint32_t read(unsigned offs, Hw::Pci::Cfg_width w) const
     {
@@ -59,7 +59,7 @@ namespace Pci {
      *               are used in the operation).
      * \param  w     The access width (in terms of 2^`w`).
      * \param  ro    Bit set in this value are read-only in the register.
-     *               The value is reltive to the full register.
+     *               The value is relative to the full register.
      */
     void write(unsigned offs, l4_uint32_t v, Hw::Pci::Cfg_width w, T ro = 0)
     {
@@ -100,7 +100,7 @@ namespace Pci {
      * Read from the BAR array.
      *
      * \param offs  The offset relative to the beginning of the first BAR.
-     * \param w     The access width (in termal of 2^`w`).
+     * \param w     The access width (in terms of 2^`w`).
      */
     l4_uint32_t read(unsigned offs, Cfg_width w) const
     {
@@ -115,7 +115,7 @@ namespace Pci {
      *
      * \param offs  The offset relative to the beginning of the first BAR.
      * \param v     The value that shall be written to the BAR.
-     * \param w     The access width (in termal of 2^`w`).
+     * \param w     The access width (in terms of 2^`w`).
      *
      * This function handles read-only parts of BAR registers
      * according to BAR size and type.
@@ -167,7 +167,7 @@ namespace Pci {
      * \param  bar  The BAR number (0 .. BARS-1).
      * \param  r    Pointer to the resource.
      * \returns The number of 32bit registers to skip to find the next
-     *          BAR. In particular, for a 64bit BAR 2 is returned, 1 else.
+     *          BAR. In particular, for a 64-bit BAR 2 is returned, 1 else.
      *
      * This function set the BAR as invalid if `r == nullptr`,
      * or if `r` is not valid or not compatible with PCI BARs.
@@ -219,7 +219,15 @@ namespace Pci {
     }
 
   private:
-    Cfg_reg<l4_uint32_t> _b[BARS];
+    /**
+     * An entry in this array represents a 32bit base address value of an IO or
+     * MMIO region. For 64bit MMIO regions two entries are used.
+     */
+    Cfg_reg<l4_uint32_t> _b[BARS];  ///< 32bit base address value
+    /**
+     * An entry in this array stores the size of the corresponding IO or MMIO
+     * region.
+     */
     l4_uint8_t _s[BARS];
   };
 
