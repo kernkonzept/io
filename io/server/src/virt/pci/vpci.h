@@ -166,6 +166,8 @@ namespace Pci {
      * \tparam RESOURCE  The type of the resource.
      * \param  bar  The BAR number (0 .. BARS-1).
      * \param  r    Pointer to the resource.
+     * \returns The number of 32bit registers to skip to find the next
+     *          BAR. In particular, for a 64bit BAR 2 is returned, 1 else.
      *
      * This function set the BAR as invalid if `r == nullptr`,
      * or if `r` is not valid or not compatible with PCI BARs.
