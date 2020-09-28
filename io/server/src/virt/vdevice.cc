@@ -43,10 +43,15 @@ Device::get_dev_by_id(l4vbus_device_handle_t id)
 {
   if (id == 0)
     return this;
-  else if (__devs.find(id) != __devs.end())
-    return (Device*)id;
-  else
+  else if (__devs.find(id) == __devs.end())
     return 0;
+
+  Device *d = (Device*)id;
+  for (Device *p = d; p; p = p->parent())
+    if (p == this)
+      return d;
+
+  return 0;
 }
 
 struct Match_hid
