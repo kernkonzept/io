@@ -203,6 +203,8 @@ public:
   // Pm_client interface
   void pm_notify(unsigned, unsigned) {}
 
+  Io_irq_pin::Msi_src *find_msi_src(Msi_src_info si) override;
+
   bool dev_notify(Device const *dev, unsigned type,
                   unsigned event, unsigned value, bool syn) override;
 

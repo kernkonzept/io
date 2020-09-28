@@ -239,8 +239,12 @@ class Device : public Resource_container
 public:
   struct Msi_src_info
   {
-    unsigned v = 0;
-    Msi_src_info(unsigned v) : v(v) {}
+    l4_uint64_t v = 0;
+    Msi_src_info(l4_uint64_t v) : v(v) {}
+    CXX_BITFIELD_MEMBER(63, 63, is_dev_handle, v);
+    CXX_BITFIELD_MEMBER( 0, 62, dev_handle, v);
+
+
     CXX_BITFIELD_MEMBER(18, 19, svt, v);
     CXX_BITFIELD_MEMBER(16, 17, sq, v);
 

@@ -605,6 +605,22 @@ Vbus_event_source::Vbus_event_source()
   _ds = buffer_ds.release();
 }
 
+Io_irq_pin::Msi_src *
+System_bus::find_msi_src(Msi_src_info si)
+{
+  if (si.is_dev_handle())
+    {
+      if (Device *dev = get_dev_by_id(si.dev_handle()))
+        if (Msi_src_feature *msi = dev->find_feature<Msi_src_feature>())
+          return msi->msi_src();
+    }
+  else if (si.svt())
+    return Device::find_msi_src(si);
+
+  d_printf(DBG_ALL, "%s: device has no MSI support\n", __func__);
+  return nullptr;
+}
+
 /**
  * \brief Send device notification to client.
  *

@@ -94,9 +94,6 @@ private:
   int unmask_irq(unsigned irqn);
   int set_mode(unsigned irqn, l4_umword_t mode);
 
-  Io_irq_pin::Msi_src *_find_msi_src(l4vbus_device_handle_t device);
-  Io_irq_pin::Msi_src *_find_msi_src(Device::Msi_src_info si);
-
   class Sw_irq_pin : public cxx::Avl_tree_node
   {
   private:

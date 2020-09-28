@@ -62,33 +62,6 @@ Sw_icu::get_msi_pin(unsigned msin)
   return p;
 }
 
-Io_irq_pin::Msi_src *
-Sw_icu::_find_msi_src(l4vbus_device_handle_t device)
-{
-  Device *dev = get_root()->get_dev_by_id(device);
-  if (!dev)
-    return nullptr;
-
-  Msi_src_feature *msi = dev->find_feature<Msi_src_feature>();
-  if (!msi)
-    {
-      d_printf(DBG_ALL, "%s: device has no MSI support\n", __func__);
-      return nullptr;
-    }
-
-  return msi->msi_src();
-}
-
-Io_irq_pin::Msi_src *
-Sw_icu::_find_msi_src(Device::Msi_src_info si)
-{
-  if (!si.svt())
-    return nullptr;
-
-  return get_root()->find_msi_src(si);
-}
-
-
 int
 Sw_icu::op_msi_info(L4::Icu::Rights, l4_umword_t irqnum, l4_uint64_t source,
                     l4_icu_msi_info_t &info)
@@ -104,17 +77,12 @@ Sw_icu::op_msi_info(L4::Icu::Rights, l4_umword_t irqnum, l4_uint64_t source,
   Io_irq_pin::Msi_src *src;
 
   // interpret source as the device handle and use that to lookup the device
-  if (source & L4vbus::Icu::Src_dev_handle)
-    src = _find_msi_src((l4vbus_device_handle_t)(source & ~L4vbus::Icu::Src_dev_handle));
-  else
-    {
-      Device::Msi_src_info si = source;
+  Device::Msi_src_info si = source;
 
-      d_printf(DBG_ALL, "%s: irqnum=%lx: source=0x%05x\n",
-               __func__, irqnum, (unsigned)source);
+  d_printf(DBG_ALL, "%s: irqnum=%lx: source=0x%05x\n",
+           __func__, irqnum, (unsigned)source);
 
-      src = _find_msi_src(si);
-    }
+  src = get_root()->find_msi_src(si);
 
   if (!src)
     {
