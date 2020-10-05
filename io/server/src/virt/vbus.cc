@@ -15,6 +15,7 @@
 
 #include <l4/vbus/vbus_types.h>
 #include <l4/vbus/vdevice-ops.h>
+#include <l4/vbus/vbus_pm-ops.h>
 
 #include <cstdio>
 
@@ -204,6 +205,8 @@ namespace Vi {
 System_bus::System_bus(Inhibitor_mux *mux)
 : Inhibitor_provider(mux), _sw_icu(0)
 {
+  _handle = 0; // the vBUS root device always has handle 0
+  _devices_by_id.push_back(this);
   register_property("num_msis", &_num_msis);
   add_feature(this);
   add_resource(new Root_resource(Resource::Irq_res, new Root_irq_rs(this)));
@@ -552,27 +555,220 @@ System_bus::op_next_lock_info(L4Re::Inhibitor::Rights, l4_mword_t &id,
 
 }
 
+
+// some internal helper functions for device RPCs
+namespace {
+
+template<typename V, typename S> inline V
+rpc_get(S &ios)
+{
+  V v;
+  if (ios.get(v))
+    return v;
+
+  L4Re::throw_error(-L4_EMSGTOOSHORT);
+}
+
+// get the HID of a device
+static inline int
+rpc_get_dev_hid(Device *dev, L4::Ipc::Iostream &ios)
+{
+  char const *h = dev->hid();
+  if (!h)
+    return -L4_ENOSYS;
+
+  ios << h;
+  return L4_EOK;
+}
+
+// get the ADR record of a device
+static inline int
+rpc_get_dev_adr(Device *dev, L4::Ipc::Iostream &ios)
+{
+  l4_uint32_t a = dev->adr();
+  if (a == l4_uint32_t(~0))
+    return -L4_ENOSYS;
+
+  ios << a;
+  return L4_EOK;
+}
+
+struct Match_hid
+{
+  char const *hid;
+  Device mutable *dev;
+
+  int operator () (Device *d) const
+  {
+    char const *h = d->hid();
+    if (h && strcmp(h, hid) == 0)
+      {
+        dev = d;
+        return 1;
+      }
+    return 0;
+  }
+};
+
+}
+
+Device *
+System_bus::dev_from_id(l4vbus_device_handle_t dev, int err) const
+{
+  if (dev >= 0 && dev < (int)_devices_by_id.size())
+    if (Device *d = _devices_by_id[dev])
+      return d;
+
+  L4Re::throw_error(err);
+}
+
+Device::iterator
+System_bus::rpc_get_dev_next_iterator(Device *dev, L4::Ipc::Iostream &ios, int err) const
+{
+  auto current = rpc_get<l4vbus_device_handle_t>(ios);
+  int depth  = rpc_get<int>(ios);
+  iterator c;
+
+  if (current == L4VBUS_NULL)
+    c = dev->begin(depth);
+  else
+    {
+      c = iterator(dev, dev_from_id(current, -L4_EINVAL), depth);
+
+      if (c == dev->end())
+        L4Re::throw_error(err);
+
+      ++c;
+    }
+
+  if (c == dev->end())
+    L4Re::throw_error(err);
+
+  return c;
+}
+
+inline int
+System_bus::rpc_device_get(Device *dev, L4::Ipc::Iostream &ios) const
+{
+  ios.put(dev->handle());
+  ios.put(dev->get_device_info());
+  return L4_EOK;
+}
+
+inline int
+System_bus::rpc_get_next_dev(Device *dev, L4::Ipc::Iostream &ios, int err) const
+{
+  return rpc_device_get(*rpc_get_dev_next_iterator(dev, ios, err), ios);
+}
+
+int
+System_bus::rpc_get_dev_by_hid(Device *dev, L4::Ipc::Iostream &ios) const
+{
+  auto c = rpc_get_dev_next_iterator(dev, ios, -L4_ENOENT);
+
+  unsigned long sz;
+  char const *hid = 0;
+
+  ios >> L4::Ipc::buf_in(hid, sz);
+
+  if (0)
+    printf("look for '%s' in %p\n", hid, this);
+
+  if (!hid || sz <= 1)
+    return -L4_EINVAL;
+
+  Match_hid mh;
+  mh.hid = hid;
+  mh.dev = 0;
+
+  for (; c != end(); ++c)
+    if (mh(*c) == 1)
+      return rpc_device_get(*c, ios);
+
+  return -L4_ENOENT;
+}
+
+int
+System_bus::dispatch_generic(L4vbus::Vbus::Rights obj, Device *dev,
+                             l4_uint32_t func, L4::Ipc::Iostream &ios)
+{
+  switch (l4vbus_subinterface(func))
+    {
+    case L4VBUS_INTERFACE_GENERIC:
+      switch ((L4vbus_vdevice_op)func)
+        {
+        case L4vbus_vdevice_hid:
+          return rpc_get_dev_hid(dev, ios);
+        case L4vbus_vdevice_adr:
+          return rpc_get_dev_adr(dev, ios);
+        case L4vbus_vdevice_get_by_hid:
+          return rpc_get_dev_by_hid(dev, ios);
+        case L4vbus_vdevice_get_next:
+          return rpc_get_next_dev(dev, ios, -L4_ENODEV);
+        case L4vbus_vdevice_get:
+          return rpc_device_get(dev, ios);
+
+        case L4vbus_vdevice_get_resource:
+          ios.put(dev->get_resource_info(rpc_get<int>(ios)));
+          return L4_EOK;
+
+        case L4vbus_vdevice_is_compatible:
+            {
+              unsigned long sz;
+              char const *cid = 0;
+              ios >> L4::Ipc::buf_in(cid, sz);
+              if (sz == 0)
+                return -L4_EMSGTOOSHORT;
+              return dev->match_cid(cxx::String(cid, strnlen(cid, sz))) ? 1 : 0;
+            }
+
+        case L4vbus_vdevice_get_hid:
+          if (char const *_hid = dev->hid())
+            ios << _hid;
+          else
+            ios << "";
+
+          return L4_EOK;
+
+        default: return -L4_ENOSYS;
+        }
+
+    case L4VBUS_INTERFACE_PM:
+      switch (func)
+        {
+        case L4VBUS_PM_OP_SUSPEND:
+          return dev->pm_suspend();
+
+        case L4VBUS_PM_OP_RESUME:
+          return dev->pm_resume();
+
+        default: return -L4_ENOSYS;
+        }
+
+    default:
+      break;
+    }
+
+  for (auto *i: *dev->features())
+    {
+      int e = i->dispatch(obj & L4_CAP_FPAGE_RS, func, ios);
+      if (e != -L4_ENOSYS)
+        return e;
+    }
+
+  return -L4_ENOSYS;
+}
+
 l4_msgtag_t
 System_bus::op_dispatch(l4_utcb_t *utcb, l4_msgtag_t tag, L4vbus::Vbus::Rights obj)
 {
   L4::Ipc::Iostream ios(utcb);
   ios.Istream::tag() = tag;
 
-  l4vbus_device_handle_t devid;
-  if (L4_UNLIKELY(!ios.get(devid)))
-    return l4_msgtag(-L4_EMSGTOOSHORT, 0, 0, 0);
-
-  l4_uint32_t func;
-
-  if (L4_UNLIKELY(!ios.get(func)))
-    return l4_msgtag(-L4_EMSGTOOSHORT, 0, 0, 0);
-
-  Device *dev = get_dev_by_id(devid);
-  if (!dev)
-    return l4_msgtag(-L4_ENODEV, 0, 0, 0);
-  return ios.prepare_ipc(dev->vdevice_dispatch(obj & L4_CAP_FPAGE_RS, func, ios));
+  Device *dev = dev_from_id(rpc_get<l4vbus_device_handle_t>(ios), -L4_ENODEV);
+  l4_uint32_t func = rpc_get<l4_uint32_t>(ios);
+  return ios.prepare_ipc(dispatch_generic(obj, dev, func, ios));
 }
-
 
 int
 System_bus::dispatch(l4_umword_t, l4_uint32_t func, L4::Ipc::Iostream &ios)
@@ -611,9 +807,9 @@ System_bus::find_msi_src(Msi_src_info si)
 {
   if (si.is_dev_handle())
     {
-      if (Device *dev = get_dev_by_id(si.dev_handle()))
-        if (Msi_src_feature *msi = dev->find_feature<Msi_src_feature>())
-          return msi->msi_src();
+      Device *dev = dev_from_id(si.dev_handle(), -L4_EINVAL);
+      if (Msi_src_feature *msi = dev->find_feature<Msi_src_feature>())
+        return msi->msi_src();
     }
   else if (si.svt())
     return Device::find_msi_src(si);
@@ -640,7 +836,7 @@ System_bus::dev_notify(Device const *dev, unsigned type,
   ev.payload.type = type;
   ev.payload.code = event;
   ev.payload.value = value;
-  ev.payload.stream_id = (l4vbus_device_handle_t)dev;
+  ev.payload.stream_id = dev->handle();
 
   return Vbus_event_source::put(ev, syn);
 }
@@ -648,10 +844,7 @@ System_bus::dev_notify(Device const *dev, unsigned type,
 int
 System_bus::get_stream_info_for_id(l4_umword_t dev_id, L4Re::Event_stream_info *info)
 {
-  Device *dev = get_dev_by_id(dev_id);
-  if (!dev)
-    return -L4_ENOSYS;
-
+  Device *dev = dev_from_id(dev_id, -L4_ENOSYS);
   Io::Event_source_infos const *_info = dev->get_event_infos();
   if (!_info)
     return -L4_ENOSYS;
@@ -663,10 +856,7 @@ System_bus::get_stream_info_for_id(l4_umword_t dev_id, L4Re::Event_stream_info *
 int
 System_bus::get_stream_state_for_id(l4_umword_t dev_id, L4Re::Event_stream_state *state)
 {
-  Device *dev = get_dev_by_id(dev_id);
-  if (!dev)
-    return -L4_ENOSYS;
-
+  Device *dev = dev_from_id(dev_id, -L4_ENOSYS);
   Io::Event_source_infos const *_info = dev->get_event_infos();
   if (!_info)
     return -L4_ENOSYS;
@@ -688,9 +878,20 @@ System_bus::inhibitor_signal(l4_umword_t id)
   ev.payload.type = L4RE_EV_PM;
   ev.payload.code = id;
   ev.payload.value = 1;
-  ev.payload.stream_id = (l4vbus_device_handle_t)0;
+  ev.payload.stream_id = _handle;
 
   put(ev);
+}
+
+void
+System_bus::finalize()
+{
+  for (auto d = begin(L4VBUS_MAX_DEPTH); d != end(); ++d)
+    if (d->handle() < 0)
+      {
+        d->set_handle(_devices_by_id.size());
+        _devices_by_id.push_back(*d);
+      }
 }
 
 }

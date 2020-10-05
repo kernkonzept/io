@@ -60,8 +60,6 @@ public:
   using Device_tree_mixin<Device>::begin;
   using Device_tree_mixin<Device>::end;
 
-  // dispatch helper for server object
-  int vdevice_dispatch(l4_umword_t obj, l4_uint32_t func, L4::Ipc::Iostream &ios);
 
   typedef std::vector<Dev_feature*> Feature_list;
 
@@ -89,7 +87,7 @@ public:
   { return l4_uint32_t(~0); }
 
   virtual ~Device()
-  { __devs.erase(l4vbus_device_handle_t(this)); }
+  {}
 
   char const *name() const override
   { return _name.c_str(); }
@@ -130,18 +128,17 @@ public:
 
   virtual Io_irq_pin::Msi_src *find_msi_src(Msi_src_info si);
 
-  Device() : _name("(noname)")
-  { __devs.insert(l4vbus_device_handle_t(this)); }
-
-  Device *get_dev_by_id(l4vbus_device_handle_t id);
+  Device() : _name("(noname)") {}
 
   void dump(int indent) const override;
 
-protected:
-  // helper functions
-  int get_by_hid(L4::Ipc::Iostream &ios);
-  int vbus_get_device(L4::Ipc::Iostream &ios);
+  l4vbus_device_handle_t handle() const { return _handle; }
+  void set_handle(l4vbus_device_handle_t h) { _handle = h; }
 
+  l4vbus_device_t get_device_info() const;
+  l4vbus_resource_t get_resource_info(int index) const;
+
+protected:
   Device *get_root()
   {
     Device *d;
@@ -151,9 +148,7 @@ protected:
   }
 
   std::string _name;
-
-  typedef cxx::Avl_set<l4vbus_device_handle_t> Dev_set;
-  static Dev_set __devs;
+  int _handle = -1;
 
 private:
   Feature_list _features;

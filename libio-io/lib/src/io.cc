@@ -249,7 +249,7 @@ l4io_iterate_devices(l4io_device_handle_t *devhandle,
   if (reshandle)
     *reshandle = 0;
 
-  return l4vbus_get_next_device(vbus().cap(), L4VBUS_NULL,
+  return l4vbus_get_next_device(vbus().cap(), L4VBUS_ROOT_BUS,
                                 devhandle, L4VBUS_MAX_DEPTH, dev);
 }
 
@@ -259,7 +259,7 @@ l4io_lookup_device(const char *devname,
                    l4io_resource_handle_t *res_handle)
 {
   int r;
-  l4io_device_handle_t dh = 0;
+  l4io_device_handle_t dh = L4VBUS_NULL;
 
   if (!vbus().is_valid())
     return -L4_ENOENT;
@@ -320,7 +320,7 @@ l4io_request_resource_iomem(l4io_device_handle_t devhandle,
 void
 l4io_request_all_ioports(void (*res_cb)(l4vbus_resource_t const *res))
 {
-  l4vbus_device_handle_t next_dev = 0;
+  l4vbus_device_handle_t next_dev = L4VBUS_NULL;
   l4vbus_device_t info;
 
   while (!l4vbus_get_next_device(vbus().cap(), l4io_get_root_device(),
@@ -344,7 +344,7 @@ int
 l4io_has_resource(enum l4io_resource_types_t type,
                   l4vbus_paddr_t start, l4vbus_paddr_t end)
 {
-  l4io_device_handle_t dh = l4io_get_root_device();
+  l4io_device_handle_t dh = L4VBUS_NULL;
   l4io_device_t dev;
   l4io_resource_handle_t reshandle;
 

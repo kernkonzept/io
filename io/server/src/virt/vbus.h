@@ -118,6 +118,7 @@ public:
   Resource_set const *resource_set() const { return &_resources; }
   Sw_icu *sw_icu() const { return _sw_icu; }
   void sw_icu(Sw_icu *icu) { _sw_icu = icu; }
+  void finalize();
 
   char const *inhibitor_name() const override
   { return Device::name(); }
@@ -217,11 +218,20 @@ private:
   int get_stream_info_for_id(l4_umword_t, L4Re::Event_stream_info *) override;
   int get_stream_state_for_id(l4_umword_t, L4Re::Event_stream_state *) override;
 
+  Device *dev_from_id(l4vbus_device_handle_t dev, int err) const;
+  iterator rpc_get_dev_next_iterator(Device *dev, L4::Ipc::Iostream &ios, int err) const;
+  int rpc_get_next_dev(Device *dev, L4::Ipc::Iostream &ios, int err) const;
+  int rpc_get_dev_by_hid(Device *dev, L4::Ipc::Iostream &ios) const;
+  int rpc_device_get(Device *dev, L4::Ipc::Iostream &ios) const;
+
+  int dispatch_generic(L4vbus::Vbus::Rights obj, Device *dev, l4_uint32_t func, L4::Ipc::Iostream &ios);
+
   Resource_set _resources;
   Device *_host;
   Sw_icu *_sw_icu;
   Int_property _num_msis;
   Dma_domain_group _dma_domain_group;
+  std::vector<Device *> _devices_by_id;
 };
 
 }
