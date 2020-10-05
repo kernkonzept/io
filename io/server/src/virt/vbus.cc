@@ -593,23 +593,6 @@ rpc_get_dev_adr(Device *dev, L4::Ipc::Iostream &ios)
   return L4_EOK;
 }
 
-struct Match_hid
-{
-  char const *hid;
-  Device mutable *dev;
-
-  int operator () (Device *d) const
-  {
-    char const *h = d->hid();
-    if (h && strcmp(h, hid) == 0)
-      {
-        dev = d;
-        return 1;
-      }
-    return 0;
-  }
-};
-
 }
 
 Device *
@@ -677,13 +660,10 @@ System_bus::rpc_get_dev_by_hid(Device *dev, L4::Ipc::Iostream &ios) const
   if (!hid || sz <= 1)
     return -L4_EINVAL;
 
-  Match_hid mh;
-  mh.hid = hid;
-  mh.dev = 0;
-
   for (; c != end(); ++c)
-    if (mh(*c) == 1)
-      return rpc_device_get(*c, ios);
+    if (char const *h = c->hid())
+      if (strcmp(h, hid) == 0)
+        return rpc_device_get(*c, ios);
 
   return -L4_ENOENT;
 }
