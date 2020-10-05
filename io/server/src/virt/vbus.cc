@@ -324,6 +324,9 @@ System_bus::request_resource(L4::Ipc::Iostream &ios)
     return -L4_EMSGTOOSHORT;
 
   Resource ires(res.type, res.start, res.end);
+  if (!ires.valid())
+    return -L4_EINVAL;
+
   if (dlevel(DBG_DEBUG2))
     {
       printf("request resource: ");
