@@ -357,8 +357,8 @@ public:
     if ((s & 1) == 1) // IO
       {
         _type = T_io;
-        _base = v & ~(l4_uint32_t)1;
-        _size = (~(s & ~(l4_uint32_t)1) + 1) & s;
+        _base = v & ~(l4_uint32_t)3;
+        _size = (~(s & ~(l4_uint32_t)3) + 1) & s;
         _flags = 0;
         return true;
       }
