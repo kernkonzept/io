@@ -41,10 +41,12 @@ namespace Pci {
      */
     l4_uint32_t read(unsigned offs, Hw::Pci::Cfg_width w) const
     {
-      offs >>= w;
-      if (offs > sizeof(T))
+      if (offs >= sizeof(T))
         return ~0;
 
+      // convert byte offset into bit shift while also aligning the offset
+      // according to the access width
+      offs >>= w;
       offs <<= w + 3; // now offs is aligned to 'w'
       l4_uint32_t m = 0xffffffffU >> (32 - (8U << w));
       return (_v >> offs) & m;
@@ -63,10 +65,10 @@ namespace Pci {
      */
     void write(unsigned offs, l4_uint32_t v, Hw::Pci::Cfg_width w, T ro = 0)
     {
-      offs >>= w;
-      if (offs > sizeof(T))
+      if (offs >= sizeof(T))
         return;
 
+      offs >>= w;
       offs <<= w + 3; // now offs is aligned to 'w'
       l4_uint32_t m = 0xffffffffU >> (32 - (8U << w));
 
