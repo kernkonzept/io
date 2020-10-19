@@ -1,0 +1,27 @@
+comment "GPIO Drivers"
+
+config L4IO_GPIO_BCM2835
+	bool "Broadcom BCM2835"
+	default y
+	help
+		Add support for Broadcom BCM2835 gpio chip
+
+config L4IO_GPIO_OMAP
+	bool "OMAP35x, OMAP44x, OMAP54x"
+	default y
+	help
+		Add support for the OMAP3/4/5 GPIO chips (omap35x,omap44x,omap54x)
+
+config L4IO_GPIO_QCOM
+	bool "GPIO Qualcom TLMN / MSM8916"
+	default y
+	help
+		Add support for the Qualcomm "Top-Level Mode Multiplexer" (TLMM) GPIO
+		controller.
+
+config L4IO_GPIO_IMX
+	bool "GPIO IMX / IMX8QM"
+	default y
+	select L4IO_SCU_IMX8QM
+	help
+		Add support for the IMX / IMX8 GPIO chips.

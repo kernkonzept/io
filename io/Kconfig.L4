@@ -1,0 +1,27 @@
+menu "io platform manager"
+
+config L4IO_ACPI
+	bool "Include the ACPI subsystem" if !BUILD_ARCH_x86 && !BUILD_ARCH_amd64
+	depends on BUILD_ARCH_x86 || BUILD_ARCH_amd64
+	default y
+	select L4IO_PCI
+
+config L4IO_PCI
+	bool "Include the PCI subsystem"
+	select L4IO_SCU_IMX8QM
+	default y
+
+config L4IO_PCIID_DB
+	bool "Include PCI-ID database for descriptive PCI devices"
+	depends on L4IO_PCI
+	default y
+
+menu "Device drivers"
+
+source "server/src/drivers/Kconfig.L4"
+
+source "server/src/drivers/gpio/Kconfig.L4"
+
+endmenu
+
+endmenu

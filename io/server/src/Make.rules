@@ -2,10 +2,6 @@
 #MODE   := shared
 TARGET  = io
 
-$(GENERAL_D_LOC): $(PKGDIR)/server/src/Makefile.config
-
-include $(PKGDIR)/server/src/Makefile.config
-
 DEFINES-$(CONFIG_L4IO_PCIID_DB) += -DCONFIG_L4IO_PCIID_DB
 
 SUBDIRS      = drivers

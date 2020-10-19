@@ -1,0 +1,5 @@
+config L4IO_SCU_IMX8QM
+	bool "NXP i.MX8QM SCU"
+	default y
+	help
+		Add support for i.MX8 System Controller Unit found on the NXP i.MX8QM.
