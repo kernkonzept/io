@@ -225,7 +225,7 @@ namespace Pci {
      * An entry in this array represents a 32bit base address value of an IO or
      * MMIO region. For 64bit MMIO regions two entries are used.
      */
-    Cfg_reg<l4_uint32_t> _b[BARS];  ///< 32bit base address value
+    Cfg_reg<l4_uint32_t> _b[BARS];
     /**
      * An entry in this array stores the size of the corresponding IO or MMIO
      * region.
