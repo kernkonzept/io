@@ -8,6 +8,7 @@
  * Please see the COPYING-GPL-2 file for details.
  */
 
+#include <l4/bid_config.h>
 #include <l4/re/env>
 #include <l4/re/namespace>
 
@@ -526,6 +527,22 @@ System_bus::op_map(L4Re::Dataspace::Rights,
   return L4_EOK;
 };
 
+long
+System_bus::op_map_info(L4Re::Dataspace::Rights,
+                        [[maybe_unused]] l4_addr_t &start_addr,
+                        [[maybe_unused]] l4_addr_t &end_addr)
+{
+#ifdef CONFIG_MMU
+  // No constraints on MMU systems.
+  return 0;
+#else
+  // The virtual IO dataspace spans the whole address range. Return the full
+  // range so that resources are mapped 1:1.
+  start_addr = 0;
+  end_addr = ~static_cast<l4_addr_t>(0);
+  return 1;
+#endif
+}
 
 long
 System_bus::op_acquire(L4Re::Inhibitor::Rights, l4_umword_t id, L4::Ipc::String<> reason)

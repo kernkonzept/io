@@ -161,6 +161,9 @@ public:
              L4Re::Dataspace::Flags flags,
              L4::Ipc::Snd_fpage &fp);
 
+  long op_map_info(L4Re::Dataspace::Rights r,
+                   l4_addr_t &start_addr,
+                   l4_addr_t &end_addr);
 
   long op_acquire(L4Re::Inhibitor::Rights r, l4_umword_t id,
                   L4::Ipc::String<> reason);
