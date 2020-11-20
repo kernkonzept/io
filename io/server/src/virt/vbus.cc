@@ -524,6 +524,21 @@ System_bus::op_map(L4Re::Dataspace::Rights,
   return L4_EOK;
 };
 
+long
+System_bus::op_map_info(L4Re::Dataspace::Rights,
+                        l4_addr_t &min_addr,
+                        l4_addr_t &max_addr)
+{
+#ifndef CONFIG_MMU
+  min_addr = 0;
+  max_addr = ~0UL;
+  return 1;
+#else
+  (void)min_addr;
+  (void)max_addr;
+  return 0;
+#endif
+}
 
 long
 System_bus::op_acquire(L4Re::Inhibitor::Rights, l4_umword_t id, L4::Ipc::String<> reason)
