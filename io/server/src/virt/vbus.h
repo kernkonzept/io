@@ -161,6 +161,13 @@ public:
              L4Re::Dataspace::Flags flags,
              L4::Ipc::Snd_fpage &fp);
 
+  long op_map_to(L4Re::Dataspace::Rights rights,
+                 L4::Ipc::Snd_fpage const &dst_cap,
+                 L4Re::Dataspace::Offset offset,
+                 L4Re::Dataspace::Flags flags,
+                 L4Re::Dataspace::Map_addr min_addr,
+                 L4Re::Dataspace::Map_addr max_addr);
+
   long op_map_info(L4Re::Dataspace::Rights r,
                    l4_addr_t &min_addr,
                    l4_addr_t &max_addr);

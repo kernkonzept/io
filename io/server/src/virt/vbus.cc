@@ -525,6 +525,17 @@ System_bus::op_map(L4Re::Dataspace::Rights,
 };
 
 long
+System_bus::op_map_to(L4Re::Dataspace::Rights,
+                      L4::Ipc::Snd_fpage const &,
+                      L4Re::Dataspace::Offset,
+                      L4Re::Dataspace::Flags,
+                      L4Re::Dataspace::Map_addr,
+                      L4Re::Dataspace::Map_addr)
+{
+  return -L4_ENOSYS;
+}
+
+long
 System_bus::op_map_info(L4Re::Dataspace::Rights,
                         l4_addr_t &min_addr,
                         l4_addr_t &max_addr)
