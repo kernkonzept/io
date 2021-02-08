@@ -29,11 +29,12 @@
  * (page 325)
  */
 
+#include <l4/drivers/hw_mmio_register_block>
+
 #include "cfg.h"
 #include "res.h"
 #include "debug.h"
 #include <pci-driver.h>
-#include "hw_mmio_register_block.h"
 
 namespace {
 
@@ -112,7 +113,7 @@ struct Intel_root_complex_p2p_inhibitor : Driver
         return 0;
       }
 
-    auto regs = Hw::Mmio_register_block<32>(vbase);
+    auto regs = L4drivers::Mmio_register_block<32>(vbase);
     l4_uint32_t bspr = regs.read<l4_uint32_t>(Bspr);
     d_printf(DBG_DEBUG, "Bspr = %x\n", bspr);
     bspr &= Bspr_bpnpd | Bspr_bppd;

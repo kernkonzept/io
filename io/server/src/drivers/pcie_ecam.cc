@@ -87,8 +87,9 @@
  * \endcode
  */
 
+#include <l4/drivers/hw_mmio_register_block>
+
 #include "hw_device.h"
-#include "hw_mmio_register_block.h"
 #include <pci-root.h>
 #include "resource_provider.h"
 
@@ -149,10 +150,10 @@ private:
   Int_property _int_map[4];
 
   // PCI root bridge core memory. (Currently) not used.
-  Hw::Register_block<32> _regs;
+  L4drivers::Register_block<32> _regs;
 
   // PCI root bridge config space.
-  Hw::Register_block<32> _cfg;
+  L4drivers::Register_block<32> _cfg;
 
   // Used for certain debug output.
   char _prefix[20];
@@ -238,7 +239,7 @@ Ecam_pcie_bridge::host_init()
       d_printf(DBG_ERR, "ERROR %s: could not map core memory.\n", _prefix);
       return -L4_ENOMEM;
     }
-  _regs = new Hw::Mmio_register_block<32>(va);
+  _regs = new L4drivers::Mmio_register_block<32>(va);
 
   va = res_map_iomem(_cfg_base, _cfg_size);
   if (!va)
@@ -246,7 +247,7 @@ Ecam_pcie_bridge::host_init()
       d_printf(DBG_ERR, "ERROR %s: could not map cfg memory.\n", _prefix);
       return -L4_ENOMEM;
     }
-  _cfg = new Hw::Mmio_register_block<32>(va);
+  _cfg = new L4drivers::Mmio_register_block<32>(va);
 
   // Port I/O is not performed using dedicated instructions like in/out on
   // non-x86 hosts. Instead, port I/O is emulated using an MMIO region. The

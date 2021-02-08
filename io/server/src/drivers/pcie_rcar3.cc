@@ -55,11 +55,11 @@
 
 #include "cpg_rcar3.h"
 #include "hw_device.h"
-#include "hw_mmio_register_block.h"
 #include <pci-root.h>
 #include "resource_provider.h"
 #include "pcie_rcar3_regs.h"
 
+#include <l4/drivers/hw_mmio_register_block>
 #include <l4/re/error_helper>
 #include <l4/util/util.h>
 
@@ -129,7 +129,7 @@ private:
   Int_property _interrupt{~0};
 
   // PCI root bridge core memory.
-  Hw::Register_block<32> _regs;
+  L4drivers::Register_block<32> _regs;
 
   // Used for certain debug output.
   char _prefix[20];
@@ -228,7 +228,7 @@ Rcar3_pcie_bridge::host_init()
       d_printf(DBG_ERR, "ERROR: %s: could not map core memory.\n", _prefix);
       return -L4_ENOMEM;
     }
-  _regs = new Hw::Mmio_register_block<32>(va);
+  _regs = new L4drivers::Mmio_register_block<32>(va);
 
   unsigned bit;
   Rcar3_cpg cpg(0xe6150000);

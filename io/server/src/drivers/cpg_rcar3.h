@@ -10,12 +10,12 @@
 
 #pragma once
 
+#include <l4/drivers/hw_mmio_register_block>
 #include <l4/re/env>
 #include <l4/re/rm>
 #include <l4/util/util.h>
 
 #include "debug.h"
-#include "hw_mmio_register_block.h"
 #include "res.h"
 
 /*
@@ -35,7 +35,7 @@ public:
         d_printf(DBG_ERR, "ERROR: rcar3_cpg: could not map CPG memory.\n");
         throw -L4_ENOMEM;
       }
-    _regs = new Hw::Mmio_register_block<32>(_base);
+    _regs = new L4drivers::Mmio_register_block<32>(_base);
   }
 
   ~Rcar3_cpg()
@@ -160,5 +160,5 @@ private:
   };
 
   l4_addr_t _base;
-  Hw::Register_block<32> _regs;
+  L4drivers::Register_block<32> _regs;
 };

@@ -1,12 +1,12 @@
 #pragma once
 
+#include <l4/drivers/hw_mmio_register_block>
 #include <l4/re/env>
 #include <l4/sys/iommu>
 #include <l4/re/error_helper>
 #include <cassert>
 #include "dma_domain.h"
 #include "hw_device.h"
-#include "hw_mmio_register_block.h"
 
 namespace Hw {
 
@@ -113,7 +113,7 @@ private:
     if (!reg_base)
       return;
 
-    auto reg_block = Hw::Mmio_register_block<32>(reg_base->map_iomem());
+    auto reg_block = L4drivers::Mmio_register_block<32>(reg_base->map_iomem());
     reg_block.write(sid, offset);
   }
 
