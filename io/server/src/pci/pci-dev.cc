@@ -385,9 +385,6 @@ Dev::discover_bar(int bar)
 void
 Dev::discover_expansion_rom()
 {
-  if (!Io_config::cfg->expansion_rom(host()))
-    return;
-
   l4_uint32_t v, x;
   unsigned rom_register = (cfg.type() == 0) ? 12 * 4 : 14 * 4;
 
@@ -401,15 +398,16 @@ Dev::discover_expansion_rom()
   l4_uint16_t cmd = disable_decoders();
   c.write<l4_uint32_t>(rom_register, ~0x7ffU);
   x = c.read<l4_uint32_t>(rom_register);
-  c.write<l4_uint32_t>(rom_register, v);
+  // write value back and disable expansion ROM
+  c.write<l4_uint32_t>(rom_register, v & ~0x1);
   restore_decoders(cmd);
 
-  v &= ~0x3ff;
+  v &= ~0x7ff;
 
   if (!x)
     return; // no expansion ROM
 
-  x &= ~0x3ff;
+  x &= ~0x7ff;
 
   if (0)
     printf("ROM %08x: %08x %08x\n", _host->adr(), x, v);
@@ -425,7 +423,9 @@ Dev::discover_expansion_rom()
   Resource *res = new Resource(flags);
   res->set_id("ROM");
 
-  _rom = res;
+  if (Io_config::cfg->expansion_rom(host()))
+    _rom = res;
+
   res->start_size(v & ~3, 1 << s);
   res->validate();
   _host->add_resource_rq(res);
