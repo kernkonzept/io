@@ -117,6 +117,16 @@ public:
 
   void add_saved_cap(Saved_cap *cap) { _saved_state.add_cap(cap); }
 
+  void enable_bus_master() override
+  {
+    auto c = config();
+    l4_uint16_t v = c.read<l4_uint16_t>(Config::Command);
+
+    // bus mastering is off
+    if (!(v & 0x4))
+      c.write<l4_uint16_t>(Config::Command, (v | 0x4));
+  }
+
 protected:
   cxx::H_list_t<Msi_mgr> _msi_mgrs;
 

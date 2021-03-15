@@ -110,6 +110,8 @@ Bridge::setup_children(Hw::Device *)
       if (0)
         printf("%08x: set pref mmio to %08x\n", host()->adr(), v);
     }
+
+  enable_bus_master();
 }
 
 void

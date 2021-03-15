@@ -33,6 +33,8 @@ public:
   virtual l4_uint16_t checked_cmd_write(l4_uint16_t mask, l4_uint16_t cmd) = 0;
   virtual bool enable_rom() = 0;
 
+  virtual void enable_bus_master() = 0;
+
   virtual unsigned bus_nr() const = 0;
   virtual unsigned devfn() const = 0;
   unsigned device_nr() const { return devfn() >> 3; }
