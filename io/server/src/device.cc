@@ -39,7 +39,6 @@ bool
 Device::alloc_child_resource(Resource *r, Device *cld)
 {
   bool found_as = false;
-  bool assigned = false;
   // The first run requires exact match between client and parent resource.
   // The second run allows to assign a prefetchable MMIO client region to a
   // non-prefetchable MMIO parent resource.
@@ -90,12 +89,9 @@ Device::alloc_child_resource(Resource *r, Device *cld)
           if (!found_as && parent())
             return parent()->alloc_child_resource(r, cld);
 
-          if (!assigned)
-            {
-              d_printf(DBG_ERR, "ERROR: could not reserve resource\n");
-              if (dlevel(DBG_ERR))
-                r->dump();
-            }
+          d_printf(DBG_ERR, "ERROR: could not reserve resource\n");
+          if (dlevel(DBG_ERR))
+            r->dump();
 
           r->disable();
           return false;
