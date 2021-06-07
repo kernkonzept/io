@@ -271,18 +271,16 @@ Ecam_pcie_bridge::host_init()
 int
 Ecam_pcie_bridge::cfg_read(Cfg_addr addr, l4_uint32_t *value, Cfg_width width)
 {
-  uint32_t v = _cfg[addr.addr() & ~3];
-
   switch (width)
     {
     case Hw::Pci::Cfg_long:
-      *value = v;
+      *value = _cfg.r<32>(addr.addr());
       break;
     case Hw::Pci::Cfg_short:
-      *value = (v >> ((addr.reg() & 2) << 3)) & 0xffff;
+      *value = _cfg.r<16>(addr.addr());
       break;
     case Hw::Pci::Cfg_byte:
-      *value = (v >> ((addr.reg() & 3) << 3)) & 0xff;
+      *value = _cfg.r<8>(addr.addr());
       break;
     default:
       d_printf(DBG_WARN, "Invalid width %d!\n", width);
@@ -305,27 +303,22 @@ Ecam_pcie_bridge::cfg_write(Cfg_addr addr, l4_uint32_t value, Cfg_width width)
            _prefix, addr.bus(), addr.dev(), addr.fn(), addr.reg(), 8 << width,
            2 << width, value & ((1UL << (8 << width)) - 1));
 
-  uint32_t mask, shift;
   switch (width)
     {
     case Hw::Pci::Cfg_long:
-      shift = 0;
-      mask  = 0xffffffff;
+      _cfg.r<32>(addr.addr()) = value;
       break;
     case Hw::Pci::Cfg_short:
-      shift = (addr.reg() & 2) << 3;
-      mask  = 0xffff << shift;
+      _cfg.r<16>(addr.addr()) = value;
       break;
     case Hw::Pci::Cfg_byte:
-      shift = (addr.reg() & 3) << 3;
-      mask  = 0xff << shift;
+      _cfg.r<8>(addr.addr()) = value;
       break;
     default:
       d_printf(DBG_WARN, "Invalid width %d!\n", width);
       return -EIO;
     }
 
-  _cfg[addr.addr()].modify(mask, (value << shift) & mask);
   return 0;
 }
 
