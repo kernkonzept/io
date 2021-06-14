@@ -31,9 +31,13 @@
  * virtual bus. After obtaining a device handle for a specific device the
  * client can enumerate its resources.
  *
- * \includefile{l4/vbus/vbus}
- *
  * Refer to \ref l4vbus_module for the C API.
+ *
+ * \includefile{l4/vbus/vbus}
+ */
+
+/**
+ * \copydoc api_l4re_vbus
  */
 namespace L4vbus {
 
