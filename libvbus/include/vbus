@@ -45,7 +45,8 @@ class Vbus;
 
 /**
  * \ingroup api_l4re_vbus
- * Power-management API mixin.
+ * Power-management API mixin. Devices that inherit from this mixin provide an
+ * API to be suspended and resumed.
  */
 template<typename DEC>
 class Pm
@@ -230,8 +231,9 @@ protected:
  * \ingroup api_l4re_vbus
  * Vbus Interrupt controller API.
  *
- * Allows to access the underlying L4::Icu capability managing IRQs for
- * the L4vbus::Vbus.
+ * Every Vbus contains a virtual interrupt control unit that manages the IRQs of
+ * the devices on the bus. This class provides access to a capability to an
+ * L4::Icu object which can then be used to interface with the IRQs.
  *
  * \see L4::Icu
  */
@@ -252,7 +254,13 @@ public:
   };
 
   /**
-   * Request the L4::Icu capability for this Vbus ICU.
+   * Request an L4::Icu capability for this Vbus's virtual ICU.
+   *
+   * \param[out] icu  Capability slot where the L4::Icu capability shall be
+   *                  stored.
+   *
+   * \retval 0          Success.
+   * \retval otherwise  IPC error.
    */
   int vicu(L4::Cap<L4::Icu> icu) const
   {
