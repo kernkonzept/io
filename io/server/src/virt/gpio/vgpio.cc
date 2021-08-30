@@ -435,20 +435,20 @@ class Gpio_resource : public Resource
 {
 public:
   explicit Gpio_resource(::Gpio_resource *hr)
-  : Resource(hr->flags(), hr->start(), hr->end()), _hwr(hr), _handle(~0)
+  : Resource(hr->flags(), hr->start(), hr->end()), _hwr(hr), _provider(nullptr)
   { set_id(hr->id()); }
 
   ::Gpio_resource *hwr() const { return _hwr; }
 
-  void set_handle(l4vbus_device_handle_t handle)
-  { _handle = handle; }
+  void set_provider(Gpio *provider)
+  { _provider = provider; }
 
   l4vbus_device_handle_t provider_device_handle() const override
-  { return _handle; }
+  { return _provider->handle(); }
 
 private:
   ::Gpio_resource *_hwr;
-  l4vbus_device_handle_t _handle;
+  Gpio *_provider;
 };
 
 class Root_gpio_rs : public Resource_space
@@ -517,7 +517,7 @@ public:
     if (e >= n) e = n - 1;
     if (s >= n) s = n - 1;
     vgpio->enable_range(s, e);
-    r->set_handle(l4vbus_device_handle_t(vgpio));
+    r->set_provider(vgpio);
 
     return true;
   }
