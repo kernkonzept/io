@@ -11,6 +11,7 @@
 #include "irqs.h"
 #include "debug.h"
 #include "main.h"
+#include "server.h"
 #include <l4/sys/cxx/ipc_epiface>
 #include <l4/cxx/unique_ptr>
 #include <l4/sys/irq>
