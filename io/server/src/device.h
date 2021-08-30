@@ -8,6 +8,8 @@
  */
 #pragma once
 
+#include <fnmatch.h>
+
 #include <l4/sys/l4int.h>
 #include <l4/vbus/vbus_types.h>
 #include <l4/cxx/minmax>
@@ -311,7 +313,20 @@ public:
     request_resource(r);
   }
 
-  virtual bool match_cid(cxx::String const &) const { return false; }
+  virtual bool match_cid(cxx::String const &cid) const
+  {
+    if (hid() == nullptr)
+      return false;
+
+    char cid_cstr[cid.len() + 1];
+    __builtin_memcpy(cid_cstr, cid.start(), cid.len());
+    cid_cstr[cid.len()]  = 0;
+
+    if (!fnmatch(cid_cstr, hid(), 0))
+      return true;
+
+    return false;
+  }
 
   char const *name() const override { return "(noname)"; }
   char const *hid() const override { return 0; }

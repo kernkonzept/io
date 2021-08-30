@@ -7,8 +7,6 @@
  * Please see the COPYING-GPL-2 file for details.
  */
 
-#include <fnmatch.h>
-
 #include "hw_device.h"
 #include "cfg.h"
 #include "debug.h"
@@ -171,13 +169,8 @@ Device::get_child_dev_uid(l4_umword_t uid, l4_uint32_t adr, bool create)
 bool
 Device::match_cid(cxx::String const &cid) const
 {
-    {
-      char cid_cstr[cid.len() + 1];
-      __builtin_memcpy(cid_cstr, cid.start(), cid.len());
-      cid_cstr[cid.len()]  = 0;
-      if (!fnmatch(cid_cstr, hid(), 0))
-        return true;
-    }
+  if (Generic_device::match_cid(cid))
+    return true;
 
   for (Cid_list::const_iterator i = _cid.begin(); i != _cid.end(); ++i)
     if (cid == (*i).c_str())
