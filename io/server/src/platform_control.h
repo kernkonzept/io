@@ -35,6 +35,10 @@ public:
   int op_system_suspend(L4::Platform_control::Rights, l4_umword_t)
   { return start_operation(Suspend_in_progress); }
 
+  int op_cpu_allow_shutdown(L4::Platform_control::Rights, l4_umword_t,
+                            l4_umword_t)
+  { return -L4_ENOSYS; }
+
   int op_cpu_enable(L4::Platform_control::Rights, l4_umword_t)
   { return -L4_ENOSYS; }
 
