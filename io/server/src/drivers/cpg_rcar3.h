@@ -27,7 +27,7 @@
 class Rcar3_cpg
 {
 public:
-  Rcar3_cpg(l4_addr_t base)
+  Rcar3_cpg(l4_uint64_t base)
   {
     _base = res_map_iomem(base, 0x1000);
     if (!_base)

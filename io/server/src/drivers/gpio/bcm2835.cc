@@ -521,12 +521,12 @@ Gpio_bcm2835_chip::init()
       return;
     }
 
-  l4_addr_t phys_base = regs->start();
-  l4_addr_t size = regs->size();
+  l4_uint64_t phys_base = regs->start();
+  l4_uint64_t size = regs->size();
 
   if (size < 0xb4 || size > (1 << 20))
     {
-      d_printf(DBG_ERR, "error: %s: invalid mmio size (%lx) for device: Gpio_bcm2835_chip\n"
+      d_printf(DBG_ERR, "error: %s: invalid mmio size (%llx) for device: Gpio_bcm2835_chip\n"
                         "       the chip will not work at all!\n", name(), size);
       return;
     }
@@ -543,7 +543,7 @@ Gpio_bcm2835_chip::init()
   if (!vbase)
     {
       d_printf(DBG_ERR, "error: %s: cannot map registers for Gpio_bcm2835_chip\n"
-                        "       phys=%lx-%lx\n",
+                        "       phys=%llx-%llx\n",
                name(), phys_base, phys_base + size - 1);
       return;
     }

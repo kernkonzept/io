@@ -21,6 +21,7 @@
 #include <cstdlib>
 #include <cstdio>
 #include <cstring>
+#include <limits>
 
 #include "debug.h"
 #include "res.h"
@@ -163,8 +164,18 @@ map_iomem_range(l4_addr_t phys, l4_addr_t virt, l4_addr_t size)
  * Sigma0 and remember that this physical region is mapped into our address
  * space (in the 'io_set' AVL tree).
  */
-l4_addr_t res_map_iomem(l4_addr_t phys, l4_addr_t size)
+l4_addr_t res_map_iomem(l4_uint64_t phys, l4_uint64_t size)
 {
+  if (   size > std::numeric_limits<l4_umword_t>::max()
+      || phys > std::numeric_limits<l4_umword_t>::max() - size)
+    {
+      // This can happen on 32-bit systems where Phys_region can only handle
+      // addresses up to 4GB.
+      d_printf(DBG_WARN,
+               "MMIO region 0x%llx/0x%llx not addressable!\n", phys, size);
+      return 0;
+    }
+
   int p2size = Min_rs;
   while ((1UL << p2size) < (size + (phys - l4_trunc_size(phys, p2size))))
     ++p2size;
