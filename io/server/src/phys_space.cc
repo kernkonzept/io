@@ -22,6 +22,9 @@
 void *operator new (size_t sz, cxx::Nothrow const &) throw()
 { return malloc(sz); }
 
+void operator delete(void *p, cxx::Nothrow const &) throw()
+{ return free(p); }
+
 Phys_space Phys_space::space;
 
 Phys_space::Phys_space()
