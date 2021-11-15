@@ -47,9 +47,9 @@ struct Internals
         return;
       }
 
-    l4vbus_device_handle_t handle = 0;
-    int ret = l4vbus_get_device_by_hid(_vbus.cap(), 0, &handle, "L40009",
-        L4VBUS_MAX_DEPTH, 0);
+    l4vbus_device_handle_t handle = L4VBUS_NULL;
+    int ret = l4vbus_get_device_by_hid(_vbus.cap(), L4VBUS_ROOT_BUS, &handle,
+                                       "L40009", L4VBUS_MAX_DEPTH, 0);
     if (ret)
       {
         printf("libio: Warning: Finding 'icu' in system bus failed with '%s'\n",
@@ -264,7 +264,7 @@ l4io_lookup_device(const char *devname,
   if (!vbus().is_valid())
     return -L4_ENOENT;
 
-  if ((r = l4vbus_get_device_by_hid(vbus().cap(), 0,
+  if ((r = l4vbus_get_device_by_hid(vbus().cap(), L4VBUS_ROOT_BUS,
                                     &dh, devname, L4VBUS_MAX_DEPTH, dev)))
     return r;
 
