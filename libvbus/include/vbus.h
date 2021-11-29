@@ -142,6 +142,19 @@ l4vbus_get_hid(l4_cap_idx_t vbus, l4vbus_device_handle_t dev, char *hid,
                unsigned long max_len);
 
 /**
+ * \brief Get the bus-specific address of a device
+ *
+ * \param       vbus    Capability of the system bus
+ * \param       dev     Handle of the device
+ * \param[out]  adr     Address
+ *
+ * \retval L4_EOK      Success.
+ * \retval -L4_ENOSYS  Device has no valid address.
+ */
+int L4_CV
+l4vbus_get_adr(l4_cap_idx_t vbus, l4vbus_device_handle_t dev, l4_uint32_t *adr);
+
+/**
  * Request an IO port resource.
  *
  * \param     vbus  Capability of the system bus.

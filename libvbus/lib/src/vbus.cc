@@ -174,6 +174,18 @@ l4vbus_get_hid(l4_cap_idx_t vbus, l4vbus_device_handle_t dev, char *hid,
 }
 
 int
+l4vbus_get_adr(l4_cap_idx_t vbus, l4vbus_device_handle_t dev, l4_uint32_t *adr)
+{
+  L4::Ipc::Iostream s(l4_utcb());
+  s << dev << l4_uint32_t(L4vbus_vdevice_adr);
+  int err = l4_error(s.call(vbus, L4vbus::Vbus::Protocol));
+  if (err == L4_EOK)
+    s >> *adr;
+
+  return err;
+}
+
+int
 l4vbus_vicu_get_cap(l4_cap_idx_t vbus, l4vbus_device_handle_t icu,
                     l4_cap_idx_t res)
 {
