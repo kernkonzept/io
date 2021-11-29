@@ -575,9 +575,9 @@ rpc_get_dev_hid(Device *dev, L4::Ipc::Iostream &ios)
 {
   char const *h = dev->hid();
   if (!h)
-    return -L4_ENOSYS;
-
-  ios << h;
+    ios << "";
+  else
+    ios << h;
   return L4_EOK;
 }
 
@@ -678,6 +678,7 @@ System_bus::dispatch_generic(L4vbus::Vbus::Rights obj, Device *dev,
       switch ((L4vbus_vdevice_op)func)
         {
         case L4vbus_vdevice_hid:
+        case L4vbus_vdevice_get_hid:
           return rpc_get_dev_hid(dev, ios);
         case L4vbus_vdevice_adr:
           return rpc_get_dev_adr(dev, ios);
@@ -701,14 +702,6 @@ System_bus::dispatch_generic(L4vbus::Vbus::Rights obj, Device *dev,
                 return -L4_EMSGTOOSHORT;
               return dev->match_cid(cxx::String(cid, strnlen(cid, sz))) ? 1 : 0;
             }
-
-        case L4vbus_vdevice_get_hid:
-          if (char const *_hid = dev->hid())
-            ios << _hid;
-          else
-            ios << "";
-
-          return L4_EOK;
 
         default: return -L4_ENOSYS;
         }
