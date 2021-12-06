@@ -95,6 +95,12 @@ namespace Pci {
   template<unsigned BARS = 6>
   class Bar_array
   {
+  private:
+    l4_uint32_t bar_ro_mask(unsigned bar)
+    {
+      return (_s[bar] < 32) ? ~(~0UL << _s[bar]) : ~0UL;
+    }
+
   public:
     using Cfg_width = Hw::Pci::Cfg_width;
 
@@ -125,7 +131,7 @@ namespace Pci {
     void write(unsigned offs, l4_uint32_t v, Cfg_width w)
     {
       if (offs < (BARS * 4))
-        _b[offs / 4].write(offs & 3, v, w, ~(~0U << _s[offs / 4]));
+        _b[offs / 4].write(offs & 3, v, w, bar_ro_mask(offs / 4));
     }
 
     /**
@@ -147,7 +153,10 @@ namespace Pci {
       if ((v & 7) == 4) // 64bit MMIO BAR
         {
           _b[bar + 1].set(v >> 32);
-          _s[bar + 1] = 0;
+          if (order > 32)
+            _s[bar + 1] = order - 32 ;
+          else
+            _s[bar + 1] = 0;
         }
     }
 
@@ -158,8 +167,8 @@ namespace Pci {
      */
     void set_invalid(unsigned bar)
     {
-      _b[bar].set(~0U);
-      _s[bar] = 4;
+      _b[bar].set(0);
+      _s[bar] = 32;
     }
 
     /**
