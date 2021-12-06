@@ -335,18 +335,15 @@ Dev::discover_bar(int bar)
   if (!valid) // skip invalid (empty) BAR
     return bar + 1;
 
-  unsigned io_flags = (cmd & CC_io) ? 0 : Resource::F_disabled;
-  unsigned mem_flags = (cmd & CC_mem) ? 0 : Resource::F_disabled;
+  unsigned io_flags =  Resource::Io_res
+                     | Resource::F_size_aligned
+                     | Resource::F_hierarchical
+                     | Resource::F_can_move;
 
-  io_flags |= Resource::Io_res
-           | Resource::F_size_aligned
-           | Resource::F_hierarchical
-           | Resource::F_can_move;
-
-  mem_flags |= Resource::Mmio_res
-            | Resource::F_size_aligned
-            | Resource::F_hierarchical
-            | Resource::F_can_move;
+  unsigned mem_flags =  Resource::Mmio_res
+                       | Resource::F_size_aligned
+                       | Resource::F_hierarchical
+                       | Resource::F_can_move;
 
   Resource *res = 0;
   switch (c.type())
