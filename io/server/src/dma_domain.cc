@@ -44,7 +44,7 @@ Dma_domain_if::set_dma_space(bool set, L4::Cap<L4Re::Dma_space> space)
     printf("%s:%d: %s : %s\n", __FILE__, __LINE__, __func__,
            set ? "bind" : "unbind");
 
-  // FIXME: check trustworthyness of `space`
+  // FIXME: check trustworthiness of `space`
   if (!set)
     return 0; // FIXME: space->disassociate(_kern_dma_space);
 
