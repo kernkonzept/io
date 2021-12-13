@@ -573,11 +573,11 @@ rpc_get(S &ios)
 static inline int
 rpc_get_dev_hid(Device *dev, L4::Ipc::Iostream &ios)
 {
-  char const *h = dev->hid();
-  if (!h)
-    ios << "";
-  else
+  if (char const *h = dev->hid())
     ios << h;
+  else
+    ios << "";
+
   return L4_EOK;
 }
 
