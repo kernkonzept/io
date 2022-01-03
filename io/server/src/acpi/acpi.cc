@@ -661,12 +661,14 @@ Hw::Pci::Platform_adapter_if *pci_platform_adapter;
 
 }
 
+#if defined(ARCH_x86) || defined(ARCH_amd64)
 static Hw::Pci::Root_bridge *
 create_port_bridge(int segment, int busnum, Hw::Device *dev)
 {
   return new Hw::Pci::Port_root_bridge(segment, busnum, dev,
                                        pci_platform_adapter);
 }
+#endif
 
 static Hw::Pci::Root_bridge *
 create_additional_mmio_bridge(int pci_segment, int bus_num, Hw::Device *)
@@ -694,7 +696,7 @@ create_additional_mmio_bridge(int pci_segment, int bus_num, Hw::Device *)
 }
 
 Hw::Pci::Root_bridge *(*acpi_create_pci_root_bridge)(int segment,
-    int busnum, Hw::Device *device) = create_port_bridge;
+    int busnum, Hw::Device *device) = create_additional_mmio_bridge;
 
 static bool
 setup_pci_root_mmconfig()
@@ -728,8 +730,6 @@ setup_pci_root_mmconfig()
                                         0, e->Address, num_busses,
                                         pci_platform_adapter));
 
-      acpi_create_pci_root_bridge = create_additional_mmio_bridge;
-
       e++;
       sz -= sizeof(ACPI_MCFG_ALLOCATION);
     }
@@ -742,9 +742,12 @@ static void setup_pci_root()
   if (setup_pci_root_mmconfig())
     return;
 
+#if defined(ARCH_x86) || defined(ARCH_amd64)
   // fall-back to port-based bridge
+  acpi_create_pci_root_bridge = create_port_bridge;
   Hw::Pci::register_root_bridge(
       new Hw::Pci::Port_root_bridge(0, 0, 0, pci_platform_adapter));
+#endif
 }
 
 

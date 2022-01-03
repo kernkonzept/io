@@ -2,9 +2,12 @@ menu "io platform manager"
 
 config L4IO_ACPI
 	bool "Include the ACPI subsystem" if !BUILD_ARCH_x86 && !BUILD_ARCH_amd64
-	depends on BUILD_ARCH_x86 || BUILD_ARCH_amd64
+	depends on (BUILD_ARCH_x86 || BUILD_ARCH_amd64 || BUILD_ARCH_arm64) && HAVE_BIDPC_ACPICA
 	default y
 	select L4IO_PCI
+
+comment "ACPI not available due to missing acpica package"
+	depends on !HAVE_BIDPC_ACPICA
 
 config L4IO_PCI
 	bool "Include the PCI subsystem"

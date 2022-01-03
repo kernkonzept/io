@@ -13,6 +13,8 @@ int res_init();
 
 #if defined(ARCH_x86) || defined(ARCH_amd64)
 int res_get_ioport(unsigned port, int size);
+#else
+static inline int res_get_ioport(unsigned, int) { return -L4_ENOSYS; }
 #endif
 
 l4_addr_t res_map_iomem(l4_uint64_t phys, l4_uint64_t size, bool cached = false);

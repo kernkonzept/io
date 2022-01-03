@@ -464,9 +464,9 @@ run(int argc, char * const *argv)
 
   //res_get_ioport(0xcf8, 4);
   res_get_ioport(0, 16);
+#endif
 
   acpica_init();
-#endif
 
   system_bus()->plugin();
 

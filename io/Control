@@ -1,4 +1,5 @@
 requires: acpica[arch(x86) || arch(amd64)] libc libstdc++ l4sys libio-io
           libsigma0 stdlibs lua++ drivers-frst
+optional: acpica[arch(arm64)]
 provides: libpciids
 maintainer: warg@os.inf.tu-dresden.de

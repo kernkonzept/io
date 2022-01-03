@@ -6,6 +6,7 @@ DEFINES-$(CONFIG_L4IO_PCIID_DB) += -DCONFIG_L4IO_PCIID_DB
 
 SUBDIRS      = drivers
 
+SRC_CC_ACPI-arm64 = platform_arm64_iort.cc
 SRC_CC_ACPI-amd64 = platform_intel_vtd.cc
 SRC_CC_ACPI-x86   = platform_intel_vtd.cc
 SRC_CC_ACPI  = acpi.cc acpi_sci.cc acpi_osl.cc pci-acpi.cc $(SRC_CC_ACPI-$(ARCH))

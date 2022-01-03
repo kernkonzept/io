@@ -14,7 +14,11 @@
 #include <l4/util/port_io.h>
 #include <utils.h>
 
+#endif
+
 namespace Hw { namespace Pci {
+
+#if defined(ARCH_x86) || defined(ARCH_amd64)
 
 int
 Port_root_bridge::cfg_read(Cfg_addr addr, l4_uint32_t *value, Cfg_width w)
@@ -54,6 +58,7 @@ Port_root_bridge::cfg_write(Cfg_addr addr, l4_uint32_t value, Cfg_width w)
   return 0;
 }
 
+#endif
 
 int
 Mmio_root_bridge::cfg_read(Cfg_addr addr, l4_uint32_t *value, Cfg_width w)
@@ -80,10 +85,7 @@ Mmio_root_bridge::cfg_write(Cfg_addr addr, l4_uint32_t value, Cfg_width w)
   return 0;
 }
 
-
 }}
-
-#endif
 
 namespace Hw { namespace Pci {
 

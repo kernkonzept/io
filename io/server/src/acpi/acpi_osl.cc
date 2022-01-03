@@ -228,6 +228,7 @@ AcpiOsReadPciConfiguration (
   Hw::Pci::Root_bridge *rb = Hw::Pci::root_bridge(PciId->Segment);
   if (!rb)
     {
+#if defined(ARCH_x86) || defined(ARCH_amd64)
       if (Register >= 0x100)
         {
           d_printf(DBG_ERR, "error: PCI config space register out of range\n");
@@ -243,6 +244,10 @@ AcpiOsReadPciConfiguration (
         return AE_BAD_PARAMETER;
 
       return AE_OK;
+#else
+      d_printf(DBG_ERR, "error: no PCI bridge for seg %u\n", PciId->Segment);
+      return AE_BAD_PARAMETER;
+#endif
     }
 
   int r = rb->cfg_read(Hw::Pci::Cfg_addr(PciId->Bus, PciId->Device,
@@ -283,6 +288,7 @@ AcpiOsWritePciConfiguration (
   Hw::Pci::Root_bridge *rb = Hw::Pci::root_bridge(PciId->Segment);
   if (!rb)
     {
+#if defined(ARCH_x86) || defined(ARCH_amd64)
       if (Register >= 0x100)
         {
           d_printf(DBG_ERR, "error: PCI config space register out of range\n");
@@ -298,6 +304,10 @@ AcpiOsWritePciConfiguration (
         return AE_BAD_PARAMETER;
 
       return AE_OK;
+#else
+      d_printf(DBG_ERR, "error: no PCI bridge for seg %u\n", PciId->Segment);
+      return AE_BAD_PARAMETER;
+#endif
     }
 
   int r = rb->cfg_write(Hw::Pci::Cfg_addr(PciId->Bus, PciId->Device,
