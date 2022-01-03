@@ -168,8 +168,8 @@ Msi_res::bind(Triggerable const &irq, unsigned mode)
     return err;
 
   _msg = l4_icu_msi_info_t();
-  // TODO: use a source filter for transparent MSIs too
-  int e2 = l4_error(system_icu()->icu->msi_info(pin(), 0, &_msg));
+  l4_uint64_t src = _dev->get_src_info(nullptr);
+  int e2 = l4_error(system_icu()->icu->msi_info(pin(), src, &_msg));
   if (e2 < 0)
     {
       d_printf(DBG_ERR, "ERROR: could not get MSI message (pin=%x)\n", pin());
