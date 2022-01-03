@@ -8,6 +8,7 @@
  */
 #include <l4/sys/compiler.h>
 #include <l4/sigma0/sigma0.h>
+#include <l4/sys/kip>
 
 #include <cstdint>
 
@@ -20,6 +21,8 @@ __END_DECLS
 
 #include <pci-root.h>
 #include "res.h"
+
+using L4::Kip::Mem_desc;
 
 ACPI_STATUS
 AcpiOsEnterSleep (
@@ -139,11 +142,46 @@ AcpiOsMapMemory (
         ACPI_PHYSICAL_ADDRESS           where,
         ACPI_SIZE                       length)
 {
-  void *virt = (void*)res_map_iomem(where, length);
+  bool cached = false;
 
-  d_printf(DBG_DEBUG, "%s(%lx, %lx) = %lx\n",
+  // If the memory is in a known (reserved) RAM region it must be mapped
+  // cachable. This is required by Arm architectures because of the unaligned
+  // members in ACPI tables.
+  for (auto const &md: Mem_desc::all(l4re_kip()))
+    {
+      if (md.is_virtual())
+        continue;
+      if (where < md.start() || where > md.end())
+        continue;
+
+      switch (md.type())
+        {
+        case Mem_desc::Conventional:
+        case Mem_desc::Reserved:
+        case Mem_desc::Dedicated:
+        case Mem_desc::Bootloader:
+          break;
+        case Mem_desc::Info:
+          if (md.sub_type() != Mem_desc::Info_acpi_rsdp)
+            continue;
+          break;
+        case Mem_desc::Arch:
+          if (md.sub_type() != Mem_desc::Arch_acpi_tables)
+            continue;
+          break;
+        default:
+          continue;
+        }
+
+      cached = true;
+      break;
+    }
+
+  void *virt = (void*)res_map_iomem(where, length, cached);
+
+  d_printf(DBG_DEBUG, "%s(%lx, %lx) = %lx, %s\n",
                       __func__, (unsigned long)where, (unsigned long)length,
-                      (unsigned long)virt);
+                      (unsigned long)virt, cached ? "cached" : "uncached");
 
   return virt;
 }

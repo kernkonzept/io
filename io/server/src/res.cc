@@ -54,9 +54,10 @@ struct Io_region : public Phys_region, public cxx::Avl_tree_node
   l4_addr_t virt;
 
   mutable cxx::Bitmap_base pages;
+  cxx::Bitmap_base cached;
 
-  Io_region() : virt(0), pages(0) {}
-  Io_region(Phys_region const &pr) : Phys_region(pr), virt(0), pages(0) {}
+  Io_region() : virt(0), pages(0), cached(0) {}
+  Io_region(Phys_region const &pr) : Phys_region(pr), virt(0), pages(0), cached(0) {}
 };
 
 struct Io_region_get_key
@@ -107,7 +108,7 @@ int res_init()
  * \retval <0          Error during sigma0 request.
  */
 static long
-map_iomem_range(l4_addr_t phys, l4_addr_t virt, l4_addr_t size)
+map_iomem_range(l4_addr_t phys, l4_addr_t virt, l4_addr_t size, bool cached)
 {
   unsigned p2sz = L4_PAGESHIFT;
   long res;
@@ -131,7 +132,8 @@ map_iomem_range(l4_addr_t phys, l4_addr_t virt, l4_addr_t size)
       l4_msg_regs_t *m = l4_utcb_mr_u(l4_utcb());
       l4_buf_regs_t *b = l4_utcb_br_u(l4_utcb());
       l4_msgtag_t tag = l4_msgtag(L4_PROTO_SIGMA0, 2, 0, 0);
-      m->mr[0] = SIGMA0_REQ_FPAGE_IOMEM;
+      m->mr[0] = cached ? SIGMA0_REQ_FPAGE_IOMEM_CACHED
+                        : SIGMA0_REQ_FPAGE_IOMEM;
       m->mr[1] = l4_fpage(phys, p2sz, L4_FPAGE_RWX).raw;
 
       b->bdr   = 0;
@@ -164,7 +166,7 @@ map_iomem_range(l4_addr_t phys, l4_addr_t virt, l4_addr_t size)
  * Sigma0 and remember that this physical region is mapped into our address
  * space (in the 'io_set' AVL tree).
  */
-l4_addr_t res_map_iomem(l4_uint64_t phys, l4_uint64_t size)
+l4_addr_t res_map_iomem(l4_uint64_t phys, l4_uint64_t size, bool cached)
 {
   if (   size > std::numeric_limits<l4_umword_t>::max()
       || phys > std::numeric_limits<l4_umword_t>::max() - size)
@@ -208,16 +210,26 @@ l4_addr_t res_map_iomem(l4_uint64_t phys, l4_uint64_t size)
 
 	  unsigned bytes
 	    = cxx::Bitmap_base::bit_buffer_bytes(iomem->size >> Page_shift);
-          void *bit_buffer = malloc(bytes);
-          if (!bit_buffer)
+          void *pages_bit_buffer = malloc(bytes);
+          if (!pages_bit_buffer)
             {
               L4Re::Env::env()->rm()->free_area(iomem->virt);
               delete iomem;
               return 0;
             }
+          void *cached_bit_buffer = malloc(bytes);
+          if (!cached_bit_buffer)
+            {
+              free(pages_bit_buffer);
+              L4Re::Env::env()->rm()->free_area(iomem->virt);
+              delete iomem;
+              return 0;
+            }
 
-	  iomem->pages = cxx::Bitmap_base(bit_buffer);
+	  iomem->pages = cxx::Bitmap_base(pages_bit_buffer);
 	  memset(iomem->pages.bit_buffer(), 0, bytes);
+	  iomem->cached = cxx::Bitmap_base(cached_bit_buffer);
+	  memset(iomem->cached.bit_buffer(), 0, bytes);
 
 	  io_set.insert(iomem);
 
@@ -235,6 +247,8 @@ l4_addr_t res_map_iomem(l4_uint64_t phys, l4_uint64_t size)
 	{
 	  if (reg->pages.bit_buffer())
 	    free(reg->pages.bit_buffer());
+	  if (reg->cached.bit_buffer())
+	    free(reg->cached.bit_buffer());
 
 	  io_set.remove(*reg);
 	  delete reg;
@@ -242,39 +256,54 @@ l4_addr_t res_map_iomem(l4_uint64_t phys, l4_uint64_t size)
     }
 
   l4_addr_t min = 0, max;
-  bool not_mapped = false;
+  bool need_map = false;
   int all_ok = 0;
 
+  // The loop goes one page beyond the requested mapping length.
   for (unsigned i = (r.phys - iomem->phys) >> Page_shift;
        i <= ((r.size + r.phys - iomem->phys) >> Page_shift);
        ++i)
     {
-      if (not_mapped && (i == ((r.size + r.phys - iomem->phys) >> Page_shift)
-	  || iomem->pages[i]))
+      // Install required mappings as soon as we are either
+      //   a) at the end of loop, or
+      //   b) if a page is already mapped and we don't need to upgrade the
+      //      mapping.
+      if (need_map && (i == ((r.size + r.phys - iomem->phys) >> Page_shift)
+	               || (iomem->pages[i] && (!cached || iomem->cached[i]))))
 	{
 	  max = i << Page_shift;
-	  not_mapped = false;
+	  need_map = false;
 
 	  int res = map_iomem_range(iomem->phys + min, iomem->virt + min,
-	                            max - min);
+	                            max - min, cached);
 
-	  d_printf(DBG_DEBUG2, "map mem: p=%014lx v=%014lx s=%lx: %s(%d)\n",
+	  d_printf(DBG_DEBUG2, "map mem: p=%014lx v=%014lx s=%lx %s: %s(%d)\n",
 	           iomem->phys + min,
                    iomem->virt + min, max - min,
+                   cached ? "cached" : "uncached",
                    res < 0 ? "failed" : "done", res);
 
 	  if (res >= 0)
 	    {
 	      for (unsigned x = min >> Page_shift; x < i; ++x)
-		iomem->pages.set_bit(x);
+	        {
+		  iomem->pages.set_bit(x);
+		  iomem->cached.bit(x, cached);
+		}
 	    }
 	  else
 	    all_ok = res;
 	}
-      else if (!not_mapped && !iomem->pages[i])
+      else if (need_map)
+        continue;
+      // A new mapping region is started by either
+      //   a) the first unmapped page in the range, or
+      //   b) the first page that needs to be upgraded to a cached mapping.
+      else if (!iomem->pages[i]
+               || (iomem->pages[i] && cached && !iomem->cached[i]))
 	{
 	  min = i << Page_shift;
-	  not_mapped = true;
+	  need_map = true;
 	}
     }
 

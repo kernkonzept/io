@@ -17,4 +17,4 @@ int res_init();
 int res_get_ioport(unsigned port, int size);
 #endif
 
-l4_addr_t res_map_iomem(l4_uint64_t phys, l4_uint64_t size);
+l4_addr_t res_map_iomem(l4_uint64_t phys, l4_uint64_t size, bool cached = false);
