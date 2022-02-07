@@ -181,6 +181,7 @@ Acpi_pci_irq_router_rs::add_prt_entry(ACPI_HANDLE obj,
       if (ACPI_FAILURE(status))
 	{
 	  d_printf(DBG_WARN, "\nWARNING: Could not find PCI IRQ Link Device...\n");
+	  delete ne;
 	  return -ENODEV;
 	}
 
@@ -188,6 +189,7 @@ Acpi_pci_irq_router_rs::add_prt_entry(ACPI_HANDLE obj,
       if (ACPI_FAILURE(status))
 	{
 	  d_printf(DBG_WARN, "\nWARNING: Could not evaluate _CRS of PCI IRQ Link Device\n");
+	  delete ne;
 	  return -ENODEV;
 	}
     }
@@ -255,6 +257,7 @@ Resource *discover_prt(Acpi_dev *adev)
       if (err < 0)
         {
           d_printf(DBG_ERR, "error: adding PRT entry: %d\n", err);
+          delete r;
           return 0;
         }
 
