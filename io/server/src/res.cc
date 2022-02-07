@@ -288,7 +288,13 @@ l4_addr_t res_map_iomem(l4_uint64_t phys, l4_uint64_t size)
 
 #include <l4/util/port_io.h>
 
-static l4_umword_t iobitmap[0x10000 / L4_MWORD_BITS];
+enum
+{
+  Log2_num_ioports = 16,
+  Num_ioports = 1U << Log2_num_ioports
+};
+
+static l4_umword_t iobitmap[Num_ioports / L4_MWORD_BITS];
 
 static l4_umword_t get_iobit(unsigned port)
 {
@@ -303,7 +309,14 @@ static void set_iobit(unsigned port)
 int res_get_ioport(unsigned port, int size)
 {
   bool map = false;
-  for (unsigned i = 0; i < (1UL << size); ++i)
+  unsigned nr_ports = 1U << size;
+
+  if (size > Log2_num_ioports
+      || port >= Num_ioports
+      || port + nr_ports > Num_ioports)
+    return 0;
+
+  for (unsigned i = 0; i < nr_ports; ++i)
     if (!get_iobit(port + i))
       {
 	map = true;
