@@ -88,7 +88,7 @@ Dma_domain_set::create_managed_kern_dma_space()
       if (d->kern_dma_space() && !d->managed_kern_dma_space())
         {
           d_printf(DBG_ERR, "error: conflicting DMA remapping assignment "
-                            "(unmamanged DMA domain in group)\n");
+                            "(unmanaged DMA domain in group)\n");
           return -L4_EBUSY;
         }
 
@@ -145,7 +145,7 @@ Dma_domain_set::set_dma_task(bool set, L4::Cap<L4::Task> dma_task)
       if (d->managed_kern_dma_space())
         {
           d_printf(DBG_ERR, "error: conflicting DMA remapping assignment "
-                            "(mamanged DMA domain in group)\n");
+                            "(managed DMA domain in group)\n");
           return -L4_EBUSY;
         }
 
