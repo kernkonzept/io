@@ -279,6 +279,7 @@ AcpiOsWritePciConfiguration (
 #include <pthread.h>
 #include <semaphore.h>
 #include <time.h>
+#include <l4/cxx/unique_ptr>
 
 namespace {
 
@@ -420,15 +421,14 @@ AcpiOsCreateSemaphore (
         uint32_t                        initial_units,
         ACPI_SEMAPHORE                  *out_handle)
 {
-  sem_t *sem = new sem_t;
-  if (sem_init(sem, 0, initial_units) < 0)
+  cxx::unique_ptr<sem_t> sem(new sem_t);
+  if (sem_init(sem.get(), 0, initial_units) < 0)
     {
       perror("error: cannot initialize semaphore");
-      delete sem;
       return AE_ERROR;
     }
 
-  *out_handle = sem;
+  *out_handle = sem.release();
   return AE_OK;
 }
 
