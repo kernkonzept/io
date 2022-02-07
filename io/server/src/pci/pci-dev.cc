@@ -520,9 +520,8 @@ Dev::discover_resources(Hw::Device *host)
   if (pcie.is_valid())
       discover_pcie_caps();
 
-  Dma_domain *d = host->dma_domain();
-  if (!d)
-    d = host->parent()->dma_domain_for(host);
+  if (!host->dma_domain())
+    host->parent()->dma_domain_for(host);
 
   flags.discovered() = true;
 }
