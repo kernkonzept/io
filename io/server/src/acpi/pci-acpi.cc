@@ -6,6 +6,7 @@
 #include <pci-bridge.h>
 
 #include <l4/cxx/list>
+#include <l4/cxx/unique_ptr>
 
 namespace {
 
@@ -162,7 +163,7 @@ Acpi_pci_irq_router_rs::add_prt_entry(ACPI_HANDLE obj,
   if (!e)
     return -EINVAL;
 
-  Prt_entry *ne = new Prt_entry();
+  cxx::unique_ptr<Prt_entry> ne(new Prt_entry());
   if (!ne)
     return -ENOMEM;
 
@@ -181,7 +182,6 @@ Acpi_pci_irq_router_rs::add_prt_entry(ACPI_HANDLE obj,
       if (ACPI_FAILURE(status))
 	{
 	  d_printf(DBG_WARN, "\nWARNING: Could not find PCI IRQ Link Device...\n");
-	  delete ne;
 	  return -ENODEV;
 	}
 
@@ -189,12 +189,11 @@ Acpi_pci_irq_router_rs::add_prt_entry(ACPI_HANDLE obj,
       if (ACPI_FAILURE(status))
 	{
 	  d_printf(DBG_WARN, "\nWARNING: Could not evaluate _CRS of PCI IRQ Link Device\n");
-	  delete ne;
 	  return -ENODEV;
 	}
     }
 
-  _prt = cxx::List_item::push_back(_prt, ne);
+  _prt = cxx::List_item::push_back(_prt, ne.release());
   return 0;
 }
 
