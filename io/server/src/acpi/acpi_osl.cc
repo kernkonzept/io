@@ -424,6 +424,7 @@ AcpiOsCreateSemaphore (
   if (sem_init(sem, 0, initial_units) < 0)
     {
       perror("error: cannot initialize semaphore");
+      delete sem;
       return AE_ERROR;
     }
 
