@@ -641,7 +641,8 @@ System_bus::rpc_device_get(Device *dev, L4::Ipc::Iostream &ios) const
 inline int
 System_bus::rpc_get_next_dev(Device *dev, L4::Ipc::Iostream &ios, int err) const
 {
-  return rpc_device_get(*rpc_get_dev_next_iterator(dev, ios, err), ios);
+  Device::iterator it = rpc_get_dev_next_iterator(dev, ios, err);
+  return rpc_device_get(*it, ios);
 }
 
 int
