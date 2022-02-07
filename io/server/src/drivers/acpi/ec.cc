@@ -109,7 +109,7 @@ struct Acpi_ec : Acpi_dev
         if (ACPI_FAILURE(status) || glk.value.Type != ACPI_TYPE_INTEGER)
           _need_lock = 0;
         else
-          _need_lock = glk.value.Integer.Value;
+          _need_lock = static_cast<bool>(glk.value.Integer.Value);
       }
 
     // if we are already initialized (may be via ECDT) we must skip the rest
