@@ -108,9 +108,14 @@ public:
     F_relative      = 0x040000,
     F_internal      = 0x080000, ///< Internal resource not exported to vBUS
 
-    Mem_type_read_only    = 0x100000,
+    /// The upper 12-bits of the flags are exposed on the vBUS.
+    F_vbus_flags_mask     = 0xfff00000,
+    F_vbus_flags_shift    = 20,
 
-    Irq_type_base         = 0x100000,
+    Mem_type_base         = 1 << F_vbus_flags_shift,
+    Mem_type_read_only    = L4VBUS_RESOURCE_F_MEM_READ_ONLY * Mem_type_base,
+
+    Irq_type_base         = 1 << F_vbus_flags_shift,
     Irq_type_mask         = L4_IRQ_F_MASK       * Irq_type_base,
     Irq_type_none         = L4_IRQ_F_NONE       * Irq_type_base,
     Irq_type_level_high   = L4_IRQ_F_LEVEL_HIGH * Irq_type_base,
@@ -286,6 +291,11 @@ public:
   l4_umword_t alignment() const
   {
     return  flags() & F_size_aligned ? (_e - _s) : _a;
+  }
+
+  l4_uint16_t vbus_flags() const
+  {
+    return (flags() & F_vbus_flags_mask) >> F_vbus_flags_shift;
   }
 
   virtual l4_addr_t map_iomem() const

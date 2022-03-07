@@ -47,7 +47,7 @@ Device::get_resource_info(int index) const
   res.start = r->start();
   res.end = r->end();
   res.type = r->type();
-  res.flags = 0;
+  res.flags = r->vbus_flags();
   res.provider = r->provider_device_handle();
   res.id = r->id();
   return res;

@@ -47,13 +47,10 @@ enum l4vbus_resource_type_t {
   L4VBUS_RESOURCE_MAX,         /**< Maximum resource id */
 };
 
-/**
- * Description of vbus resource flags.
- *
- * At the moment these flags are mostly place holders as the IO server does not
- * return any resource flag at all. These two flags were introduced for custom
- * servers implementing the vbus protocol. */
+/** Description of vbus resource flags. */
 enum l4vbus_resource_flags_t {
+  /** Memory resource is read-only. */
+  L4VBUS_RESOURCE_F_MEM_READ_ONLY = 0x1,
   /** Reading needs to be performed using the MMIO space protocol. */
   L4VBUS_RESOURCE_F_MEM_MMIO_READ = 0x2000,
   /** Writing needs to be performed using the MMIO space protocol. */
