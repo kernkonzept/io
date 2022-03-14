@@ -49,8 +49,10 @@ enum l4vbus_resource_type_t {
 
 /** Description of vbus resource flags. */
 enum l4vbus_resource_flags_t {
-  /** Memory resource is read-only. */
-  L4VBUS_RESOURCE_F_MEM_READ_ONLY = 0x1,
+  /** Memory resource is readable. */
+  L4VBUS_RESOURCE_F_MEM_R = 0x1,
+  /** Memory resource is writeable. */
+  L4VBUS_RESOURCE_F_MEM_W = 0x2,
   /** Reading needs to be performed using the MMIO space protocol. */
   L4VBUS_RESOURCE_F_MEM_MMIO_READ = 0x2000,
   /** Writing needs to be performed using the MMIO space protocol. */

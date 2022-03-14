@@ -44,7 +44,7 @@ struct Pci_intel_gma500_drv : Driver
     d->cfg_read(0x5c, &v, Cfg_long);
     v &= 0xfff00000;
 
-    unsigned flags =   Resource::Mmio_res
+    unsigned flags =   Resource::Mmio_res | Resource::Mem_type_rw
                      | Resource::F_prefetchable;
     l4_addr_t end = v + gfx_mem_sz - 1;
 

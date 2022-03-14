@@ -113,7 +113,9 @@ public:
     F_vbus_flags_shift    = 20,
 
     Mem_type_base         = 1 << F_vbus_flags_shift,
-    Mem_type_read_only    = L4VBUS_RESOURCE_F_MEM_READ_ONLY * Mem_type_base,
+    Mem_type_r            = L4VBUS_RESOURCE_F_MEM_R * Mem_type_base,
+    Mem_type_w            = L4VBUS_RESOURCE_F_MEM_W * Mem_type_base,
+    Mem_type_rw           = Mem_type_r | Mem_type_w,
 
     Irq_type_base         = 1 << F_vbus_flags_shift,
     Irq_type_mask         = L4_IRQ_F_MASK       * Irq_type_base,

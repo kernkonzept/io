@@ -32,7 +32,7 @@ struct Pci_intel_i915_drv : Driver
 
     printf("Found Intel i915 GPU opregion at %x\n", v);
 
-    unsigned flags =   Resource::Mmio_res
+    unsigned flags =   Resource::Mmio_res | Resource::Mem_type_rw
                      | Resource::F_prefetchable;
 
     // the opregion address might not be page aligned... (0xdaf68018)

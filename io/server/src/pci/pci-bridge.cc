@@ -129,7 +129,8 @@ Bridge::discover_resources(Hw::Device *host)
   s = (v & 0xfff0) << 16;
   e = (v & 0xfff00000) | 0xfffff;
 
-  Resource *r = new Resource_provider(Resource::Mmio_res | Resource::F_can_move
+  Resource *r = new Resource_provider(Resource::Mmio_res | Resource::Mem_type_rw
+                                      | Resource::F_can_move
                                       | Resource::F_can_resize);
   r->set_id("WIN0");
   r->alignment(0xfffff);
@@ -144,7 +145,8 @@ Bridge::discover_resources(Hw::Device *host)
   mmio->validate();
   _host->add_resource_rq(mmio);
 
-  r = new Resource_provider(Resource::Mmio_res | Resource::F_prefetchable
+  r = new Resource_provider(Resource::Mmio_res | Resource::Mem_type_rw
+                            | Resource::F_prefetchable
                             | Resource::F_can_move | Resource::F_can_resize);
   r->set_id("WIN1");
   v = c.read<l4_uint32_t>(Config::Pref_mem_base);
@@ -325,7 +327,8 @@ Cardbus_bridge::discover_resources(Hw::Device *host)
 
   auto c = config();
 
-  Resource *r = new Resource_provider(Resource::Mmio_res | Resource::F_can_move
+  Resource *r = new Resource_provider(Resource::Mmio_res | Resource::Mem_type_rw
+                                      | Resource::F_can_move
                                       | Resource::F_can_resize);
   r->set_id("WIN0");
   r->start(c.read<l4_uint32_t>(Config::Cb_mem_base_0));
@@ -335,8 +338,8 @@ Cardbus_bridge::discover_resources(Hw::Device *host)
   r->validate();
   host->add_resource_rq(r);
 
-  r = new Resource_provider(Resource::Mmio_res | Resource::F_can_move
-                            | Resource::F_can_resize);
+  r = new Resource_provider(Resource::Mmio_res | Resource::Mem_type_rw
+                            | Resource::F_can_move | Resource::F_can_resize);
   r->set_id("WIN1");
   r->start(c.read<l4_uint32_t>(Config::Cb_mem_base_1));
   r->end(c.read<l4_uint32_t>(Config::Cb_mem_limit_1));

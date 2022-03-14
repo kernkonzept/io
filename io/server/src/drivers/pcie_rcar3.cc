@@ -621,19 +621,20 @@ Rcar3_pcie_bridge::init()
   // Ignore I/O ports in _mem_base_1 / _mem_size_1 as we don't support IO ports
   // on ARM anyway (at least for now).
 
-  mr = new Resource_provider(Resource::Mmio_res);
+  mr = new Resource_provider(Resource::Mmio_res | Resource::Mem_type_rw);
   mr->start_size(_mem_base_2, _mem_size_2);
   mr->alignment(0xfffff);
   mr->set_id("MMIO");
   add_resource_rq(mr);
 
-  mr = new Resource_provider(Resource::Mmio_res);
+  mr = new Resource_provider(Resource::Mmio_res | Resource::Mem_type_rw);
   mr->start_size(_mem_base_3, _mem_size_3);
   mr->alignment(0xfffff);
   mr->set_id("MMIO");
   add_resource_rq(mr);
 
-  mr = new Resource_provider(Resource::Mmio_res | Resource::F_prefetchable);
+  mr = new Resource_provider(Resource::Mmio_res | Resource::Mem_type_rw
+                             | Resource::F_prefetchable);
   mr->start_size(_mem_base_4, _mem_size_4);
   mr->alignment(0xfffff);
   mr->set_id("MMIO");

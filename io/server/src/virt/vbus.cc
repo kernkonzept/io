@@ -211,8 +211,9 @@ System_bus::System_bus(Inhibitor_mux *mux)
   add_feature(this);
   add_resource(new Root_resource(Resource::Irq_res, new Root_irq_rs(this)));
   Resource_space *x = new Root_x_rs(this);
-  add_resource(new Root_resource(Resource::Mmio_res, x));
-  add_resource(new Root_resource(Resource::Mmio_res | Resource::F_prefetchable, x));
+  add_resource(new Root_resource(Resource::Mmio_res | Resource::Mem_type_rw, x));
+  add_resource(new Root_resource(Resource::Mmio_res | Resource::Mem_type_rw
+                                 | Resource::F_prefetchable, x));
   add_resource(new Root_resource(Resource::Io_res, x));
   add_resource(new Root_resource(Resource::Dma_domain_res,
                                  new Root_dma_domain_rs(this, &_dma_domain_group)));
@@ -510,8 +511,11 @@ System_bus::op_map(L4Re::Dataspace::Rights,
         }
     }
 
-  unsigned char rights = (*r)->flags() & Resource::Mem_type_read_only
-                         ? L4_FPAGE_RO : L4_FPAGE_RWX;
+  unsigned char rights = 0;
+  if ((*r)->flags() & Resource::Mem_type_r)
+    rights |= L4_FPAGE_RX;
+  if ((*r)->flags() & Resource::Mem_type_w)
+    rights |= L4_FPAGE_W;
 
   fp = L4::Ipc::Snd_fpage::mem(l4_trunc_size(addr, order), order,
                                rights, l4_trunc_page(spot),

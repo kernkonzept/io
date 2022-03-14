@@ -17,13 +17,29 @@ function Io.Res.io(start, _end, flags)
   return Io.Resource(Io.Resource_Io_res, f, start, _end or start)
 end
 
-function Io.Res.mmio(start, _end, flags)
+function Io.Res._mmio(start, _end, flags, rights)
   if start > _end then
     error("Mmio region start > end. This is impossible.", 2);
   end
   local f = flags or 0
-  return Io.Resource(Io.Resource_Mmio_res, f, start, _end or start)
+  return Io.Resource(Io.Resource_Mmio_res, f | rights, start, _end or start)
 end
+
+function Io.Res.mmio_r(start, _end, flags)
+  return Io.Res._mmio(start, _end, flags, Io.Resource.Mem_type_r)
+end
+
+function Io.Res.mmio_w(start, _end, flags)
+  return Io.Res._mmio(start, _end, flags, Io.Resource.Mem_type_w)
+end
+
+function Io.Res.mmio_rw(start, _end, flags)
+  return Io.Res._mmio(start, _end, flags,
+                      Io.Resource.Mem_type_r | Io.Resource.Mem_type_w)
+end
+
+-- Access rights have not been explicitly set, thus use the default RW.
+Io.Res.mmio = Io.Res.mmio_rw
 
 function Io.Res.irq(start, ...)
   local f = 0

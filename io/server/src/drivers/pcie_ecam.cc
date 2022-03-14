@@ -341,14 +341,15 @@ Ecam_pcie_bridge::init()
       add_resource_rq(mr);
     }
 
-  mr = new Resource_provider(Resource::Mmio_res);
+  mr = new Resource_provider(Resource::Mmio_res | Resource::Mem_type_rw);
   mr->start_size(_mmio_base, _mmio_size);
   mr->set_id("MMIO");
   add_resource_rq(mr);
 
   if (_mmio_base_64 != ~0 && _mmio_size_64 != ~0)
     {
-      mr = new Resource_provider(Resource::Mmio_res | Resource::F_width_64bit);
+      mr = new Resource_provider(Resource::Mmio_res | Resource::Mem_type_rw
+                                 | Resource::F_width_64bit);
       mr->start_size(_mmio_base_64, _mmio_size_64);
       mr->set_id("MMIO");
       add_resource_rq(mr);

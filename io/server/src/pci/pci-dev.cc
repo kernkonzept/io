@@ -341,6 +341,7 @@ Dev::discover_bar(int bar)
                      | Resource::F_can_move;
 
   unsigned mem_flags =  Resource::Mmio_res
+                       | Resource::Mem_type_rw
                        | Resource::F_size_aligned
                        | Resource::F_hierarchical
                        | Resource::F_can_move;
@@ -414,9 +415,9 @@ Dev::discover_expansion_rom()
     if ((x >> s) & 1)
       break;
 
-  unsigned flags = Resource::Mmio_res | Resource::F_size_aligned
-                   | Resource::F_rom | Resource::F_prefetchable
-                   | Resource::F_can_move;
+  unsigned flags = Resource::Mmio_res | Resource::Mem_type_rw
+                   | Resource::F_size_aligned | Resource::F_rom
+                   | Resource::F_prefetchable | Resource::F_can_move;
   Resource *res = new Resource(flags);
   res->set_id("ROM");
 

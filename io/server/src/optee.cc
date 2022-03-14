@@ -88,7 +88,7 @@ public:
         return;
       }
 
-    unsigned long flags = 0;
+    unsigned long flags = Resource::Mem_type_rw;
     if (p[3] & 1)
       flags |= Resource::F_prefetchable | Resource::F_cached_mem;
 
