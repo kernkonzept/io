@@ -54,11 +54,11 @@ Io.add_vbusses
 {
 -- Create a virtual bus for a client and give access to FOODEVICE
   client1 = Io.Vi.System_bus(function ()
-    dev = wrap(Io.system_bus():match("FOODEVICE"));
+    dev = wrap(Io.system_bus():match("dev-foo,mmio"));
   end);
 
 -- Create a virtual bus for another client and give it access to BARDEVICE
   client2 = Io.Vi.System_bus(function ()
-    dev = wrap(Io.system_bus():match("BARDEVICE"));
+    dev = wrap(Io.system_bus():match("dev-bar,Example"));
   end);
 }
