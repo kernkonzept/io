@@ -93,6 +93,9 @@ public:
     register_property("mem_size_3", &_mem_size_3);
     register_property("mem_base_4", &_mem_base_4);
     register_property("mem_size_4", &_mem_size_4);
+    register_property("cpg_base", &_cpg_base);
+    register_property("cpg_reg_num", &_cpg_reg_num);
+    register_property("cpg_reg_bit", &_cpg_reg_bit);
     register_property("irq", &_interrupt);
 
     set_name("Rcar3 PCIe root bridge");
@@ -116,17 +119,20 @@ private:
   void alloc_msi_page(void **virt, l4_addr_t *phys);
   void init_msi();
 
-  Int_property _regs_base{~0};
-  Int_property _regs_size{~0};
-  Int_property _mem_base_1{~0};
-  Int_property _mem_size_1{~0};
-  Int_property _mem_base_2{~0};
-  Int_property _mem_size_2{~0};
-  Int_property _mem_base_3{~0};
-  Int_property _mem_size_3{~0};
-  Int_property _mem_base_4{~0};
-  Int_property _mem_size_4{~0};
-  Int_property _interrupt{~0};
+  Int_property _regs_base{~0};          // mandatory
+  Int_property _regs_size{~0};          // mandatory
+  Int_property _mem_base_1{~0};         // mandatory
+  Int_property _mem_size_1{~0};         // mandatory
+  Int_property _mem_base_2{~0};         // mandatory
+  Int_property _mem_size_2{~0};         // mandatory
+  Int_property _mem_base_3{~0};         // mandatory
+  Int_property _mem_size_3{~0};         // mandatory
+  Int_property _mem_base_4{~0};         // mandatory
+  Int_property _mem_size_4{~0};         // mandatory
+  Int_property _cpg_base{0xe6150000};   // optional
+  Int_property _cpg_reg_num{~0};        // optional
+  Int_property _cpg_reg_bit{~0};        // optional
+  Int_property _interrupt{~0};          // mandatory
 
   // PCI root bridge core memory.
   L4drivers::Register_block<32> _regs;
@@ -230,20 +236,23 @@ Rcar3_pcie_bridge::host_init()
     }
   _regs = new L4drivers::Mmio_register_block<32>(va);
 
-  unsigned bit;
-  Rcar3_cpg cpg(0xe6150000);
-  if (_regs_base == 0xfe000000)         // pcie0
-    bit = 19;
-  else if (_regs_base == 0xee800000)    // pcie1
-    bit = 18;
-  else
+  Rcar3_cpg cpg(_cpg_base);
+  if (_cpg_reg_num == ~0 && _cpg_reg_bit == ~0)
     {
-      d_printf(DBG_ERR, "ERROR: unknown PCIe controller at %08llx -- fix CPG code!\n",
-               _regs_base.val());
-      return -L4_EINVAL;
+      _cpg_reg_num.set(-1, 3); // pcie0 or pcie1
+      if (_regs_base == 0xfe000000)
+        _cpg_reg_bit.set(-1, 19);       // pcie0
+      else if (_regs_base == 0xee800000)
+        _cpg_reg_bit.set(-1, 18);       // pcie1
+      else
+        {
+          d_printf(DBG_ERR, "ERROR: unknown PCIe controller at %08llx -- fix CPG code!\n",
+                   _regs_base.val());
+          return -L4_EINVAL;
+        }
     }
 
-  int ret = cpg.enable_clock(3, bit);
+  int ret = cpg.enable_clock(_cpg_reg_num, _cpg_reg_bit);
   if (ret != L4_EOK)
     {
       d_printf(DBG_ERR,
