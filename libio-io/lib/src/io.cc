@@ -177,7 +177,6 @@ __map_iomem(l4_addr_t phys, l4_addr_t* virt, unsigned long size, int flags)
        * Offsets into a page should be the same. */
       if ((*virt & ~L4_PAGEMASK) != offset)
         return -L4_EINVAL;
-      *virt &= L4_PAGEMASK;
     }
 
   long r = L4Re::Env::env()->rm()->attach(virt, size, rmflags,
