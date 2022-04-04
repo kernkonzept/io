@@ -56,13 +56,22 @@ private:
   DEC *self() { return static_cast<DEC *>(this); }
 public:
   /**
-   * Suspend the module.
+   * Suspend the device.
+   *
+   * Saves the state of the device and puts it into a low-power mode.
+   *
+   * \retval 0 Success.
    */
   int pm_suspend() const
   { return l4vbus_pm_suspend(self()->bus_cap().cap(), self()->dev_handle()); }
 
   /**
-   * Resume the module.
+   * Resume the device.
+   *
+   * Switches the device from low-power mode to normal operation and restores
+   * the saved state.
+   *
+   * \retval 0 Success.
    */
   int pm_resume() const
   { return l4vbus_pm_resume(self()->bus_cap().cap(), self()->dev_handle()); }
