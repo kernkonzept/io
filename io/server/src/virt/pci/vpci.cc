@@ -460,7 +460,7 @@ Pci_proxy_dev::cfg_write(int reg, l4_uint32_t v, Cfg_width order)
     case Hw::Pci::Config::Rom_address:    return _do_rom_bar_write(mask_32, value_32);
     case Hw::Pci::Config::Capability_ptr: return 0;
     case 0x38: return 0;
-    /* pass trough the rest ... */
+    /* pass through the rest ... */
     default:   if (0) printf("pass unknown PCI cfg write for device %s: %x\n",
                              host()->name(), reg);
                /* fall through */
