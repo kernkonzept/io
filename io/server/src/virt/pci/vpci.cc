@@ -361,9 +361,13 @@ Pci_proxy_dev::cfg_read(int reg, l4_uint32_t *v, Cfg_width order)
     case 0x1c:
     case 0x20:
     case 0x24: buf = _vbars.read(reg - 0x10, order); break;
-    case 0x2c: buf = p->subsys_vendor_ids(); break;
-    case 0x30: buf = read_rom(); break;
-    case 0x34: /* CAPS */
+    case Hw::Pci::Config::Subsys_vendor: /* offset 0x2c */
+               buf = p->subsys_vendor_ids();
+               break;
+    case Hw::Pci::Config::Rom_address: /* offset 0x30 */
+               buf = read_rom();
+               break;
+    case Hw::Pci::Config::Capability_ptr: /* offset 0x34 */
                if (_pci_caps)
                  buf = _pci_caps->offset();
                else
