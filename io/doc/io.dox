@@ -222,7 +222,7 @@
  *  to clients, as there are no changes in the API used to interact
  *  with PCI device via interrupts.
  *
- * - **acpi-debug-level <level_mask>**
+ * - **acpi-debug-level \<level_mask>**
  *
  *  Set the ACPI debug level. The `<level_mask>` is a mask that selects
  *  components of interest for debugging. It can be constructed from the
@@ -232,7 +232,7 @@
  *  the ACPI debug level is set to
  *  `ACPI_LV_INIT | ACPI_LV_TABLES | ACPI_LV_VERBOSE_INFO`.
  *
- * - **trace <trace_mask>**
+ * - **trace \<trace_mask>**
  *
  *  Enable tracing of events matching `trace_mask`. The only supported trace
  *  mask is `1` and this matches ACPI events.
