@@ -383,14 +383,14 @@ public:
   }
 
   /**
-   * Bind or unbind a kernel DMA space to a DMA domain.
+   * Bind or unbind a kernel \ref l4_kernel_object_dmar_space to a DMA domain.
    * \param domain_id  DMA domain ID (resource address of DMA domain found on
    *                   the vBUS). If the value is ~0U the DMA space of the whole
    *                   vBUS is used.
    * \param flags      A combination of #L4vbus_dma_domain_assign_flags.
    * \param dma_space  The DMA space capability to bind or unbind, this must be
-   *                   a kernel DMA space (L4::Task created with
-   *                   L4_PROTO_DMA_SPACE)
+   *                   a kernel \ref l4_kernel_object_dmar_space (L4::Task
+   *                   created with L4_PROTO_DMA_SPACE)
    *
    * \retval 0           Operation completed successfully.
    * \retval -L4_ENOENT  The vbus does not support a global DMA domain or no DMA
