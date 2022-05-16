@@ -16,7 +16,9 @@
 
 #include <l4/sys/types.h>
 
+/** Device handle for a device on the vbus */
 typedef l4_mword_t l4vbus_device_handle_t;
+/** Address of resources on the vbus */
 typedef l4_addr_t l4vbus_paddr_t;
 
 /** Description of a single vbus resource */
