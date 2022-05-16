@@ -30,12 +30,19 @@
  */
 typedef enum l4vbus_iface_type_t
 {
+  /** Interrupt Controller */
   L4VBUS_INTERFACE_ICU = 0,
+  /** GPIO */
   L4VBUS_INTERFACE_GPIO,
+  /** PCI */
   L4VBUS_INTERFACE_PCI,
+  /** PCI Device */
   L4VBUS_INTERFACE_PCIDEV,
+  /** Power Management */
   L4VBUS_INTERFACE_PM,
+  /** VBus */
   L4VBUS_INTERFACE_BUS,
+  /** No specific sub interface */
   L4VBUS_INTERFACE_GENERIC = 0x20
 } l4vbus_iface_type_t;
 
