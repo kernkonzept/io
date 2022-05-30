@@ -359,7 +359,7 @@ public:
   }
 
   /**
-   * Assign an L4Re::Dma_space to a DMA domain.
+   * Bind or unbind an L4Re::Dma_space to a DMA domain.
    * \param domain_id  DMA domain ID (resource address of DMA domain found on
    *                   the vBUS). If the value is ~0U the DMA space of the whole
    *                   vBUS is used.
@@ -383,7 +383,7 @@ public:
   }
 
   /**
-   * Assign a kernel DMA space to a DMA domain.
+   * Bind or unbind a kernel DMA space to a DMA domain.
    * \param domain_id  DMA domain ID (resource address of DMA domain found on
    *                   the vBUS). If the value is ~0U the DMA space of the whole
    *                   vBUS is used.
