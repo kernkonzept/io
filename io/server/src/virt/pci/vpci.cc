@@ -449,7 +449,6 @@ Pci_proxy_dev::cfg_write(int reg, l4_uint32_t v, Cfg_width order)
     case 0x00: return 0;
     case 0x08: return 0;
     case 0x04: return _do_status_cmd_write(mask_32, value_32);
-    /* simulate multi function on hdr type */
     case 0x10: /* bars 0 to 5 */
     case 0x14:
     case 0x18:
