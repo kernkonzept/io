@@ -221,7 +221,7 @@ Pci_vroot_id::add_child(Device *d)
 {
   Pci_dev *vp = d->find_feature<Pci_dev>();
 
-  // hm, also here, drom non PCI devices
+  // hm, also here, drop non PCI devices
   if (!vp)
     return;
 
