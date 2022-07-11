@@ -275,6 +275,8 @@ public:
   void allocate_pending_child_resources();
   void allocate_pending_resources();
 
+  virtual bool can_alloc_from_res(Resource const *) { return true; }
+
   virtual char const *name() const = 0;
   virtual char const *hid() const = 0;
 

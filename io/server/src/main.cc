@@ -331,6 +331,15 @@ run(int argc, char * const *argv)
     }
 
 #if defined(ARCH_x86) || defined(ARCH_amd64)
+  hw_system_bus()->set_can_alloc_cb([](Resource const *r)
+                                        {
+                                          if ((r->type() == Resource::Mmio_res)
+                                              && (r->start() < (1UL << 20)))
+                                            return false;
+
+                                          return true;
+                                        });
+
   bool is_ux = l4util_kip_kernel_is_ux(l4re_kip());
   //res_get_ioport(0xcf8, 4);
   res_get_ioport(0, 16);

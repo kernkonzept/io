@@ -10,6 +10,8 @@
 
 #include "hw_device.h"
 
+#include <functional>
+
 namespace Hw {
 
 class Root_bus : public Device
@@ -47,8 +49,22 @@ public:
    */
   void reboot() { _pm->reboot(); }
 
+  using Resource_cb = std::function<bool(Resource const *r)>;
+
+  void set_can_alloc_cb(Resource_cb cb) { _can_alloc_cb = cb; }
+
+  bool can_alloc_from_res(Resource const *r) override
+  {
+    if (_can_alloc_cb)
+      return _can_alloc_cb(r);
+
+    return true;
+  }
+
 private:
   Pm *_pm;
+
+  std::function<bool(Resource const *r)> _can_alloc_cb;
 };
 
 inline Root_bus::Pm::~Pm() {}

@@ -60,6 +60,9 @@ Device::alloc_child_resource(Resource *r, Device *cld)
           if (!br->compatible(r, exact))
             continue;
 
+          if (parent() && !parent()->can_alloc_from_res(br))
+            continue;
+
           found_as = true;
 
           if (parent() && !parent()->resource_allocated(br))
