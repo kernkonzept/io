@@ -118,8 +118,8 @@ Root_mmio_rs::request(Resource *parent, Device *, Resource *child, Device *)
 
 
 bool
-Root_mmio_rs::alloc(Resource *parent, Device *, Resource *child, Device *,
-                    bool /*resize*/)
+Root_mmio_rs::alloc(Resource * /*parent*/, Device *, Resource * /*child*/,
+                    Device *, bool /*resize*/)
 {
   d_printf(DBG_ERR, "internal error: cannot alloc from Root_mmio_rs\n");
   return false;
