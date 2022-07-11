@@ -121,27 +121,30 @@ bool
 Root_mmio_rs::alloc(Resource *parent, Device *, Resource *child, Device *,
                     bool /*resize*/)
 {
-  Resource::Size align = cxx::max<Resource::Size>(child->alignment(),  L4_PAGESIZE - 1);
-  Phys_space::Phys_region phys = Phys_space::space.alloc(child->size(), align);
-  if (!phys.valid())
-    {
-#if 0
-      printf("ERROR: could not reserve physical space for resource\n");
-      r->dump();
-#endif
-      child->disable();
-      return false;
-    }
+  d_printf(DBG_ERR, "internal error: cannot alloc from Root_mmio_rs\n");
+  return false;
 
-  child->start(phys.start());
-  child->parent(parent);
-
-  if (dlevel(DBG_DEBUG))
-    {
-      printf("allocated resource: ");
-      child->dump();
-    }
-  return true;
+//  Resource::Size align = cxx::max<Resource::Size>(child->alignment(),  L4_PAGESIZE - 1);
+//  Phys_space::Phys_region phys = Phys_space::space.alloc(child->size(), align);
+//  if (!phys.valid())
+//    {
+//#if 0
+//      printf("ERROR: could not reserve physical space for resource\n");
+//      r->dump();
+//#endif
+//      child->disable();
+//      return false;
+//    }
+//
+//  child->start(phys.start());
+//  child->parent(parent);
+//
+//  if (dlevel(DBG_DEBUG))
+//    {
+//      printf("allocated resource: ");
+//      child->dump();
+//    }
+//  return true;
 }
 
 
