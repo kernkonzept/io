@@ -7,6 +7,7 @@
  * GNU General Public License 2.
  * Please see the COPYING-GPL-2 file for details.
  */
+#include <l4/bid_config.h>
 #include <l4/sys/capability>
 #include <l4/sys/kip>
 #include <l4/re/env>
@@ -198,9 +199,15 @@ l4_addr_t res_map_iomem(l4_uint64_t phys, l4_uint64_t size, bool cached)
 	  iomem = new Io_region(io_reg);
 
           // start searching for virtual region at L4_PAGESIZE
+#ifdef CONFIG_MMU
 	  iomem->virt = L4_PAGESIZE;
 	  int res = L4Re::Env::env()->rm()->reserve_area(&iomem->virt,
 	      iomem->size, L4Re::Rm::F::Search_addr, p2size);
+#else
+	  iomem->virt = iomem->phys;
+	  int res = L4Re::Env::env()->rm()->reserve_area(&iomem->virt,
+	      iomem->size, L4Re::Rm::Flags(0), p2size);
+#endif
 
 	  if (res < 0)
 	    {
