@@ -156,18 +156,13 @@ struct Discover_ctxt
   unsigned level;
 };
 
-static unsigned acpi_mem_write_protect_to_f(l4_uint8_t write_protect)
-{
-  return write_protect ? Resource::Mem_type_rw : Resource::Mem_type_r;
-}
-
 static unsigned acpi_adr_t_to_f(ACPI_RESOURCE_ADDRESS const *ar)
 {
   switch (ar->ResourceType)
     {
     case ACPI_MEMORY_RANGE:
       return   Resource::Mmio_res
-             | acpi_mem_write_protect_to_f(ar->Info.Mem.WriteProtect);
+             | Resource::Mem_type_rw;
     case ACPI_IO_RANGE: return Resource::Io_res;
     case ACPI_BUS_NUMBER_RANGE: return Resource::Bus_res;
     default: return ~0;
@@ -1034,7 +1029,7 @@ Acpi_dev::discover_crs(Hw::Device *host)
           if (d->Memory24.AddressLength == 0)
             break;
 	  flags =   Resource::Mmio_res
-                  | acpi_mem_write_protect_to_f(d->Memory24.WriteProtect);
+                  | Resource::Mem_type_rw;
 	  host->add_resource_rq(res(res_id++, flags, d->Memory24.Minimum,
 		                    d->Memory24.Minimum + d->Memory24.AddressLength - 1));
 	  break;
@@ -1043,7 +1038,7 @@ Acpi_dev::discover_crs(Hw::Device *host)
           if (d->Memory32.AddressLength == 0)
             break;
 	  flags =   Resource::Mmio_res
-                  | acpi_mem_write_protect_to_f(d->Memory32.WriteProtect);
+                  | Resource::Mem_type_rw;
 	  host->add_resource_rq(res(res_id++, flags, d->Memory32.Minimum,
 		                    d->Memory32.Minimum + d->Memory32.AddressLength - 1));
 	  break;
@@ -1052,7 +1047,7 @@ Acpi_dev::discover_crs(Hw::Device *host)
           if (d->FixedMemory32.AddressLength == 0)
             break;
 	  flags =   Resource::Mmio_res
-                  | acpi_mem_write_protect_to_f(d->FixedMemory32.WriteProtect);
+                  | Resource::Mem_type_rw;
 	  host->add_resource_rq(res(res_id++, flags, d->FixedMemory32.Address,
 		                    d->FixedMemory32.Address + d->FixedMemory32.AddressLength - 1));
 	  break;
