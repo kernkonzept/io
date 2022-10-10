@@ -8,6 +8,8 @@
 
 #include <pci-bridge.h>
 
+#include <pthread.h>
+
 namespace Hw { namespace Pci {
 
 class Root_bridge : public Dev_feature, public Bridge_base, public Config_space
