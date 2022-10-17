@@ -158,26 +158,6 @@ int L4_CV
 l4vbus_request_ioport(l4_cap_idx_t vbus, l4vbus_resource_t const *res);
 
 /**
- * Request a resource of a specific type
- *
- * \param     vbus   Capability of the system bus.
- * \param[in] res    Descriptor of the resource.
- * \param     flags  Ignored.
- *
- * \return 0 on success, else failure.
- *
- * If any resource is found that contains the requested type and resource
- * address range the resource is obtained.
- *
- * \deprecated This function is deprecated since Q3 2019.
- *             Use l4vbus_request_ioport() instead.
- */
-int L4_CV
-L4_DEPRECATED("use l4vbus_request_ioport")
-l4vbus_request_resource(l4_cap_idx_t vbus, l4vbus_resource_t const *res,
-                        int flags);
-
-/**
  * Flags for l4vbus_assign_dma_domain().
  */
 enum L4vbus_dma_domain_assign_flags
@@ -227,21 +207,6 @@ l4vbus_assign_dma_domain(l4_cap_idx_t vbus, unsigned domain_id,
  */
 int L4_CV
 l4vbus_release_ioport(l4_cap_idx_t vbus, l4vbus_resource_t const *res);
-
-/**
- * Release a previously requested resource.
- *
- * \param     vbus  Capability of the system bus.
- * \param[in] res   The resource to be released from the bus.
- *
- * \return >=0 on success, <0 on error.
- *
- * \deprecated This function is deprecated since Q3 2019.
- *             Use l4vbus_release_ioport() instead.
- */
-int L4_CV
-L4_DEPRECATED("use l4vbus_release_ioport")
-l4vbus_release_resource(l4_cap_idx_t vbus, l4vbus_resource_t const *res);
 
 /**
  * \brief Get capability of ICU.

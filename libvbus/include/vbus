@@ -303,24 +303,6 @@ public:
   }
 
   /**
-   * Request the given resource from the bus.
-   *
-   * \param[in] res    The resource to be requested from the bus.
-   * \param     flags  Ignored.
-   *
-   * \return 0 on success, else failure.
-   *
-   * \deprecated This function is deprecated since Q3 2019.
-   *             Use request_ioport() instead.
-   */
-  int
-  L4_DEPRECATED("use L4Vbus::Vbus::request_ioport")
-  request_resource(l4vbus_resource_t *res, int /*flags*/ = 0) const
-  {
-    return l4vbus_request_ioport(cap(), res);
-  }
-
-  /**
    * Release the given IO port resource from the bus.
    *
    * \param[in] res  The IO port resource to be released from the bus.
@@ -328,23 +310,6 @@ public:
    * \return >=0 on success, <0 on error.
    */
   int release_ioport(l4vbus_resource_t *res) const
-  {
-    return l4vbus_release_ioport(cap(), res);
-  }
-
-  /**
-   * Release the given resource from the bus.
-   *
-   * \param[in] res  The resource to be released from the bus.
-   *
-   * \return >=0 on success, <0 on error.
-   *
-   * \deprecated This function is deprecated since Q3 2019.
-   *             Use release_ioport() instead.
-   */
-  int
-  L4_DEPRECATED("use L4Vbus::Vbus::release_ioport")
-  release_resource(l4vbus_resource_t *res) const
   {
     return l4vbus_release_ioport(cap(), res);
   }

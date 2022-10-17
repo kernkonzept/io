@@ -123,12 +123,6 @@ l4vbus_request_ioport(l4_cap_idx_t vbus, l4vbus_resource_t const *res)
 }
 
 int
-l4vbus_request_resource(l4_cap_idx_t vbus, l4vbus_resource_t const *res, int)
-{
-  return l4vbus_request_ioport(vbus, res);
-}
-
-int
 l4vbus_assign_dma_domain(l4_cap_idx_t vbus, unsigned domain_id,
                          unsigned flags, l4_cap_idx_t dma_space)
 {
@@ -153,12 +147,6 @@ l4vbus_release_ioport(l4_cap_idx_t vbus, l4vbus_resource_t const *res)
   int err = l4_error(s.call(vbus, L4vbus::Vbus::Protocol));
 
   return err;
-}
-
-int
-l4vbus_release_resource(l4_cap_idx_t vbus, l4vbus_resource_t const *res)
-{
-  return l4vbus_release_ioport(vbus, res);
 }
 
 int
