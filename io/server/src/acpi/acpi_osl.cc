@@ -9,6 +9,8 @@
 #include <l4/sys/compiler.h>
 #include <l4/sigma0/sigma0.h>
 
+#include <cstdint>
+
 #include "debug.h"
 
 __BEGIN_DECLS

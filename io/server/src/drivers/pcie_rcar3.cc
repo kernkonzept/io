@@ -63,6 +63,8 @@
 #include <l4/re/error_helper>
 #include <l4/util/util.h>
 
+#include <cstdint>
+
 enum
 {
   // More investigation required.
