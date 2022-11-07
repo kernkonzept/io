@@ -231,24 +231,6 @@ public:
     if (!d)
       return;
 
-    Extended_cap ari = d->find_ext_cap(Ari_cap::Id);
-    // we must check if we are the root complex or some ordinary PCIe BUS.
-    if (ari_forwarding_enable() && !ari.Config::is_valid())
-      ari = Extended_cap();
-
-    while (ari.Config::is_valid())
-      {
-        l4_uint8_t next_func = ari.read<Ari_cap::Caps>().next_func();
-        if (!next_func)
-          return;
-
-        d = discover_func(host_bus, cfg, nullptr, 0, next_func);
-        if (!d)
-          return;
-
-        ari = d->find_ext_cap(Ari_cap::Id);
-      }
-
     // look for functions in PCI style
     if (d->cfg.is_multi_function())
       for (int function = 1; function < 8; ++function)
