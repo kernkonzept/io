@@ -188,7 +188,8 @@ public:
   virtual Bridge_if *parent_bridge() const = 0;
   virtual unsigned alloc_bus_number() = 0;
   virtual bool check_bus_number(unsigned bus) = 0;
-  virtual bool ari_forwarding_enable() = 0;
+  virtual bool enable_ari_forwarding() = 0;
+  virtual bool ari_forwarding_enabled() const = 0;
   virtual unsigned segment() const = 0;
   virtual Dma_requester_id dma_alias() const = 0;
 };

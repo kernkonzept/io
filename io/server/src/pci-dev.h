@@ -158,6 +158,7 @@ private:
   using Ext_cap_handler = bool(*)(Dev *dev, Extended_cap cap);
   void handle_ext_cap(unsigned char id, Ext_cap_handler handler);
 
+  static bool handle_ari_cap(Dev *dev, Extended_cap cap);
   static bool handle_acs_cap(Dev *dev, Extended_cap cap);
 
 public:

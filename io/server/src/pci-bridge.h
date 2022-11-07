@@ -29,7 +29,8 @@ public:
     return bus_num <= subordinate;
   }
 
-  bool ari_forwarding_enable() override { return false; }
+  bool enable_ari_forwarding() override { return false; }
+  bool ari_forwarding_enabled() const override { return false; }
 
   virtual ~Bridge_base() = default;
 

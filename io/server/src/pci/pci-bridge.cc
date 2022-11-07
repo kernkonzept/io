@@ -232,6 +232,7 @@ Bridge::dma_alias() const
 class Pcie_downstream_port : public Bridge
 {
 private:
+  /// Whether ARI forwarding is enabled for this downstream port.
   bool _ari = false;
 
 public:
@@ -241,7 +242,13 @@ public:
   {
   }
 
-  bool ari_forwarding_enable() override
+  /**
+   * Enabled ARI forwarding for this downstream port if it supports it.
+   *
+   * \retval true   ARI forwarding was (already) enabled.
+   * \retval false  ARI forwarding is not supported.
+   */
+  bool enable_ari_forwarding() override
   {
     if (_ari)
       return true;
@@ -259,16 +266,48 @@ public:
     return _ari;
   }
 
+  bool ari_forwarding_enabled() const override
+  { return _ari; }
+
   void discover_devices(Hw::Device *host_bus, Config_space *cfg) override
   {
     Dev *d = discover_func(host_bus, cfg, 0, 0);
     if (!d)
       return;
 
+    // If first device has an ARI capability it tries to enable ARI forwarding
+    // on the downstream port via enable_ari_forwarding() (see
+    // Dev::handle_ari_cap()).
+    if (ari_forwarding_enabled())
+      {
+        Extended_cap ari = d->find_ext_cap(Ari_cap::Id);
+
+        // look for functions in ARI style (optimization to improve enumeration
+        // performance)
+        while (ari.Config::is_valid())
+          {
+            l4_uint8_t next_func = ari.read<Ari_cap::Caps>().next_func();
+            if (!next_func)
+              // In an ARI device each function must implement the ARI
+              // capability (see PCI Express Base Specification Revision 6.0,
+              // section 7.8.8 ARI Extended Capability).
+              return;
+
+            d = discover_func(host_bus, cfg, 0, next_func);
+            if (!d)
+              // Should never happen with, a non-null next_func must always
+              // point to a valid function.
+              return;
+
+            ari = d->find_ext_cap(Ari_cap::Id);
+          }
+      }
     // look for functions in PCI style
-    if (d->cfg.is_multi_function())
-      for (int function = 1; function < 8; ++function)
-        discover_func(host_bus, cfg, 0, function);
+    else if (!ari_forwarding_enabled() && d->cfg.is_multi_function())
+      {
+        for (int function = 1; function < 8; ++function)
+          discover_func(host_bus, cfg, 0, function);
+      }
   }
 
   Dma_requester_id dma_alias() const override

@@ -470,6 +470,7 @@ Dev::handle_ext_cap(unsigned char id, Ext_cap_handler handler)
 void
 Dev::discover_pcie_caps()
 {
+  handle_ext_cap(Ari_cap::Id, Dev::handle_ari_cap);
   handle_ext_cap(Acs_cap::Id, Dev::handle_acs_cap);
 }
 
