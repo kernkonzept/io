@@ -135,7 +135,6 @@ public:
   int int_map(int i) const { return _int_map[i]; }
 
 private:
-  int assert_prop(Int_property &prop, char const *prop_name);
   int host_init();
 
   Int_property _regs_base{~0};
@@ -208,27 +207,15 @@ public:
 };
 
 int
-Ecam_pcie_bridge::assert_prop(Int_property &prop, char const *prop_name)
-{
-  if (prop == ~0)
-    {
-      d_printf(DBG_ERR, "error: %s: '%s' not set.\n", name(), prop_name);
-      return -L4_EINVAL;
-    }
-
-  return 0;
-}
-
-int
 Ecam_pcie_bridge::host_init()
 {
   // assert on mandatory properties
-  if (   assert_prop(_regs_base, "regs_base")
-      || assert_prop(_regs_size, "regs_size")
-      || assert_prop(_cfg_base, "cfg_base")
-      || assert_prop(_cfg_size, "cfg_size")
-      || assert_prop(_mmio_base, "mmio_base")
-      || assert_prop(_mmio_size, "mmio_size"))
+  if (   assert_property(&_regs_base, "regs_base", ~0)
+      || assert_property(&_regs_size, "regs_size", ~0)
+      || assert_property(&_cfg_base, "cfg_base", ~0)
+      || assert_property(&_cfg_size, "cfg_size", ~0)
+      || assert_property(&_mmio_base, "mmio_base", ~0)
+      || assert_property(&_mmio_size, "mmio_size", ~0))
     return -L4_EINVAL;
 
   l4_addr_t va = res_map_iomem(_regs_base, _regs_size);

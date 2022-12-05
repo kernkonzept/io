@@ -114,7 +114,6 @@ public:
   int interrupt() const { return _interrupt; }
 
 private:
-  int assert_prop(Int_property &prop, char const *prop_name);
   int host_init();
   int access_enable(Cfg_addr addr, Cfg_width width);
   void access_disable(Cfg_addr addr);
@@ -200,31 +199,19 @@ public:
 };
 
 int
-Rcar3_pcie_bridge::assert_prop(Int_property &prop, char const *prop_name)
-{
-  if (prop == ~0)
-    {
-      d_printf(DBG_ERR, "error: %s: '%s' not set.\n", name(), prop_name);
-      return -L4_EINVAL;
-    }
-
-  return 0;
-}
-
-int
 Rcar3_pcie_bridge::host_init()
 {
-  if (   assert_prop(_regs_base,  "regs_base")
-      || assert_prop(_regs_size,  "regs_size")
-      || assert_prop(_mem_base_1, "mem_base_1")
-      || assert_prop(_mem_size_1, "mem_size_1")
-      || assert_prop(_mem_base_2, "mem_base_2")
-      || assert_prop(_mem_size_2, "mem_size_2")
-      || assert_prop(_mem_base_3, "mem_base_3")
-      || assert_prop(_mem_size_3, "mem_size_3")
-      || assert_prop(_mem_base_4, "mem_base_4")
-      || assert_prop(_mem_size_4, "mem_size_4")
-      || assert_prop(_interrupt,  "irq"))
+  if (   assert_property(&_regs_base,  "regs_base", ~0)
+      || assert_property(&_regs_size,  "regs_size", ~0)
+      || assert_property(&_mem_base_1, "mem_base_1", ~0)
+      || assert_property(&_mem_size_1, "mem_size_1", ~0)
+      || assert_property(&_mem_base_2, "mem_base_2", ~0)
+      || assert_property(&_mem_size_2, "mem_size_2", ~0)
+      || assert_property(&_mem_base_3, "mem_base_3", ~0)
+      || assert_property(&_mem_size_3, "mem_size_3", ~0)
+      || assert_property(&_mem_base_4, "mem_base_4", ~0)
+      || assert_property(&_mem_size_4, "mem_size_4", ~0)
+      || assert_property(&_interrupt,  "irq", ~0))
     return -L4_EINVAL;
 
   l4_addr_t va = res_map_iomem(_regs_base, _regs_size);
