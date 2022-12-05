@@ -48,7 +48,7 @@ namespace Pci {
       // according to the access width
       offs >>= w;
       offs <<= w + 3; // now offs is aligned to 'w'
-      l4_uint32_t m = 0xffffffffU >> (32 - (8U << w));
+      l4_uint32_t m = cfg_o_to_mask(w);
       return (_v >> offs) & m;
     }
 
@@ -70,7 +70,7 @@ namespace Pci {
 
       offs >>= w;
       offs <<= w + 3; // now offs is aligned to 'w'
-      l4_uint32_t m = 0xffffffffU >> (32 - (8U << w));
+      l4_uint32_t m = cfg_o_to_mask(w);
 
       _v = (_v & (ro | ~(m << offs))) | (((v & m) << offs) & ~ro);
     }
