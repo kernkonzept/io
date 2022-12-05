@@ -104,6 +104,9 @@ public:
   : Hw::Device(0xffee0000), // just don't use the default 0xffffffff ID
     Hw::Pci::Root_bridge(segment, bus_nr, this)
   {
+    // Use a default name as long as no name was set with the Lua script.
+    set_name_if_empty("pcie_ecam");
+
     // the set of mandatory properties
     register_property("regs_base", &_regs_base);        // mandatory
     register_property("regs_size", &_regs_size);        // mandatory
@@ -119,8 +122,6 @@ public:
     register_property("int_b", &_int_map[1]);           // optional
     register_property("int_c", &_int_map[2]);           // optional
     register_property("int_d", &_int_map[3]);           // optional
-
-    set_name("QEMU PCI root bridge");
   }
 
   typedef Hw::Pci::Cfg_addr Cfg_addr;
@@ -154,9 +155,6 @@ private:
 
   // PCI root bridge config space.
   L4drivers::Register_block<32> _cfg;
-
-  // Used for certain debug output.
-  char _prefix[20];
 };
 
 class Irq_router_rs : public Resource_space
@@ -214,7 +212,7 @@ Ecam_pcie_bridge::assert_prop(Int_property &prop, char const *prop_name)
 {
   if (prop == ~0)
     {
-      d_printf(DBG_ERR, "ERROR: %s: '%s' not set.\n", _prefix, prop_name);
+      d_printf(DBG_ERR, "ERROR: %s: '%s' not set.\n", name(), prop_name);
       return -L4_EINVAL;
     }
 
@@ -236,7 +234,7 @@ Ecam_pcie_bridge::host_init()
   l4_addr_t va = res_map_iomem(_regs_base, _regs_size);
   if (!va)
     {
-      d_printf(DBG_ERR, "ERROR %s: could not map core memory.\n", _prefix);
+      d_printf(DBG_ERR, "ERROR %s: could not map core memory.\n", name());
       return -L4_ENOMEM;
     }
   _regs = new L4drivers::Mmio_register_block<32>(va);
@@ -244,7 +242,7 @@ Ecam_pcie_bridge::host_init()
   va = res_map_iomem(_cfg_base, _cfg_size);
   if (!va)
     {
-      d_printf(DBG_ERR, "ERROR %s: could not map cfg memory.\n", _prefix);
+      d_printf(DBG_ERR, "ERROR %s: could not map cfg memory.\n", name());
       return -L4_ENOMEM;
     }
   _cfg = new L4drivers::Mmio_register_block<32>(va);
@@ -262,8 +260,8 @@ Ecam_pcie_bridge::host_init()
   // This is currently not implemented, therefore access to port I/O resources
   // of PCI devices will not work on non-x86 architectures.
   if (_ioport_base != ~0 && (_ioport_base & 0xffffffff0000ULL))
-    d_printf(DBG_WARN, "Base for I/O ports set to MMIO range (%08llx-%08llx)!\n",
-             _ioport_base.val(), _ioport_base.val() + _ioport_size.val());
+    d_printf(DBG_WARN, "%s: Base for I/O ports set to MMIO range (%08llx-%08llx)!\n",
+             name(), _ioport_base.val(), _ioport_base.val() + _ioport_size.val());
 
   return 0;
 }
@@ -289,7 +287,7 @@ Ecam_pcie_bridge::cfg_read(Cfg_addr addr, l4_uint32_t *value, Cfg_width width)
 
   d_printf(DBG_ALL,
            "%s: cfg_read  addr=%02x:%02x.%x reg=%03x width=%2d-bit  =>   %0*lx\n",
-           _prefix, addr.bus(), addr.dev(), addr.fn(), addr.reg(), 8 << width,
+           name(), addr.bus(), addr.dev(), addr.fn(), addr.reg(), 8 << width,
            2 << width, *value & ((1UL << (8 << width)) - 1));
 
   return 0;
@@ -300,7 +298,7 @@ Ecam_pcie_bridge::cfg_write(Cfg_addr addr, l4_uint32_t value, Cfg_width width)
 {
   d_printf(DBG_ALL,
            "%s: cfg_write addr=%02x:%02x.%x reg=%03x width=%2d-bit value=%0*lx\n",
-           _prefix, addr.bus(), addr.dev(), addr.fn(), addr.reg(), 8 << width,
+           name(), addr.bus(), addr.dev(), addr.fn(), addr.reg(), 8 << width,
            2 << width, value & ((1UL << (8 << width)) - 1));
 
   switch (width)
@@ -325,8 +323,6 @@ Ecam_pcie_bridge::cfg_write(Cfg_addr addr, l4_uint32_t value, Cfg_width width)
 void
 Ecam_pcie_bridge::init()
 {
-  snprintf(_prefix, sizeof(_prefix), "ecam_pcie.%08llx", _regs_base.val());
-
   if (host_init())
     return;
 
