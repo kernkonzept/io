@@ -66,14 +66,14 @@ Io.Dt = {}
 
 function Io.Dt.add_child(parent, name, dev, idx)
   parent:add_child(dev)
-  if dev.plugin and (parent:parent() or swig_equals(parent, Io.hw_bus)) then
-    dev:plugin()
-  end
   if type(name) == "string" then
     if idx ~= nil then
       name = name .. '[' .. idx ..']'
     end
     dev:set_name(name)
+  end
+  if dev.plugin and (parent:parent() or swig_equals(parent, Io.hw_bus)) then
+    dev:plugin()
   end
 end
 
