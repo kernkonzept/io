@@ -204,7 +204,7 @@ Rcar3_pcie_bridge::assert_prop(Int_property &prop, char const *prop_name)
 {
   if (prop == ~0)
     {
-      d_printf(DBG_ERR, "ERROR: %s: '%s' not set.\n", name(), prop_name);
+      d_printf(DBG_ERR, "error: %s: '%s' not set.\n", name(), prop_name);
       return -L4_EINVAL;
     }
 
@@ -230,7 +230,7 @@ Rcar3_pcie_bridge::host_init()
   l4_addr_t va = res_map_iomem(_regs_base, _regs_size);
   if (!va)
     {
-      d_printf(DBG_ERR, "ERROR: %s: could not map core memory.\n", name());
+      d_printf(DBG_ERR, "error: %s: could not map core memory.\n", name());
       return -L4_ENOMEM;
     }
   _regs = new L4drivers::Mmio_register_block<32>(va);
@@ -245,7 +245,7 @@ Rcar3_pcie_bridge::host_init()
         _cpg_reg_bit.set(-1, 18);       // pcie1
       else
         {
-          d_printf(DBG_ERR, "ERROR: unknown PCIe controller at %08llx -- fix CPG code!\n",
+          d_printf(DBG_ERR, "error: unknown PCIe controller at %08llx -- fix CPG code!\n",
                    _regs_base.val());
           return -L4_EINVAL;
         }
@@ -255,7 +255,7 @@ Rcar3_pcie_bridge::host_init()
   if (ret != L4_EOK)
     {
       d_printf(DBG_ERR,
-               "ERROR: %s: couldn't enable PCIe controller at CPG (%s)!\n",
+               "error: %s: couldn't enable PCIe controller at CPG (%s)!\n",
                name(), l4sys_errtostr(ret));
       return ret;
     }
@@ -286,7 +286,7 @@ Rcar3_pcie_bridge::host_init()
 
   if (!(_regs[Pcie_physr] & 1))
     {
-      d_printf(DBG_ERR, "ERROR: %s: PHY not ready!\n", name());
+      d_printf(DBG_ERR, "error: %s: PHY not ready!\n", name());
       return -L4_ENXIO;
     }
 

@@ -32,7 +32,7 @@ public:
     _base = res_map_iomem(base, 0x1000);
     if (!_base)
       {
-        d_printf(DBG_ERR, "ERROR: rcar3_cpg: could not map CPG memory.\n");
+        d_printf(DBG_ERR, "error: rcar3_cpg: could not map CPG memory.\n");
         throw -L4_ENOMEM;
       }
     _regs = new L4drivers::Mmio_register_block<32>(_base);

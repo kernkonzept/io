@@ -84,20 +84,20 @@ struct Acpi_ec : Acpi_dev
     Resource_list const &r = *host->resources();
     if (r.size() < 2)
       {
-        d_printf(DBG_ERR, "ERROR: EC: error missing resources\n");
+        d_printf(DBG_ERR, "error: EC: error missing resources\n");
         return;
       }
 
     if (r[0]->type() != Resource::Io_res || r[1]->type() != Resource::Io_res)
       {
-        d_printf(DBG_ERR, "ERROR: EC: resource type mismatch: types=%d,%d\n",
+        d_printf(DBG_ERR, "error: EC: resource type mismatch: types=%d,%d\n",
                  r[0]->type(), r[1]->type());
         return;
       }
 
     if (!r[0]->start() || !r[1]->start())
       {
-        d_printf(DBG_ERR, "ERROR: EC: invalid ec ports=%x,%x\n",
+        d_printf(DBG_ERR, "error: EC: invalid ec ports=%x,%x\n",
                  (unsigned)r[0]->start(), (unsigned)r[1]->start());
         return;
       }
@@ -127,7 +127,7 @@ struct Acpi_ec : Acpi_dev
         // never seen the package return value here...
         if (ACPI_FAILURE(status) || gpe.value.Type != ACPI_TYPE_INTEGER)
           {
-            d_printf(DBG_ERR, "ERROR: EC: invalid result from _GPE: %d\n", status);
+            d_printf(DBG_ERR, "error: EC: invalid result from _GPE: %d\n", status);
             return;
           }
 

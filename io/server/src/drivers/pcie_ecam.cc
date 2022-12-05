@@ -212,7 +212,7 @@ Ecam_pcie_bridge::assert_prop(Int_property &prop, char const *prop_name)
 {
   if (prop == ~0)
     {
-      d_printf(DBG_ERR, "ERROR: %s: '%s' not set.\n", name(), prop_name);
+      d_printf(DBG_ERR, "error: %s: '%s' not set.\n", name(), prop_name);
       return -L4_EINVAL;
     }
 
@@ -234,7 +234,7 @@ Ecam_pcie_bridge::host_init()
   l4_addr_t va = res_map_iomem(_regs_base, _regs_size);
   if (!va)
     {
-      d_printf(DBG_ERR, "ERROR %s: could not map core memory.\n", name());
+      d_printf(DBG_ERR, "error: %s: could not map core memory.\n", name());
       return -L4_ENOMEM;
     }
   _regs = new L4drivers::Mmio_register_block<32>(va);
@@ -242,7 +242,7 @@ Ecam_pcie_bridge::host_init()
   va = res_map_iomem(_cfg_base, _cfg_size);
   if (!va)
     {
-      d_printf(DBG_ERR, "ERROR %s: could not map cfg memory.\n", name());
+      d_printf(DBG_ERR, "error: %s: could not map cfg memory.\n", name());
       return -L4_ENOMEM;
     }
   _cfg = new L4drivers::Mmio_register_block<32>(va);
