@@ -139,9 +139,6 @@ private:
   // PCI root bridge core memory.
   L4drivers::Register_block<32> _regs;
 
-  // Used for certain debug output.
-  char _prefix[20];
-
   L4Re::Util::Unique_cap<L4Re::Dataspace> _ds_msi;
 };
 
@@ -207,7 +204,7 @@ Rcar3_pcie_bridge::assert_prop(Int_property &prop, char const *prop_name)
 {
   if (prop == ~0)
     {
-      d_printf(DBG_ERR, "ERROR: %s: '%s' not set.\n", _prefix, prop_name);
+      d_printf(DBG_ERR, "ERROR: %s: '%s' not set.\n", name(), prop_name);
       return -L4_EINVAL;
     }
 
@@ -233,7 +230,7 @@ Rcar3_pcie_bridge::host_init()
   l4_addr_t va = res_map_iomem(_regs_base, _regs_size);
   if (!va)
     {
-      d_printf(DBG_ERR, "ERROR: %s: could not map core memory.\n", _prefix);
+      d_printf(DBG_ERR, "ERROR: %s: could not map core memory.\n", name());
       return -L4_ENOMEM;
     }
   _regs = new L4drivers::Mmio_register_block<32>(va);
@@ -259,7 +256,7 @@ Rcar3_pcie_bridge::host_init()
     {
       d_printf(DBG_ERR,
                "ERROR: %s: couldn't enable PCIe controller at CPG (%s)!\n",
-               _prefix, l4sys_errtostr(ret));
+               name(), l4sys_errtostr(ret));
       return ret;
     }
 
@@ -289,7 +286,7 @@ Rcar3_pcie_bridge::host_init()
 
   if (!(_regs[Pcie_physr] & 1))
     {
-      d_printf(DBG_ERR, "ERROR: %s: PHY not ready!\n", _prefix);
+      d_printf(DBG_ERR, "ERROR: %s: PHY not ready!\n", name());
       return -L4_ENXIO;
     }
 
@@ -377,7 +374,7 @@ Rcar3_pcie_bridge::host_init()
     {
       if (_regs[Pcie_tstr] & Pcie_tstr_dllact)
         {
-          d_printf(DBG_INFO, "%s: link up.\n", _prefix);
+          d_printf(DBG_INFO, "%s: link up.\n", name());
 
           // Remember, we are in root port mode:
 
@@ -396,7 +393,7 @@ Rcar3_pcie_bridge::host_init()
       l4_sleep(10);
     }
 
-  d_printf(DBG_INFO, "%s: link down.\n", _prefix);
+  d_printf(DBG_INFO, "%s: link down.\n", name());
   return -L4_ENXIO;
 }
 
@@ -488,7 +485,7 @@ Rcar3_pcie_bridge::alloc_msi_page(void **virt, l4_addr_t *phys)
   *phys = phys_ram;
 
   d_printf(DBG_INFO, "%s: alloc_msi_page: virt=%08lx phys=%08lx\n",
-           _prefix, (unsigned long)*virt, *phys);
+           name(), (unsigned long)*virt, *phys);
 }
 
 void
@@ -541,7 +538,7 @@ Rcar3_pcie_bridge::cfg_read(Cfg_addr addr, l4_uint32_t *value, Cfg_width width)
 
   d_printf(DBG_ALL,
            "%s: cfg_read addr=%02x:%02x.%x reg=%03x width=%2d-bit value=%0*lx\n",
-           _prefix, addr.bus(), addr.dev(), addr.fn(), addr.reg(), 8 << width,
+           name(), addr.bus(), addr.dev(), addr.fn(), addr.reg(), 8 << width,
            2 << width, *value & ((1UL << (8 << width)) - 1));
 
   return 0;
@@ -552,7 +549,7 @@ Rcar3_pcie_bridge::cfg_write(Cfg_addr addr, l4_uint32_t value, Cfg_width width)
 {
   d_printf(DBG_ALL,
            "%s: cfg_wrte addr=%02x:%02x.%x reg=%03x width=%2d-bit value=%0*lx\n",
-           _prefix, addr.bus(), addr.dev(), addr.fn(),  addr.reg(), 8 << width,
+           name(), addr.bus(), addr.dev(), addr.fn(),  addr.reg(), 8 << width,
            2 << width, value & ((1UL << (8 << width)) - 1));
 
   if (access_enable(addr, width) < 0)
@@ -593,12 +590,10 @@ Rcar3_pcie_bridge::cfg_write(Cfg_addr addr, l4_uint32_t value, Cfg_width width)
 void
 Rcar3_pcie_bridge::init()
 {
-  snprintf(_prefix, sizeof(_prefix), "rcar3_pcie.%08llx", _regs_base.val());
-
   if (host_init())
     return;
 
-  d_printf(DBG_INFO, "%s: new device.\n", _prefix);
+  d_printf(DBG_INFO, "%s: new device.\n", name());
 
   if (Enable_msi)
     {
@@ -611,9 +606,9 @@ Rcar3_pcie_bridge::init()
       catch (L4::Runtime_error &e)
         {
           if (e.extra_str() && e.extra_str()[0] != '\0')
-            dprintf(DBG_ERR, "%s: %s: %s\n", _prefix, e.extra_str(), e.str());
+            dprintf(DBG_ERR, "%s: %s: %s\n", name(), e.extra_str(), e.str());
           else
-            dprintf(DBG_ERR, "%s: %s\n", _prefix, e.str());
+            dprintf(DBG_ERR, "%s: %s\n", name(), e.str());
           return;
         }
     }
