@@ -361,6 +361,34 @@ public:
    * \return The corresponding property object if it exists, NULL otherwise
    */
   Property *property(std::string const &name);
+
+  /**
+   * Verify that the property was set and return an error otherwise.
+   *
+   * Verify if the property has the value of `default_value`. If so, print a
+   * warning (if the ERR debug level is enabled) using the device name and
+   * return an error. Otherwise just return 0 (success).
+   *
+   * \param prop           Property.
+   * \param prop_name      Property name.
+   * \param default_value  Default value to check for.
+   *
+   * \retval 0          Property has a non-default value.
+   * \retval -L4_EINVAL Property was not set and has the default value.
+   */
+  template<typename P, typename V>
+  int assert_property(P const &prop, std::string const &prop_name,
+                      V default_value = 0)
+  {
+    if (prop->val() == default_value)
+      {
+        d_printf(DBG_ERR, "error: %s: Property '%s' not set.\n",
+                 name(), prop_name.c_str());
+        return -L4_EINVAL;
+      }
+
+    return 0;
+  }
 };
 
 /**
