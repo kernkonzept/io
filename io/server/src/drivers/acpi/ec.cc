@@ -330,7 +330,7 @@ Acpi_ec *Acpi_ec::_ecdt_ec;
 struct Acpi_ec_drv : Acpi_device_driver
 {
   Acpi_dev *probe(Device *device, ACPI_HANDLE acpi_hdl,
-                  ACPI_DEVICE_INFO const *)
+                  ACPI_DEVICE_INFO const *) override
   {
     d_printf(DBG_DEBUG, "Found ACPI EC\n");
     Acpi_ec *ec = 0;

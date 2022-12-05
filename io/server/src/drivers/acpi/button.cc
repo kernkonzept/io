@@ -105,7 +105,7 @@ class Acpi_lid : public Acpi_dev
 public:
   Acpi_lid(ACPI_HANDLE hdl, Device *host);
 
-  void enable_notifications(Hw::Device *host);
+  void enable_notifications(Hw::Device *host) override;
   void get_and_store_state(bool *closed, bool *duplicate);
   void notify(unsigned type, unsigned event, unsigned value)
   { _host->notify(type, event, value); }
@@ -227,7 +227,8 @@ Acpi_lid::get_and_store_state(bool *closed, bool *duplicate)
 class Acpi_lid_driver : public Acpi_device_driver
 {
 public:
-  Acpi_dev *probe(Device *device, ACPI_HANDLE handle, ACPI_DEVICE_INFO const *)
+  Acpi_dev *probe(Device *device, ACPI_HANDLE handle,
+                  ACPI_DEVICE_INFO const *) override
   {
     Acpi_lid *dev;
     d_printf(DBG_DEBUG, "ACPI: found LID: %s\n", device->name());
@@ -245,7 +246,8 @@ public:
 class Acpi_button_driver : public Acpi_device_driver
 {
 public:
-  Acpi_dev *probe(Device *device, ACPI_HANDLE handle, ACPI_DEVICE_INFO const *)
+  Acpi_dev *probe(Device *device, ACPI_HANDLE handle,
+                  ACPI_DEVICE_INFO const *) override
   {
     Acpi_dev *dev;
 

@@ -91,7 +91,7 @@ struct Intel_root_complex_p2p_inhibitor : Driver
    * Forwarding in PCI ACS. For more information please consult the PCIe base
    * specification (revision 3).
    */
-  int probe(Dev *d)
+  int probe(Dev *d) override
   {
     d_printf(DBG_DEBUG, "Intel PCIe: disable P2P traffic.\n");
 
@@ -191,7 +191,7 @@ struct Intel_root_port_p2p_inhibitor : Driver
    * equivalent of PCI ACS source validation. For reference, please consult
    * the PCIe base specification (revision 3).
    */
-  int probe(Dev *d)
+  int probe(Dev *d) override
   {
     d_printf(DBG_DEBUG, "Intel PCIe: disable P2P traffic.\n");
 

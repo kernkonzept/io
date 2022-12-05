@@ -17,7 +17,7 @@ using namespace Hw::Pci;
 
 struct Pci_intel_gma500_drv : Driver
 {
-  int probe(Dev *d)
+  int probe(Dev *d) override
   {
     d_printf(DBG_DEBUG, "Found Intel gma500 device\n");
 

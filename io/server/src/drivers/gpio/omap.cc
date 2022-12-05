@@ -135,7 +135,7 @@ class Scm_omap : public Hw::Device
 public:
   Scm_omap() { add_cid("scm-omap"); }
 
-  void init()
+  void init() override
   {
     Hw::Device::init();
 
@@ -209,9 +209,9 @@ public:
     std::fill_n(_offsets, Num_offsets, -1);
   }
 
-  int set(int, std::string const &) { return -EINVAL; }
+  int set(int, std::string const &) override { return -EINVAL; }
 
-  int set(int k, l4_int64_t i)
+  int set(int k, l4_int64_t i) override
   {
     // check for correct index, lua tables start with index 1
     // and the first entry is defined to be the device reference
@@ -230,7 +230,7 @@ public:
 
   /* the device reference has to be the first entry in the table
    * note: lua tables start at index 1 */
-  int set(int k, Generic_device *d)
+  int set(int k, Generic_device *d) override
   {
     if (k != 1)
       return -EINVAL;
@@ -242,7 +242,7 @@ public:
     return 0;
   }
 
-  int set(int, Resource *) { return -EINVAL; }
+  int set(int, Resource *) override { return -EINVAL; }
 
   Scm_omap *dev() { return _scm; }
   l4_int32_t offset(int index)
@@ -452,12 +452,12 @@ public:
     register_property("scm", &_scm);
   }
 
-  unsigned nr_pins() const { return _nr_pins; }
+  unsigned nr_pins() const override { return _nr_pins; }
 
-  void request(unsigned) {}
-  void free(unsigned) {}
+  void request(unsigned) override {}
+  void free(unsigned) override {}
 
-  int get(unsigned pin)
+  int get(unsigned pin) override
   {
     if (pin >= _nr_pins)
       throw -L4_EINVAL;
@@ -465,7 +465,7 @@ public:
     return (_regs[REGS::Data_out] >> _pin_shift(pin)) & 1;
   }
 
-  void set(unsigned pin, int value)
+  void set(unsigned pin, int value) override
   {
     if (pin >= _nr_pins)
       throw -L4_EINVAL;
@@ -474,13 +474,13 @@ public:
     _regs[reg_set] = _pin_bit(pin);
   }
 
-  unsigned multi_get(unsigned offset)
+  unsigned multi_get(unsigned offset) override
   {
     _reg_offset_check(offset);
     return _regs[REGS::Data_out];
   }
 
-  void multi_set(Pin_slice const &mask, unsigned data)
+  void multi_set(Pin_slice const &mask, unsigned data) override
   {
     _reg_offset_check(mask.offset);
     if (mask.mask & data)
@@ -489,7 +489,7 @@ public:
       _regs[REGS::Clr_data_out] = (mask.mask & ~data);
   }
 
-  void setup(unsigned pin, unsigned mode, int value)
+  void setup(unsigned pin, unsigned mode, int value) override
   {
     if (pin >= _nr_pins)
       throw -L4_EINVAL;
@@ -521,7 +521,7 @@ public:
     config(pin, mode);
   }
 
-  void config_pad(unsigned pin, unsigned reg, unsigned value)
+  void config_pad(unsigned pin, unsigned reg, unsigned value) override
   {
     if (pin >= _nr_pins)
       throw -L4_EINVAL;
@@ -553,7 +553,7 @@ public:
       }
   }
 
-  void config_get(unsigned pin, unsigned reg, unsigned *value)
+  void config_get(unsigned pin, unsigned reg, unsigned *value) override
   {
     if (pin >= _nr_pins)
       throw -L4_EINVAL;
@@ -594,7 +594,7 @@ public:
       }
   }
 
-  void config_pull(unsigned pin, unsigned mode)
+  void config_pull(unsigned pin, unsigned mode) override
   {
     if (pin >= _nr_pins)
       throw -L4_EINVAL;
@@ -620,7 +620,7 @@ public:
       _scm.dev()->set_pull(_scm.offset(pin), mode);
   }
 
-  Io_irq_pin *get_irq(unsigned pin)
+  Io_irq_pin *get_irq(unsigned pin) override
   {
     if (pin >= _nr_pins)
       throw -L4_EINVAL;
@@ -631,7 +631,8 @@ public:
     return _irq_svr->template get_pin<Gpio_irq_pin_t<REGS>>(pin, _regs);
   }
 
-  void multi_config_pad(Pin_slice const &mask, unsigned func, unsigned value)
+  void multi_config_pad(Pin_slice const &mask, unsigned func,
+                        unsigned value) override
   {
     unsigned m = mask.mask;
     for (unsigned pin = mask.offset; pin < _nr_pins; ++pin, m >>= 1)
@@ -639,7 +640,8 @@ public:
         config_pad(pin, func, value);
   }
 
-  void multi_setup(Pin_slice const &mask, unsigned mode, unsigned outvalues)
+  void multi_setup(Pin_slice const &mask, unsigned mode,
+                   unsigned outvalues) override
   {
     unsigned m = mask.mask;
     for (unsigned pin = mask.offset; pin < _nr_pins; ++pin, m >>= 1, outvalues >>= 1)
@@ -647,7 +649,7 @@ public:
         setup(pin, mode, outvalues & 1);
   }
 
-  void init()
+  void init() override
   {
     Gpio_device::init();
 

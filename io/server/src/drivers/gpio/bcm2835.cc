@@ -258,24 +258,26 @@ public:
     register_property("pins", &_nr_pins);
   }
 
-  unsigned nr_pins() const { return _nr_pins; }
+  unsigned nr_pins() const override { return _nr_pins; }
 
-  void request(unsigned) {}
-  void free(unsigned) {}
-  void setup(unsigned pin, unsigned mode, int value = 0);
-  void config_pull(unsigned pin, unsigned mode);
-  int get(unsigned pin);
-  void set(unsigned pin, int value);
-  void config_pad(unsigned pin, unsigned func, unsigned value);
-  void config_get(unsigned pin, unsigned func, unsigned *value);
-  Io_irq_pin *get_irq(unsigned pin);
+  void request(unsigned) override {}
+  void free(unsigned) override {}
+  void setup(unsigned pin, unsigned mode, int value = 0) override;
+  void config_pull(unsigned pin, unsigned mode) override;
+  int get(unsigned pin) override;
+  void set(unsigned pin, int value) override;
+  void config_pad(unsigned pin, unsigned func, unsigned value) override;
+  void config_get(unsigned pin, unsigned func, unsigned *value) override;
+  Io_irq_pin *get_irq(unsigned pin) override;
 
-  void multi_setup(Pin_slice const &mask, unsigned mode, unsigned outvalues = 0);
-  void multi_config_pad(Pin_slice const &mask, unsigned func, unsigned value = 0);
-  void multi_set(Pin_slice const &mask, unsigned data);
-  unsigned multi_get(unsigned offset);
+  void multi_setup(Pin_slice const &mask, unsigned mode,
+                   unsigned outvalues = 0) override;
+  void multi_config_pad(Pin_slice const &mask, unsigned func,
+                        unsigned value = 0) override;
+  void multi_set(Pin_slice const &mask, unsigned data) override;
+  unsigned multi_get(unsigned offset) override;
 
-  void init();
+  void init() override;
 
 private:
   enum

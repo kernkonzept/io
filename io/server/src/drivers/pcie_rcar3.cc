@@ -106,7 +106,7 @@ public:
   typedef Hw::Pci::Cfg_addr Cfg_addr;
   typedef Hw::Pci::Cfg_width Cfg_width;
 
-  void init();
+  void init() override;
 
   int cfg_read(Cfg_addr addr, l4_uint32_t *value, Cfg_width) override;
   int cfg_write(Cfg_addr addr, l4_uint32_t value, Cfg_width) override;

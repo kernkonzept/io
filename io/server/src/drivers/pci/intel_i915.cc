@@ -15,7 +15,7 @@ using namespace Hw::Pci;
 
 struct Pci_intel_i915_drv : Driver
 {
-  int probe(Dev *d)
+  int probe(Dev *d) override
   {
     d_printf(DBG_DEBUG, "Found Intel i915 device\n");
 

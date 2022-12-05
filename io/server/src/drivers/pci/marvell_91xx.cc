@@ -25,7 +25,7 @@ using namespace Hw::Pci;
 
 struct Pci_marvell_91xx_quirk : Driver
 {
-  int probe(Dev *d)
+  int probe(Dev *d) override
   {
     d_printf(DBG_DEBUG,
              "Found Marvell 91xx SATA controller: use PCI function aliasing quirk\n");

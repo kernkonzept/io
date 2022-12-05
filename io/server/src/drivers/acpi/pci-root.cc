@@ -89,7 +89,7 @@ get_bbn(ACPI_HANDLE hdl, int *bbn)
 struct Acpi_pci_root_drv : Acpi_device_driver
 {
   Acpi_dev *probe(Device *device, ACPI_HANDLE acpi_hdl,
-                  ACPI_DEVICE_INFO const *info)
+                  ACPI_DEVICE_INFO const *info) override
   {
     d_printf(DBG_DEBUG, "Found PCI root bridge...\n");
     // do this first so we have an Acpi_dev feature installed for 'device'
