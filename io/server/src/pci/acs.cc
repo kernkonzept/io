@@ -79,9 +79,9 @@ struct Acs_cap_handler : Extended_cap_handler_t<Acs_cap::Id>
         return false;
       }
 
-    d_printf(DBG_DEBUG, "ACS: %02x:%02x.%x: enabled ACS (features=0x%x)\n",
-             dev->bus_nr(), dev->device_nr(), dev->function_nr(),
-             ctrl.enabled().get());
+    printf("ACS: %02x:%02x.%x: enabled ACS (features=0x%x)\n",
+           dev->bus_nr(), dev->device_nr(), dev->function_nr(),
+           ctrl.enabled().get());
 
     dev->add_saved_cap(new Saved_acs_cap(acs_cap.reg()));
 
