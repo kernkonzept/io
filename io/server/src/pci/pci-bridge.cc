@@ -112,6 +112,10 @@ Bridge::setup_children(Hw::Device *)
     }
 
   enable_bus_master();
+
+  // Enable forwarding of secondary interface SERR# assertions.
+  l4_uint16_t v = c.read<l4_uint16_t>(Config::Bridge_control);
+  c.write<l4_uint16_t>(Config::Bridge_control, (v | 0x2));
 }
 
 void
