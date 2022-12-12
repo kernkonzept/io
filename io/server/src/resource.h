@@ -335,7 +335,7 @@ public:
   L4Re::Rm::Unique_region<l4_addr_t> _r;
 
   Mmio_data_space(Size size, unsigned long alloc_flags = 0)
-  : Resource(Mmio_res, 0, size - 1)
+  : Resource(Mmio_res | Mem_type_rw, 0, size - 1)
   {
     alloc_ram(size, alloc_flags);
   }
