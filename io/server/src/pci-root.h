@@ -16,10 +16,11 @@ class Root_bridge : public Dev_feature, public Bridge_base, public Config_space
 {
 private:
   Hw::Device *_host;
+  unsigned _segment;
 
 public:
-  explicit Root_bridge(int segment, unsigned bus_nr, Hw::Device *host)
-  : Bridge_base(bus_nr), _host(host), segment(segment)
+  explicit Root_bridge(unsigned segment, unsigned bus_nr, Hw::Device *host)
+  : Bridge_base(bus_nr), _host(host), _segment(segment)
   {}
 
 
@@ -34,12 +35,13 @@ public:
     return ++subordinate;
   }
 
-  int segment;
+  unsigned segment() const override
+  { return _segment; }
 };
 
 struct Port_root_bridge : public Root_bridge
 {
-  explicit Port_root_bridge(int segment, unsigned bus_nr,
+  explicit Port_root_bridge(unsigned segment, unsigned bus_nr,
                             Hw::Device *host)
   : Root_bridge(segment, bus_nr, host) {}
 
@@ -52,7 +54,7 @@ private:
 
 struct Mmio_root_bridge : public Root_bridge
 {
-  explicit Mmio_root_bridge(int segment, unsigned bus_nr,
+  explicit Mmio_root_bridge(unsigned segment, unsigned bus_nr,
                             Hw::Device *host,
                             l4_uint64_t phys_base, unsigned num_busses)
   : Root_bridge(segment, bus_nr, host)
@@ -70,8 +72,8 @@ struct Mmio_root_bridge : public Root_bridge
   l4_addr_t _mmio;
 };
 
-Root_bridge *root_bridge(int segment);
-Root_bridge *find_root_bridge(int segment, int bus);
+Root_bridge *root_bridge(unsigned segment);
+Root_bridge *find_root_bridge(unsigned segment, int bus);
 int register_root_bridge(Root_bridge *b);
 
 } }

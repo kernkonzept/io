@@ -35,6 +35,7 @@ public:
 
   virtual void enable_bus_master() = 0;
 
+  virtual unsigned segment_nr() const = 0;
   virtual unsigned bus_nr() const = 0;
   virtual unsigned devfn() const = 0;
   unsigned device_nr() const { return devfn() >> 3; }
@@ -63,6 +64,7 @@ public:
   virtual unsigned alloc_bus_number() = 0;
   virtual bool check_bus_number(unsigned bus) = 0;
   virtual bool ari_forwarding_enable() = 0;
+  virtual unsigned segment() const = 0;
 };
 
 class Transparent_msi

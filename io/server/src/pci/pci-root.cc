@@ -99,10 +99,10 @@ Root_bridge::setup(Hw::Device *host)
   Bridge_base::discover_bus(host, this);
 }
 
-Root_bridge *root_bridge(int segment)
+Root_bridge *root_bridge(unsigned segment)
 {
   for (auto b: __pci_root_bridge)
-    if (b->segment == segment)
+    if (b->segment() == segment)
       return b;
 
   return 0;
@@ -112,7 +112,7 @@ int
 register_root_bridge(Root_bridge *b)
 {
   for (auto x: __pci_root_bridge)
-    if (x->segment == b->segment
+    if (x->segment() == b->segment()
         && x->num == b->num)
       return -L4_EEXIST;
 
@@ -120,10 +120,10 @@ register_root_bridge(Root_bridge *b)
   return 0;
 }
 
-Root_bridge *find_root_bridge(int segment, int bus)
+Root_bridge *find_root_bridge(unsigned segment, int bus)
 {
   for (auto b: __pci_root_bridge)
-    if (b->segment == segment
+    if (b->segment() == segment
         && b->num == bus)
       return b;
 

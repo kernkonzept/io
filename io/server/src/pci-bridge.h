@@ -149,6 +149,10 @@ public:
     Bridge_base::dump(indent);
   }
 
+  unsigned segment() const override
+  {
+    return bridge()->segment();
+  }
 };
 
 class Bridge : public Generic_bridge

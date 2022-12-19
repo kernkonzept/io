@@ -269,6 +269,9 @@ public:
   static void add_ext_cap_handler(Extended_cap_handler *h)
   { _ext_cap_handlers.add(h); }
 
+  unsigned segment_nr() const override
+  { return bridge()->segment(); }
+
 private:
   int discover_bar(int bar);
   void discover_expansion_rom();
