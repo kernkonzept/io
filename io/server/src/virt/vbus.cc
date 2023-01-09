@@ -245,33 +245,35 @@ System_bus::add_resource_to_bus(Resource *r)
 
   // at least one overlapping resource entry found
   auto lower = _resources.lower_bound(r);
-  if (typeid (*r) != typeid (**lower))
+  Resource const *l = *lower;
+  if (typeid (*r) != typeid (*l))
     {
       if (dlevel(DBG_ERR))
         {
           printf("error: overlapping incompatible resources for vbus\n");
           printf("       new:   "); r->dump(); puts(" conflicts with");
-          printf("       found: "); (*lower)->dump(); puts("");
+          printf("       found: "); l->dump(); puts("");
         }
       return false;
     }
 
-  if ((*lower)->contains(*r))
+  if (l->contains(*r))
     // already fully included
     return true;
 
   auto upper = _resources.upper_bound(r);
   for (auto it = lower; it != upper; ++it)
     {
-      bool same_type = typeid (*r) == typeid (**it);
-      if (!same_type || !r->contains(**it))
+      Resource const *i = *it;
+      bool same_type = typeid (*r) == typeid (*i);
+      if (!same_type || !r->contains(*i))
         {
           if (dlevel(DBG_ERR))
             {
               printf("error: %s resources for vbus\n",
                      same_type ? "oddly overlapping" : "overlapping incompatible");
               printf("       new:   "); r->dump(); puts(" conflicts with");
-              printf("       found: "); (*it)->dump(); puts("");
+              printf("       found: "); i->dump(); puts("");
             }
           return false;
         }
