@@ -98,7 +98,7 @@ namespace Pci {
   private:
     l4_uint32_t bar_ro_mask(unsigned bar)
     {
-      return (_s[bar] < 32) ? ~(~0UL << _s[bar]) : ~0UL;
+      return (_s[bar] < 32) ? ~(~0UL << _s[bar]) : ~0U;
     }
 
   public:
