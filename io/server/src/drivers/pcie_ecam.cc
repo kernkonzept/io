@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019-2020 Kernkonzept GmbH.
+ * Copyright (C) 2019-2023 Kernkonzept GmbH.
  * Author(s): Frank Mehnert <frank.mehnert@kernkonzept.com>
  *
  * This file is distributed under the terms of the GNU General Public
