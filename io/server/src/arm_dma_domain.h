@@ -1,6 +1,5 @@
 #pragma once
 
-#include <l4/drivers/hw_mmio_register_block>
 #include <l4/re/env>
 #include <l4/sys/iommu>
 #include <l4/re/error_helper>
@@ -105,18 +104,6 @@ private:
 
 class Arm_dma_domain_factory : public Dma_domain_factory
 {
-private:
-  static l4_uint16_t _global_sid;
-  void write_sid(Hw::Device *sidreg, l4_int64_t offset, l4_uint16_t sid)
-  {
-    Resource *reg_base = sidreg->resources()->find("reg0");
-    if (!reg_base)
-      return;
-
-    auto reg_block = L4drivers::Mmio_register_block<32>(reg_base->map_iomem());
-    reg_block.write(sid, offset);
-  }
-
 public:
   Arm_dma_domain *create(Hw::Device * /* bridge */, Hw::Device *dev) override
   {
@@ -131,43 +118,19 @@ public:
       // not an ARM DMA device, not supported
       return nullptr;
 
-    Device_property<Hw::Device> *sidreg =
-      dynamic_cast<Device_property<Hw::Device>*>(dev->property("sidreg"));
-    Hw::Device *reg = sidreg->dev();
-    // FIXME: We need a less fragile way to recognize IOMMU variants.
-    if (reg)
-      {
-        // We have an SMMU-400.
-        Int_property *offset =
-          dynamic_cast<Int_property*>(dev->property("offset"));
-        if (!offset)
-          return nullptr;
+    Int_property *sid = dynamic_cast<Int_property*>(dev->property("sid"));
+    if (!sid)
+      return nullptr;
 
-        l4_uint16_t sid = _global_sid++;
-        write_sid(reg, offset->val(), sid);
-        _src_id = ((l4_uint64_t)(iommu->val()) << 16) |  sid;
-      }
-    else
-      {
-        // We have an IPMMU.
-        Int_property *utlb =
-          dynamic_cast<Int_property*>(dev->property("utlb"));
-        if (!utlb)
-          return nullptr;
-
-        _src_id = ((l4_uint64_t)(iommu->val()) << 16) | utlb->val();
-      }
-
-    return new Arm_dma_domain(_src_id);
+    /*
+     * src_id encoding:
+     *   63-48: reserved
+     *   47-32: smmu_idx
+     *   31- 0: stream_id
+     */
+    l4_uint64_t smmu_idx = iommu->val();
+    l4_uint64_t src_id = (smmu_idx << 32) | sid->val();
+    return new Arm_dma_domain(src_id);
   }
-
-private:
-  /*
-   * src_id encoding:
-   *   63-32: reserved
-   *   31-16: iommu_id
-   *   15- 0: dev_id
-   */
-  l4_uint64_t _src_id;
 };
 }

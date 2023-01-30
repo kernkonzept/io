@@ -10,9 +10,7 @@ namespace Hw {
    *
    * This class offers the following new properties for devices:
    *   - iommu   ID of the IOMMU
-   *   - sidreg  register space for stream ID configuration (SMMU-400 only)
-   *   - offset  offset into `sidreg` (SMMU-400 only)
-   *   - utlb    micro-TLB the device is connected to (IPMMU only)
+   *   - sid     stream ID of the device
    *
    * FIXME: Using an extra class for this seems like an unsatisfactory solution.
    */
@@ -32,16 +30,12 @@ namespace Hw {
     void setup()
     {
       register_property("iommu", &_iommu);
-      register_property("sidreg", &_sidreg);
-      register_property("offset", &_offset);
-      register_property("utlb", &_utlb);
+      register_property("sid", &_sid);
 
       property("flags")->set(-1, DF_dma_supported);
     }
 
-    Device_property<Hw::Device> _sidreg;
-    Int_property _offset;
     Int_property _iommu;
-    Int_property _utlb;
+    Int_property _sid;
   };
 }
