@@ -260,8 +260,6 @@ public:
 
   unsigned nr_pins() const override { return _nr_pins; }
 
-  void request(unsigned) override {}
-  void free(unsigned) override {}
   void setup(unsigned pin, unsigned mode, int value = 0) override;
   void config_pull(unsigned pin, unsigned mode) override;
   int get(unsigned pin) override;
@@ -271,9 +269,13 @@ public:
   Io_irq_pin *get_irq(unsigned pin) override;
 
   void multi_setup(Pin_slice const &mask, unsigned mode,
-                   unsigned outvalues = 0) override;
+                   unsigned outvalues = 0) override
+  { generic_multi_setup(mask, mode, outvalues); }
+
   void multi_config_pad(Pin_slice const &mask, unsigned func,
-                        unsigned value = 0) override;
+                        unsigned value = 0) override
+  { generic_multi_config_pad(mask, func, value); }
+
   void multi_set(Pin_slice const &mask, unsigned data) override;
   unsigned multi_get(unsigned offset) override;
 
@@ -486,27 +488,6 @@ Gpio_bcm2835_chip::get_irq(unsigned pin)
   if (!_irq_svr[svr])
     return nullptr;
   return _irq_svr[svr]->get_pin<Gpio_irq_pin>(pin % 32, _regs[svr]);
-}
-
-void
-Gpio_bcm2835_chip::multi_config_pad(Pin_slice const &mask, unsigned reg, unsigned val)
-{
-  d_printf(DBG_DEBUG2, "Gpio_bcm2835_chip::multi_config_pad(%x, r=%x, v=%x)\n",
-           mask.mask, reg, val);
-
-  unsigned m = mask.mask;
-  for (unsigned pin = mask.offset; pin < _nr_pins; ++pin, m >>= 1)
-    if (m & 1)
-      config_pad(pin, reg, val);
-}
-
-void
-Gpio_bcm2835_chip::multi_setup(Pin_slice const &mask, unsigned mode, unsigned outval)
-{
-  unsigned m = mask.mask;
-  for (unsigned pin = mask.offset; pin < _nr_pins; ++pin, m >>= 1, outval >>= 1)
-    if (m & 1)
-      setup(pin, mode, outval & 1);
 }
 
 void

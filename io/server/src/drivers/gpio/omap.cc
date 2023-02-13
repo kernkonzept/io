@@ -454,9 +454,6 @@ public:
 
   unsigned nr_pins() const override { return _nr_pins; }
 
-  void request(unsigned) override {}
-  void free(unsigned) override {}
-
   int get(unsigned pin) override
   {
     if (pin >= _nr_pins)
@@ -633,21 +630,11 @@ public:
 
   void multi_config_pad(Pin_slice const &mask, unsigned func,
                         unsigned value) override
-  {
-    unsigned m = mask.mask;
-    for (unsigned pin = mask.offset; pin < _nr_pins; ++pin, m >>= 1)
-      if (m & 1)
-        config_pad(pin, func, value);
-  }
+  { generic_multi_config_pad(mask, func, value); }
 
   void multi_setup(Pin_slice const &mask, unsigned mode,
                    unsigned outvalues) override
-  {
-    unsigned m = mask.mask;
-    for (unsigned pin = mask.offset; pin < _nr_pins; ++pin, m >>= 1, outvalues >>= 1)
-      if (m & 1)
-        setup(pin, mode, outvalues & 1);
-  }
+  { generic_multi_setup(mask, mode, outvalues); }
 
   void init() override
   {

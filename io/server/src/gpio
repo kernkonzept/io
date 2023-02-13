@@ -30,8 +30,8 @@ public:
     Pull_down  = L4VBUS_GPIO_PIN_PULL_DOWN,  ///< Enable pull down resistor
   };
 
-  virtual void request(unsigned pin) = 0;
-  virtual void free(unsigned pin) = 0;
+  virtual void request(unsigned /*pin*/) {}
+  virtual void free(unsigned /*pin*/) {}
 
   /**
    * Request number of pins from GPIO chip
@@ -160,6 +160,64 @@ public:
 
   void multi_input(Pin_slice const &mask)
   { multi_setup(mask, ~mask.mask); }
+
+protected:
+  /**
+   * \copydoc multi_setup()
+   * \note Generic implementation that can be used by GPIO drivers as fallback
+   *       if the hardware does not allow a more efficient implementation.
+   */
+  void generic_multi_setup(Pin_slice const &mask, unsigned mode, unsigned outvalue = 0)
+  {
+    unsigned m = mask.mask;
+    for (unsigned pin = mask.offset; pin < nr_pins(); ++pin, m >>= 1, outvalue >>= 1)
+      if (m & 1)
+        setup(pin, mode, outvalue & 1);
+  }
+
+  /**
+   * \copydoc multi_config_pad()
+   * \note Generic implementation that can be used by GPIO drivers as fallback
+   *       if the hardware does not allow a more efficient implementation.
+   */
+  void generic_multi_config_pad(Pin_slice const &mask, unsigned func, unsigned value)
+  {
+    unsigned m = mask.mask;
+    for (unsigned pin = mask.offset; pin < nr_pins(); ++pin, m >>= 1)
+      if (m & 1)
+        config_pad(pin, func, value);
+  }
+
+  /**
+   * \copydoc multi_set()
+   * \note Generic implementation that can be used by GPIO drivers as fallback
+   *       if the hardware does not allow a more efficient implementation.
+   */
+  void generic_multi_set(Pin_slice const &mask, unsigned data)
+  {
+    unsigned m = mask.mask;
+    for (unsigned pin = mask.offset; pin < nr_pins(); ++pin, m >>= 1, data >>= 1)
+      if (m & 1)
+        set(pin, data & 1);
+  }
+
+  /**
+   * \copydoc multi_get()
+   * \note Generic implementation that can be used by GPIO drivers as fallback
+   *       if the hardware does not allow a more efficient implementation.
+   */
+  unsigned generic_multi_get(unsigned offset)
+  {
+    if (offset >= nr_pins())
+      throw -L4_EINVAL;
+
+    unsigned data = 0;
+    unsigned max_bits = sizeof(data) * 8;
+    unsigned bits = cxx::min(nr_pins() - offset, max_bits);
+    for (unsigned i = 0; i < bits; ++i)
+      data |= get(offset + i) << i;
+    return data;
+  }
 };
 
 class Gpio_device :
