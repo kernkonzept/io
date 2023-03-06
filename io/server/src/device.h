@@ -112,7 +112,7 @@ public:
      *
      * \param p      Root node of the subtree to iterate.
      * \param c      Node to start iterating from.
-     * \param depth  Maximum depth of the iteratable subtree relative to `p`.
+     * \param depth  Maximum depth of the iterable subtree relative to `p`.
      */
     iterator(D *p, D *c, int depth = 0)
     : _p(p), _c(c), _d(depth + (p ? p->depth() : 0))
@@ -122,7 +122,7 @@ public:
      * Construct an iterator for a subtree of devices with root node `p`.
      *
      * \param p      Root node of the subtree to iterate.
-     * \param depth  Maximum depth of the iteratable subtree relative to `p`.
+     * \param depth  Maximum depth of the iterable subtree relative to `p`.
      *
      * \pre `p` must not be nullptr.
      */
@@ -130,7 +130,8 @@ public:
     : _p(p), _c(p->children()), _d(depth + p->depth())
     {}
 
-    /// Construct an invalid interator.
+    /// Construct an invalid iterator.
+    /// At least `_c` has to be initialized corresponding to the `==` operator!
     iterator()
     : _c(0)
     {}
@@ -140,7 +141,7 @@ public:
       if (!_c && !i._c)
         return true;
 
-      return _p == i._p && _c == i._c && _d == i._d;
+      return _c == i._c && _p == i._p && _d == i._d;
     }
 
     bool operator != (iterator const &i) const
