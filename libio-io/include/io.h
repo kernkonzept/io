@@ -162,10 +162,11 @@ l4io_device_handle_t l4io_get_root_device(void);
 /**
  * \brief Iterate over the device bus.
  *
- * \param  devhandle   Device handle to start iterating at
- * \retval devhandle   Next device handle
- * \retval dev         Device information, may be NULL
- * \retval reshandle   Resource handle.
+ * \param[in,out] devhandle  Device handle to start iterating at.
+ *                           The next device handle is returned here.
+ * \param[out]    dev        Device information, may be NULL.
+ * \param[out]    reshandle  Resource handle.
+ *
  * \return 0 on success, error code otherwise
  */
 L4_CV int L4_EXPORT
@@ -176,10 +177,11 @@ l4io_iterate_devices(l4io_device_handle_t *devhandle,
  * \brief Find a device by name.
  * \ingroup api_l4io
  *
- * \param  devname    Name of device
- * \retval dev_handle Device handle for found device, can be NULL.
- * \retval dev        Device information, filled by the function, can be NULL.
- * \retval res_handle Resource handle, can be NULL.
+ * \param      devname     Name of device.
+ * \param[out] dev_handle  Device handle for found device, can be NULL.
+ * \param[out] dev         Device information, filled by the function, can be
+ *                         NULL.
+ * \param[out] res_handle  Resource handle, can be NULL.
  *
  * \return 0 on success, error code otherwise
  */
@@ -192,12 +194,13 @@ l4io_lookup_device(const char *devname,
  * \brief Request a specific resource from a device description.
  * \ingroup api_l4io
  *
- * \param  devhandle Device handle.
- * \param  type      Type of resource to request (see \#l4io_resource_types_t)
- * \param  reshandle Resource handle,
- *                   start with handle returned by device functions.
- * \retval reshandle Next resource handle.
- * \retval res       Device descriptor
+ * \param         devhandle  Device handle.
+ * \param         type       Type of resource to request (see
+ *                           #l4io_resource_types_t).
+ * \param[in,out] reshandle  Resource handle, start with handle returned by
+ *                           device functions. The next resource handle is
+ *                           returned here.
+ * \param[out]    res        Device descriptor.
  *
  * \return 0 on success, error code otherwise, esp. -L4_ENOENT if no more
  *         resources found
