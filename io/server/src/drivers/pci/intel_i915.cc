@@ -62,6 +62,7 @@ struct Init
     _pci_intel_i915_drv.register_driver(0x8086, 0x1612);
     _pci_intel_i915_drv.register_driver(0x8086, 0x1912);
     _pci_intel_i915_drv.register_driver(0x8086, 0x1916);
+    _pci_intel_i915_drv.register_driver(0x8086, 0x5912); // "HD Graphics 630"
   }
 };
 
