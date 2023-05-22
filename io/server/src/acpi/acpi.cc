@@ -197,6 +197,36 @@ acpi_adr_res(l4_uint32_t id, Hw::Device *host, ACPI_RESOURCE_ADDRESS const *ar,
   host->add_resource_rq(r);
 }
 
+static void
+acpi_gpio_res(l4_uint32_t *id, Hw::Device *host, ACPI_RESOURCE_GPIO const* gpior)
+{
+  unsigned flags = Resource::Gpio_res;
+  if (gpior->ConnectionType == ACPI_RESOURCE_GPIO_TYPE_INT)
+    flags |=   Resource::Irq_type_base
+             | acpi_irq_to_f(gpior->Triggering, gpior->Polarity);
+
+  // Additional information that currently cannot be represented in the
+  // resource object created below.
+  d_printf(DBG_INFO, "ACPI: %s: GPIO resource: "
+           "Source=%s, PinConfig=%u, IoRestriction=%u, DebounceTimeout=%u\n",
+           host->name(), gpior->ResourceSource.StringPtr, gpior->PinConfig,
+           gpior->IoRestriction, gpior->DebounceTimeout);
+
+  for (unsigned i = 0; i < gpior->PinTableLength; i++)
+    {
+      UINT16 pin = gpior->PinTable[i];
+
+      Resource *r;
+      if (gpior->ProducerConsumer == ACPI_PRODUCER)
+        r = new Resource_provider(flags, pin, pin);
+      else
+        r = new Resource(flags, pin, pin);
+
+      r->set_id(*id++);
+      host->add_resource_rq(r);
+    }
+}
+
 static ACPI_STATUS
 discover_pre_cb(ACPI_HANDLE obj, UINT32 nl, void *ctxt, void **)
 {
@@ -1095,6 +1125,10 @@ Acpi_dev::discover_crs(Hw::Device *host)
             break;
 	  acpi_adr_res(res_id++, host, &d->Address, d->Address64.Address.Minimum, d->Address64.Address.AddressLength, 1);
 	  break;
+
+        case ACPI_RESOURCE_TYPE_GPIO:
+          acpi_gpio_res(&res_id, host, &d->Gpio);
+          break;
 
 	default:
 	  d_printf(DBG_WARN, "WARNING: ignoring ACPI resource (unknown type: %d)\n", r->Type);
