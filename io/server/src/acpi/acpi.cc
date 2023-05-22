@@ -227,6 +227,39 @@ acpi_gpio_res(l4_uint32_t *id, Hw::Device *host, ACPI_RESOURCE_GPIO const* gpior
     }
 }
 
+static void
+acpi_serial_bus_res(l4_uint32_t *id, Hw::Device *host,
+                    ACPI_RESOURCE_DATA const* d)
+{
+  if (d->CommonSerialBus.Type != ACPI_RESOURCE_SERIAL_TYPE_I2C)
+    {
+      d_printf(DBG_WARN,
+               "WARNING: ignoring ACPI resource (unknown serial bus type: %d)\n",
+               d->CommonSerialBus.Type);
+      return;
+    }
+
+  ACPI_RESOURCE_I2C_SERIALBUS const *sb = &d->I2cSerialBus;
+  // Additional information that currently cannot be represented in the
+  // resource object created below.
+  d_printf(DBG_INFO, "ACPI: %s: I2C resource: "
+           "Source=%s, Speed=%u, SlaveMode=%u, AccessMode=%u\n",
+           host->name(), sb->ResourceSource.StringPtr, sb->ConnectionSpeed,
+           sb->SlaveMode, sb->AccessMode);
+
+  unsigned flags = Resource::Bus_res;
+  unsigned adr = sb->SlaveAddress;
+
+  Resource *r;
+  if (sb->ProducerConsumer == ACPI_PRODUCER)
+    r = new Resource_provider(flags, adr, adr);
+  else
+    r = new Resource(flags, adr, adr);
+
+  r->set_id(*id++);
+  host->add_resource_rq(r);
+}
+
 static ACPI_STATUS
 discover_pre_cb(ACPI_HANDLE obj, UINT32 nl, void *ctxt, void **)
 {
@@ -1128,6 +1161,10 @@ Acpi_dev::discover_crs(Hw::Device *host)
 
         case ACPI_RESOURCE_TYPE_GPIO:
           acpi_gpio_res(&res_id, host, &d->Gpio);
+          break;
+
+        case ACPI_RESOURCE_TYPE_SERIAL_BUS:
+          acpi_serial_bus_res(&res_id, host, d);
           break;
 
 	default:
