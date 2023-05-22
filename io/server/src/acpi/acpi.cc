@@ -227,9 +227,37 @@ acpi_gpio_res(l4_uint32_t *id, Hw::Device *host, ACPI_RESOURCE_GPIO const* gpior
     }
 }
 
+
+using Guid = l4_uint8_t[16];
+
+/* HID I2C Device: 3cdff6f7-4267-4555-ad05-b30a3d8938de */
+Guid i2c_hid_guid = { 0xf7, 0xf6, 0xdf, 0x3c, 0x67, 0x42, 0x55, 0x45,
+                      0xad, 0x05, 0xb3, 0x0a, 0x3d, 0x89, 0x38, 0xde };
+
+static ACPI_STATUS
+acpi_eval_dsm_typed(ACPI_HANDLE hdl, Guid guid,
+                    l4_uint64_t rev, l4_uint64_t func, ACPI_OBJECT *param,
+                    Acpi_buffer<ACPI_OBJECT> *res, ACPI_OBJECT_TYPE type)
+{
+  ACPI_OBJECT params[4];
+  ACPI_OBJECT_LIST params_list = { 4, params };
+
+  params[0].Buffer = { ACPI_TYPE_BUFFER, 16, guid };
+  params[1].Integer = { ACPI_TYPE_INTEGER, rev };
+  params[2].Integer = { ACPI_TYPE_INTEGER, func };
+  if (param)
+    params[3] = *param;
+  else
+    params[3].Package = { ACPI_TYPE_PACKAGE, 0, NULL };
+
+  return AcpiEvaluateObjectTyped(hdl, ACPI_STRING("_DSM"), &params_list,
+                                 res, type);
+}
+
+
 static void
 acpi_serial_bus_res(l4_uint32_t *id, Hw::Device *host,
-                    ACPI_RESOURCE_DATA const* d)
+                    ACPI_RESOURCE_DATA const* d, ACPI_HANDLE handle)
 {
   if (d->CommonSerialBus.Type != ACPI_RESOURCE_SERIAL_TYPE_I2C)
     {
@@ -258,6 +286,15 @@ acpi_serial_bus_res(l4_uint32_t *id, Hw::Device *host,
 
   r->set_id(*id++);
   host->add_resource_rq(r);
+
+  // Additional information that currently cannot be represented in the
+  // resource object created above.
+  Acpi_buffer<ACPI_OBJECT> res;
+  ACPI_STATUS status = acpi_eval_dsm_typed(handle, i2c_hid_guid, 1, 1, NULL,
+                                           &res, ACPI_TYPE_INTEGER);
+  if (ACPI_SUCCESS(status))
+    d_printf(DBG_INFO, "ACPI: %s: I2C HID descriptor address 0x%llx\n",
+             host->name(), res.value.Integer.Value);
 }
 
 static ACPI_STATUS
@@ -1164,7 +1201,7 @@ Acpi_dev::discover_crs(Hw::Device *host)
           break;
 
         case ACPI_RESOURCE_TYPE_SERIAL_BUS:
-          acpi_serial_bus_res(&res_id, host, d);
+          acpi_serial_bus_res(&res_id, host, d, this->handle());
           break;
 
 	default:
