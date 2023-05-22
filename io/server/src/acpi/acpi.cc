@@ -156,6 +156,12 @@ struct Discover_ctxt
   unsigned level;
 };
 
+static unsigned acpi_irq_to_f(UINT8 Triggering, UINT8 Polarity)
+{
+  return   (!Triggering) * Resource::Irq_type_base * L4_IRQ_F_LEVEL
+         | (!!Polarity) * Resource::Irq_type_base * L4_IRQ_F_NEG;
+}
+
 static unsigned acpi_adr_t_to_f(ACPI_RESOURCE_ADDRESS const *ar)
 {
   switch (ar->ResourceType)
@@ -1002,8 +1008,7 @@ Acpi_dev::discover_crs(Hw::Device *host)
 
 	case ACPI_RESOURCE_TYPE_IRQ:
 	  flags = Resource::Irq_res | Resource::Irq_type_base;
-	  flags |= (!d->Irq.Triggering) * Resource::Irq_type_base * L4_IRQ_F_LEVEL;
-	  flags |= (!!d->Irq.Polarity) * Resource::Irq_type_base * L4_IRQ_F_NEG;
+	  flags |= acpi_irq_to_f(d->Irq.Triggering, d->Irq.Polarity);
 	  for (unsigned c = 0; c < d->Irq.InterruptCount; ++c)
 	    host->add_resource_rq(res(res_id++, flags, d->Irq.Interrupts[c],
 	                              d->Irq.Interrupts[c]));
@@ -1015,8 +1020,7 @@ Acpi_dev::discover_crs(Hw::Device *host)
 
 	case ACPI_RESOURCE_TYPE_EXTENDED_IRQ:
 	  flags = Resource::Irq_res | Resource::Irq_type_base;
-	  flags |= (!d->ExtendedIrq.Triggering) * Resource::Irq_type_base * L4_IRQ_F_LEVEL;
-	  flags |= (!!d->ExtendedIrq.Polarity) * Resource::Irq_type_base * L4_IRQ_F_NEG;
+	  flags |= acpi_irq_to_f(d->ExtendedIrq.Triggering, d->ExtendedIrq.Polarity);
 	  if (d->ExtendedIrq.ResourceSource.StringPtr)
 	    {
 	      d_printf(DBG_DEBUG2, "hoo indirect IRQ resource found src=%s idx=%d\n",
