@@ -300,8 +300,11 @@ static int acpi_enter_sleep(int sleepstate = 3 /* s3 */)
   // suspend to RAM (in contrast, hardware interrupts -- like all hardware
   // system state except RAM contents are lost on suspend). Thus, when we later
   // re-enable the SCI, a stored IRQ would immediately be delivered to IO.
-  _sci->mask();
-  _sci->clear();
+  if (_sci)
+    {
+      _sci->mask();
+      _sci->clear();
+    }
 
   L4::Cap<L4::Platform_control> pf = L4Re::Env::env()->get_cap<L4::Platform_control>("icu");
   if (!pf)
@@ -385,7 +388,10 @@ static int acpi_enter_sleep(int sleepstate = 3 /* s3 */)
     d_printf(DBG_WARN, "warning: cannot enable all wakeup GPEs\n");
 
   // re-enable system control interrupt (SCI)
-  _sci->unmask();
+  if (_sci)
+    {
+      _sci->unmask();
+    }
   return err;
 }
 
