@@ -476,10 +476,26 @@ struct Acpi_pm : Hw::Root_bus::Pm
   int shutdown() override
   {
     int res;
-    if ((res = acpi_enter_sleep(5)) < 0)
-      d_printf(DBG_ERR, "error: shutdown failed: %d\n", res);
+    if ((res = acpi_enter_sleep(5)) >= 0)
+      return res;
 
-    return res;
+    auto pf = L4Re::Env::env()->get_cap<L4::Platform_control>("icu");
+    if (!pf)
+      {
+        d_printf(DBG_WARN, "warning: no platform control capability found\n"
+                           "         no fallback for platform shutdown\n");
+        return -L4_ENOENT;
+      }
+
+    int err = l4_error(pf->system_shutdown(0));
+    if (err < 0)
+      {
+        d_printf(DBG_ERR, "error: pf->system_shutdown() failed: %d\n",
+                 err);
+        return err;
+      }
+
+    return 0;
   }
 
   int reboot() override
