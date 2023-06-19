@@ -185,7 +185,7 @@ Msi_irq_pin::msi_info(Msi_src *src, l4_icu_msi_info_t *info)
         return res;
     }
 
-  l4_uint64_t si = src->get_src_info(this);
+  l4_uint64_t si = src->get_msi_src_id(this);
   return Kernel_irq_pin::_msi_info(si, info);
 }
 

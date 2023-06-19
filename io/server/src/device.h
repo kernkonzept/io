@@ -239,26 +239,38 @@ public:
 class Device : public Resource_container
 {
 public:
+  /**
+   * Interpretation of the opaque `source` parameter of L4::Icu::msi_info()
+   * for an io vbus.
+   *
+   * Effectively it can be used in two modes. If is_dev_handle() is set,
+   * the value is interpreted as dev_handle() and is used to lookup the device
+   * on the System_bus. Otherwise it resembles a subset of the Intel VT-d
+   * interrupt remapping entry structure. It's solely supported function here
+   * is to lookup a PCI device by requester id (bus/device/function).
+   */
   struct Msi_src_info
   {
     l4_uint64_t v = 0;
     Msi_src_info(l4_uint64_t v) : v(v) {}
     CXX_BITFIELD_MEMBER(63, 63, is_dev_handle, v);
+
+    // is_dev_handle == 1
     CXX_BITFIELD_MEMBER( 0, 62, dev_handle, v);
 
+    // is_dev_handle == 0
+    CXX_BITFIELD_MEMBER(18, 19, query, v);
 
-    CXX_BITFIELD_MEMBER(18, 19, svt, v);
-    CXX_BITFIELD_MEMBER(16, 17, sq, v);
+    enum Query
+    {
+      Query_none         = 0,
+      Query_requester_id = 1,
+    };
 
-    CXX_BITFIELD_MEMBER( 0, 15, sid, v);
-
+    // query == Query_requester_id
     CXX_BITFIELD_MEMBER( 8, 15, bus, v);
     CXX_BITFIELD_MEMBER( 3,  7, dev, v);
     CXX_BITFIELD_MEMBER( 0,  2, fn, v);
-    CXX_BITFIELD_MEMBER( 0,  7, devfn, v);
-
-    CXX_BITFIELD_MEMBER( 8, 15, start_bus, v);
-    CXX_BITFIELD_MEMBER( 0,  7, end_bus, v);
   };
 
   virtual Device *parent() const = 0;

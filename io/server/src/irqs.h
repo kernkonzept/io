@@ -8,6 +8,7 @@
 #pragma once
 
 #include <l4/sys/irq>
+#include <l4/cxx/bitfield>
 #include <l4/cxx/hlist>
 #include <l4/re/util/cap_alloc>
 
@@ -50,7 +51,12 @@ public:
       virtual int reconfig_msi(l4_uint64_t src_info) = 0;
     };
 
-    virtual l4_uint64_t get_src_info(Msi_mgr *mgr) = 0;
+    /**
+     * Get MSI source-ID of device.
+     *
+     * The ID is used to get the required system Icu::msi_info().
+     */
+    virtual l4_uint64_t get_msi_src_id(Msi_mgr *mgr) = 0;
   };
 
   void add_sw_irq() { ++_max_sw_irqs; }

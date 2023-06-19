@@ -34,16 +34,19 @@ public:
   virtual ~Bridge_base() = default;
 
   void discover_bus(Hw::Device *host, Config_space *cfg,
-                    Io_irq_pin::Msi_src *ext_msi = nullptr);
+                    Io_irq_pin::Msi_src *ext_msi = nullptr,
+                    ::Dma_requester *ext_dma = nullptr);
   void dump(int) const;
 
 protected:
   virtual void discover_devices(Hw::Device *host, Config_space *cfg,
-                                Io_irq_pin::Msi_src *ext_msi);
+                                Io_irq_pin::Msi_src *ext_msi,
+                                ::Dma_requester *ext_dma);
   void discover_device(Hw::Device *host_bus, Config_space *cfg,
-                       Io_irq_pin::Msi_src *ext_msi, int devnum);
+                       Io_irq_pin::Msi_src *ext_msi, ::Dma_requester *ext_dma,
+                       int devnum);
   Dev *discover_func(Hw::Device *host_bus, Config_space *cfg,
-                     Io_irq_pin::Msi_src *ext_msi,
+                     Io_irq_pin::Msi_src *ext_msi, ::Dma_requester *ext_dma,
                      int devnum, int func);
 };
 
@@ -120,9 +123,9 @@ public:
    * \param[in] cfg      Config cache object for this generic bridge.
    */
   Generic_bridge(Hw::Device *host, Bridge_if *bridge,
-                 Io_irq_pin::Msi_src *ext_msi,
+                 Io_irq_pin::Msi_src *ext_msi, ::Dma_requester *ext_dma,
                  Config_cache const &cfg)
-  : Dev(host, bridge, ext_msi, cfg), pri(0)
+  : Dev(host, bridge, ext_msi, ext_dma, cfg), pri(0)
   {}
 
   unsigned alloc_bus_number() override
@@ -140,7 +143,7 @@ public:
 
   void discover_bus(Hw::Device *host) override
   {
-    Bridge_base::discover_bus(host, cfg.cfg_spc(), _external_msi_src);
+    Bridge_base::discover_bus(host, cfg.cfg_spc(), _external_msi_src, _external_dma_src);
     Dev::discover_bus(host);
   }
 
@@ -164,9 +167,9 @@ public:
   Resource *io = nullptr;
 
   explicit Bridge(Hw::Device *host, Bridge_if *bridge,
-                  Io_irq_pin::Msi_src *ext_msi,
+                  Io_irq_pin::Msi_src *ext_msi, ::Dma_requester *ext_dma,
                   Config_cache const &cfg)
-  : Generic_bridge(host, bridge, ext_msi, cfg)
+  : Generic_bridge(host, bridge, ext_msi, ext_dma, cfg)
   {}
 
   void setup_children(Hw::Device *host) override;

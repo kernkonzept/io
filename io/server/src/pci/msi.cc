@@ -166,7 +166,7 @@ Msi_res::bind(Triggerable const &irq, unsigned mode)
     return err;
 
   _msg = l4_icu_msi_info_t();
-  l4_uint64_t src = _dev->get_src_info(nullptr);
+  l4_uint64_t src = _dev->get_msi_src_id(nullptr);
   int e2 = l4_error(system_icu()->icu->msi_info(pin(), src, &_msg));
   if (e2 < 0)
     {

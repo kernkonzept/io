@@ -75,7 +75,8 @@ class Extended_cap_handler;
 
 class Dev :
   public virtual If,
-  private Io_irq_pin::Msi_src
+  private Io_irq_pin::Msi_src,
+  private Dma_requester
 {
 public:
   class Flags
@@ -90,6 +91,71 @@ public:
     Flags() : _raw(0) {}
   };
 
+  /**
+   * Intel VT-d interrupt remapping table entry format.
+   *
+   * This format is used by Fiasco as `source` parameter to the system Icu
+   * `msi_info()` call on x86. It it programmed directly into the IOMMU.
+   */
+  struct Vtd_irte_src_id
+  {
+    l4_uint64_t v = 0;
+    Vtd_irte_src_id(l4_uint64_t v) : v(v) {}
+
+    CXX_BITFIELD_MEMBER(18, 19, svt, v);
+
+    enum Source_validation_type
+    {
+      Svt_none         = 0,
+      Svt_requester_id = 1,
+      Svt_bus_range    = 2,
+    };
+
+    CXX_BITFIELD_MEMBER(16, 17, sq, v);
+
+    // svt == Svt_requester_id
+    CXX_BITFIELD_MEMBER( 8, 15, bus, v);
+    CXX_BITFIELD_MEMBER( 3,  7, dev, v);
+    CXX_BITFIELD_MEMBER( 0,  2, fn, v);
+    CXX_BITFIELD_MEMBER( 0,  7, devfn, v);
+
+    // svt == Svt_bus_range
+    CXX_BITFIELD_MEMBER( 8, 15, start_bus, v);
+    CXX_BITFIELD_MEMBER( 0,  7, end_bus, v);
+  };
+
+  /**
+   * Intel VT-d dma source id.
+   *
+   * This format is used by Fiasco as `src_id` parameter to Iommu::bind() on
+   * x86.
+   */
+  struct Vtd_dma_src_id
+  {
+    l4_uint64_t v = 0;
+    Vtd_dma_src_id(l4_uint64_t v) : v(v) {}
+
+    CXX_BITFIELD_MEMBER(18, 19, match, v);
+
+    enum Mode
+    {
+      Match_requester_id = 1,
+      Match_bus          = 2,
+    };
+
+    //CXX_BITFIELD_MEMBER( 0, 15, sid, v);
+    CXX_BITFIELD_MEMBER(16, 17, phantomfn, v);
+
+    // match == Match_requester_id
+    CXX_BITFIELD_MEMBER( 8, 15, bus, v);
+    CXX_BITFIELD_MEMBER( 3,  7, dev, v);
+    CXX_BITFIELD_MEMBER( 0,  2, fn, v);
+    CXX_BITFIELD_MEMBER( 0,  7, devfn, v);
+
+    // match == Match_bus
+    CXX_BITFIELD_MEMBER( 8, 15, whole_bus, v);
+  };
+
   Msi_src *get_msi_src() override
   {
     if (_external_msi_src)
@@ -98,22 +164,41 @@ public:
     return this;
   }
 
-  Msi_src *external_msi_src() const
-  {
-    return _external_msi_src;
-  }
-
-  l4_uint64_t get_src_info(Msi_mgr *mgr) override
+  l4_uint64_t get_msi_src_id(Msi_mgr *mgr) override
   {
     if (mgr)
       _msi_mgrs.add(mgr);
-    return 0x40000 | (bus_nr() << 8) | devfn() | (_phantomfn_bits << 16);
+
+    Vtd_irte_src_id id(0);
+    id.svt() = Vtd_irte_src_id::Svt_requester_id;
+    id.sq() = _phantomfn_bits;
+    id.bus() = bus_nr();
+    id.devfn() = devfn();
+    return id.v;
   }
 
-  /// Get the Msi_src for devices downstream if this is a bridge
-  virtual Msi_src *get_downstream_src_id()
+  ::Dma_requester *get_dma_src() override
   {
-    return get_msi_src();
+    if (_external_dma_src)
+      return _external_dma_src;
+
+    return this;
+  }
+
+  l4_uint64_t get_dma_src_id() override
+  {
+    Vtd_dma_src_id id(0);
+    id.match() = Vtd_dma_src_id::Match_requester_id;
+    id.phantomfn() = _phantomfn_bits;
+    id.bus() = bus_nr();
+    id.devfn() = devfn();
+    return id.v;
+  }
+
+  /// Get the Dma_requester for devices downstream if this is a bridge
+  virtual ::Dma_requester *get_downstream_dma_src()
+  {
+    return get_dma_src();
   }
 
   void add_saved_cap(Saved_cap *cap) { _saved_state.add_cap(cap); }
@@ -134,6 +219,7 @@ protected:
   Hw::Device *_host;
   Bridge_if *_bridge = nullptr;
   Io_irq_pin::Msi_src *_external_msi_src = nullptr;
+  ::Dma_requester *_external_dma_src = nullptr;
 
 public:
   Config_cache const cfg;
@@ -193,9 +279,10 @@ public:
   bool enable_rom() override;
 
   explicit Dev(Hw::Device *host, Bridge_if *bridge,
-               Msi_src *ext_msi, Config_cache const &cfg)
+               Msi_src *ext_msi, ::Dma_requester *ext_dma,
+               Config_cache const &cfg)
   : _host(host), _bridge(bridge),
-    _external_msi_src(ext_msi), cfg(cfg),
+    _external_msi_src(ext_msi), _external_dma_src(ext_dma), cfg(cfg),
     _rom(0)
   {
     for (unsigned i = 0; i < sizeof(_bars)/sizeof(_bars[0]); ++i)

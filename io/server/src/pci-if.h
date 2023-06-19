@@ -44,6 +44,7 @@ public:
   virtual unsigned phantomfn_bits() const = 0;
   virtual Config_space *config_space() const = 0;
   virtual Io_irq_pin::Msi_src *get_msi_src() = 0;
+  virtual Dma_requester *get_dma_src() = 0;
 
   virtual ~If() = 0;
 

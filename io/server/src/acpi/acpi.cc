@@ -9,6 +9,7 @@
 #include <cstdio>
 #include <cstdlib>
 
+#include "dma_domain.h"
 #include "io_acpi.h"
 #include "debug.h"
 #include <pci-root.h>
@@ -698,7 +699,7 @@ using namespace Hw;
 class Dmar_dma_domain : public Dma_domain
 {
 public:
-  Dmar_dma_domain(Io_irq_pin::Msi_src *src)
+  Dmar_dma_domain(Dma_requester *src)
   : _src(src)
   {}
 
@@ -709,11 +710,11 @@ public:
 
   int iommu_bind(L4::Cap<L4::Iommu> iommu, l4_uint64_t src)
   {
-    ::Device::Msi_src_info src_inf(src);
+    Pci::Dev::Vtd_dma_src_id src_inf(src);
 
     unsigned phantomfn = 0;
-    if (src_inf.svt() == 1) // bind specific device
-      phantomfn = src_inf.sq();
+    if (src_inf.match() == Pci::Dev::Vtd_dma_src_id::Match_requester_id)
+      phantomfn = src_inf.phantomfn();
 
     for (unsigned i = 0; i < (1u << phantomfn); ++i)
       {
@@ -731,11 +732,11 @@ public:
 
   int iommu_unbind(L4::Cap<L4::Iommu> iommu, l4_uint64_t src)
   {
-    ::Device::Msi_src_info src_inf(src);
+    Pci::Dev::Vtd_dma_src_id src_inf(src);
 
     unsigned phantomfn = 0;
-    if (src_inf.svt() == 1) // bind specific device
-      phantomfn = src_inf.sq();
+    if (src_inf.match() == Pci::Dev::Vtd_dma_src_id::Match_requester_id)
+      phantomfn = src_inf.phantomfn();
 
     for (unsigned i = 0; i < (1u << phantomfn); ++i)
       {
@@ -762,7 +763,7 @@ public:
         return;
       }
 
-    iommu_bind(iommu, _src->get_src_info(nullptr));
+    iommu_bind(iommu, _src->get_dma_src_id());
   }
 
   int create_managed_kern_dma_space() override
@@ -801,14 +802,14 @@ public:
     if (set)
       {
         _kern_dma_space = dma_task;
-        return iommu_bind(iommu, _src->get_src_info(nullptr));
+        return iommu_bind(iommu, _src->get_dma_src_id());
       }
     else
       {
         if (!_kern_dma_space)
           return 0;
 
-        int r = iommu_unbind(iommu, _src->get_src_info(nullptr));
+        int r = iommu_unbind(iommu, _src->get_dma_src_id());
         if (r < 0)
           return r;
 
@@ -819,7 +820,7 @@ public:
   }
 
 private:
-  Io_irq_pin::Msi_src *_src = nullptr;
+  Dma_requester *_src = nullptr;
 };
 
 class Dmar_dma_domain_factory : public Dma_domain_factory
@@ -827,17 +828,17 @@ class Dmar_dma_domain_factory : public Dma_domain_factory
 public:
   Dmar_dma_domain *create(Hw::Device *bridge, Hw::Device *dev) override
   {
-    Io_irq_pin::Msi_src *s = nullptr;
+    Dma_requester *s = nullptr;
     if (!dev)
       {
         Pci::Dev *p = bridge->find_feature<Pci::Dev>();
         if (!p)
           return nullptr;
 
-        s = p->get_downstream_src_id();
+        s = p->get_downstream_dma_src();
       }
     else if (Pci::Dev *p = dev->find_feature<Pci::Dev>())
-      s = p->get_msi_src();
+      s = p->get_dma_src();
 
     if (!s)
       return nullptr;

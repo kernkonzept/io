@@ -8,6 +8,21 @@
 class Dma_domain_set;
 class Dma_domain_group;
 
+/**
+ * DMA capable device that may be bound to an IOMMU.
+ */
+struct Dma_requester
+{
+  virtual ~Dma_requester() = default;
+
+  /**
+   * Get IOMMU source-ID for device.
+   *
+   * This ID is used in L4::Iommu::bind() to bind the device to a DMA task.
+   */
+  virtual l4_uint64_t get_dma_src_id() = 0;
+};
+
 class Dma_domain_if
 {
 protected:

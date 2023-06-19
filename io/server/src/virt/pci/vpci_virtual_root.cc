@@ -79,7 +79,7 @@ Pci_vroot::Pci_vroot() : Pci_bridge()
 Io_irq_pin::Msi_src *
 Pci_vroot::find_msi_src(Msi_src_info si)
 {
-  if (si.svt() == 1) // exact match
+  if (si.query() == Msi_src_info::Query_requester_id) // exact match
     {
       Pci_dev *d = child_dev(si.bus(), si.dev(), si.fn());
       if (!d)

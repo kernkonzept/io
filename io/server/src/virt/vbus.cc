@@ -806,7 +806,7 @@ System_bus::find_msi_src(Msi_src_info si)
       if (Msi_src_feature *msi = dev->find_feature<Msi_src_feature>())
         return msi->msi_src();
     }
-  else if (si.svt())
+  else if (si.query() != Msi_src_info::Query_none)
     return Device::find_msi_src(si);
 
   d_printf(DBG_ALL, "%s: device has no MSI support\n", __func__);
