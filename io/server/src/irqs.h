@@ -50,8 +50,12 @@ public:
      * Get MSI source-ID of device.
      *
      * The ID is used to get the required system Icu::msi_info().
+     *
+     * \param si[out]  The MSI source id for Icu::msi_info()
+     *
+     * \retval Negative error value or zero on success
      */
-    virtual l4_uint64_t get_msi_src_id() = 0;
+    virtual int get_msi_src_id(l4_uint64_t *si) = 0;
   };
 
   void add_sw_irq() { ++_max_sw_irqs; }

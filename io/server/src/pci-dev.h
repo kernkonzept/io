@@ -164,14 +164,15 @@ public:
     return this;
   }
 
-  l4_uint64_t get_msi_src_id() override
+  int get_msi_src_id(l4_uint64_t *si) override
   {
     Vtd_irte_src_id id(0);
     id.svt() = Vtd_irte_src_id::Svt_requester_id;
     id.sq() = _phantomfn_bits;
     id.bus() = bus_nr();
     id.devfn() = devfn();
-    return id.v;
+    *si = id.v;
+    return 0;
   }
 
   ::Dma_requester *get_dma_src() override

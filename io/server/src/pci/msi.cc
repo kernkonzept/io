@@ -166,7 +166,15 @@ Msi_res::bind(Triggerable const &irq, unsigned mode)
     return err;
 
   _msg = l4_icu_msi_info_t();
-  l4_uint64_t src = _dev->get_msi_src_id();
+  l4_uint64_t src;
+  err = _dev->get_msi_src_id(&src);
+  if (err < 0)
+    {
+      d_printf(DBG_ERR, "ERROR: could not get MSI source id (pin=%x)\n", pin());
+      Msi_resource::unbind(false);
+      return err;
+    }
+
   int e2 = l4_error(system_icu()->icu->msi_info(pin(), src, &_msg));
   if (e2 < 0)
     {

@@ -253,13 +253,14 @@ private:
   {
     l4_uint8_t secondary;
 
-    l4_uint64_t get_msi_src_id() override
+    int get_msi_src_id(l4_uint64_t *si) override
     {
       Vtd_irte_src_id id(0);
       id.svt() = Vtd_irte_src_id::Svt_bus_range;
       id.start_bus() = secondary;
       id.end_bus() = secondary;
-      return id.v;
+      *si = id.v;
+      return 0;
     }
 
     l4_uint64_t get_dma_src_id() override
