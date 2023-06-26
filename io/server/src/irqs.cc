@@ -163,19 +163,6 @@ Msi_irq_pin::bind(Triggerable const &irq, unsigned mode)
 }
 
 int
-Msi_irq_pin::reconfig_msi(l4_uint64_t src_info)
-{
-  if (!pin())
-    return -L4_EINVAL;
-
-  // we ignore the 'info' part from the kernel here as we assume the
-  // info to be stable for an allocated MSI vector and do not expect
-  // a change when we need to reset the source filter for the MSI.
-  l4_icu_msi_info_t info;
-  return Kernel_irq_pin::_msi_info(src_info, &info);
-}
-
-int
 Msi_irq_pin::msi_info(Msi_src *src, l4_icu_msi_info_t *info)
 {
   if (!pin())
@@ -185,7 +172,7 @@ Msi_irq_pin::msi_info(Msi_src *src, l4_icu_msi_info_t *info)
         return res;
     }
 
-  l4_uint64_t si = src->get_msi_src_id(this);
+  l4_uint64_t si = src->get_msi_src_id();
   return Kernel_irq_pin::_msi_info(si, info);
 }
 

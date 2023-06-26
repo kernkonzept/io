@@ -251,14 +251,10 @@ class Pcie_bridge : public Bridge
 private:
   struct Secondary_src : Io_irq_pin::Msi_src, ::Dma_requester
   {
-    cxx::H_list_t<Msi_mgr> _msi_mgrs;
     l4_uint8_t secondary;
 
-    l4_uint64_t get_msi_src_id(Msi_mgr *mgr) override
+    l4_uint64_t get_msi_src_id() override
     {
-      if (mgr)
-        _msi_mgrs.add(mgr);
-
       Vtd_irte_src_id id(0);
       id.svt() = Vtd_irte_src_id::Svt_bus_range;
       id.start_bus() = secondary;

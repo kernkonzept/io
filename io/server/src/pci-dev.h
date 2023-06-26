@@ -164,11 +164,8 @@ public:
     return this;
   }
 
-  l4_uint64_t get_msi_src_id(Msi_mgr *mgr) override
+  l4_uint64_t get_msi_src_id() override
   {
-    if (mgr)
-      _msi_mgrs.add(mgr);
-
     Vtd_irte_src_id id(0);
     id.svt() = Vtd_irte_src_id::Svt_requester_id;
     id.sq() = _phantomfn_bits;
@@ -214,8 +211,6 @@ public:
   }
 
 protected:
-  cxx::H_list_t<Msi_mgr> _msi_mgrs;
-
   Hw::Device *_host;
   Bridge_if *_bridge = nullptr;
   Io_irq_pin::Msi_src *_external_msi_src = nullptr;

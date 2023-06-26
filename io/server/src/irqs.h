@@ -46,17 +46,12 @@ public:
 public:
   struct Msi_src
   {
-    struct Msi_mgr : cxx::H_list_item_t<Msi_mgr>
-    {
-      virtual int reconfig_msi(l4_uint64_t src_info) = 0;
-    };
-
     /**
      * Get MSI source-ID of device.
      *
      * The ID is used to get the required system Icu::msi_info().
      */
-    virtual l4_uint64_t get_msi_src_id(Msi_mgr *mgr) = 0;
+    virtual l4_uint64_t get_msi_src_id() = 0;
   };
 
   void add_sw_irq() { ++_max_sw_irqs; }
@@ -110,7 +105,7 @@ protected:
 };
 
 class Msi_irq_pin
-: public Kernel_irq_pin, private Io_irq_pin::Msi_src::Msi_mgr
+: public Kernel_irq_pin
 {
 public:
   Msi_irq_pin() : Kernel_irq_pin(0) {}
@@ -120,7 +115,6 @@ public:
   int msi_info(Msi_src *src, l4_icu_msi_info_t *) override;
 
 private:
-  int reconfig_msi(l4_uint64_t src_info) override;
   void free_msi();
   int alloc_msi();
 };
