@@ -83,7 +83,7 @@ class Rcar3_pcie_bridge
 public:
   Rcar3_pcie_bridge(int segment = 0, unsigned bus_nr = 0)
   : Hw::Device(),
-    Hw::Pci::Root_bridge(segment, bus_nr, this)
+    Hw::Pci::Root_bridge(segment, bus_nr, this, nullptr)
   {
     // the set of mandatory properties
     register_property("regs_base", &_regs_base);

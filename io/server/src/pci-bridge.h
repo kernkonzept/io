@@ -34,19 +34,17 @@ public:
   virtual ~Bridge_base() = default;
 
   void discover_bus(Hw::Device *host, Config_space *cfg,
-                    Io_irq_pin::Msi_src *ext_msi = nullptr,
                     ::Dma_requester *ext_dma = nullptr);
   void dump(int) const;
 
 protected:
   virtual void discover_devices(Hw::Device *host, Config_space *cfg,
-                                Io_irq_pin::Msi_src *ext_msi,
                                 ::Dma_requester *ext_dma);
   void discover_device(Hw::Device *host_bus, Config_space *cfg,
-                       Io_irq_pin::Msi_src *ext_msi, ::Dma_requester *ext_dma,
+                       ::Dma_requester *ext_dma,
                        int devnum);
   Dev *discover_func(Hw::Device *host_bus, Config_space *cfg,
-                     Io_irq_pin::Msi_src *ext_msi, ::Dma_requester *ext_dma,
+                     ::Dma_requester *ext_dma,
                      int devnum, int func);
 };
 
@@ -119,13 +117,11 @@ public:
    * \param[in] host     Parent device
    * \param[in] bridge   The PCI bridge interface to use for this generic
    *                     bridge.
-   * \param[in] ext_msi  MSI source object.
    * \param[in] cfg      Config cache object for this generic bridge.
    */
-  Generic_bridge(Hw::Device *host, Bridge_if *bridge,
-                 Io_irq_pin::Msi_src *ext_msi, ::Dma_requester *ext_dma,
+  Generic_bridge(Hw::Device *host, Bridge_if *bridge, ::Dma_requester *ext_dma,
                  Config_cache const &cfg)
-  : Dev(host, bridge, ext_msi, ext_dma, cfg), pri(0)
+  : Dev(host, bridge, ext_dma, cfg), pri(0)
   {}
 
   unsigned alloc_bus_number() override
@@ -143,7 +139,7 @@ public:
 
   void discover_bus(Hw::Device *host) override
   {
-    Bridge_base::discover_bus(host, cfg.cfg_spc(), _external_msi_src, _external_dma_src);
+    Bridge_base::discover_bus(host, cfg.cfg_spc(), _external_dma_src);
     Dev::discover_bus(host);
   }
 
@@ -157,6 +153,18 @@ public:
   {
     return bridge()->segment();
   }
+
+  Bridge_if *parent_bridge() const override
+  { return bridge(); }
+
+  int translate_msi_src(If *dev, l4_uint64_t *si) override
+  {
+    // Unless we know better, pass upwards...
+    if (auto *b = bridge())
+      return b->translate_msi_src(dev, si);
+    else
+      return -L4_ENODEV;
+  }
 };
 
 class Bridge : public Generic_bridge
@@ -166,10 +174,9 @@ public:
   Resource *pref_mmio = nullptr;
   Resource *io = nullptr;
 
-  explicit Bridge(Hw::Device *host, Bridge_if *bridge,
-                  Io_irq_pin::Msi_src *ext_msi, ::Dma_requester *ext_dma,
+  explicit Bridge(Hw::Device *host, Bridge_if *bridge, ::Dma_requester *ext_dma,
                   Config_cache const &cfg)
-  : Generic_bridge(host, bridge, ext_msi, ext_dma, cfg)
+  : Generic_bridge(host, bridge, ext_dma, cfg)
   {}
 
   void setup_children(Hw::Device *host) override;

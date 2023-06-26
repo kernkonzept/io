@@ -62,15 +62,6 @@ static unsigned _acpi_debug_level =
       //| ACPI_LV_IO
       ;
 
-static Hw::Pci::Root_bridge *
-create_port_bridge(int segment, int busnum, Hw::Device *dev)
-{
-  return new Hw::Pci::Port_root_bridge(segment, busnum, dev);
-}
-
-Hw::Pci::Root_bridge *(*acpi_create_pci_root_bridge)(int segment,
-    int busnum, Hw::Device *device) = create_port_bridge;
-
 
 void acpi_set_debug_level(unsigned level)
 {
@@ -666,6 +657,15 @@ acpi_install_fixed_button_handler(char const *hid, UINT32 event, char const *nam
 
 }
 
+Hw::Pci::Platform_adapter_if *pci_platform_adapter;
+
+}
+
+static Hw::Pci::Root_bridge *
+create_port_bridge(int segment, int busnum, Hw::Device *dev)
+{
+  return new Hw::Pci::Port_root_bridge(segment, busnum, dev,
+                                       pci_platform_adapter);
 }
 
 static Hw::Pci::Root_bridge *
@@ -692,6 +692,9 @@ create_additional_mmio_bridge(int pci_segment, int bus_num, Hw::Device *)
   br->subordinate = bus_num;
   return br;
 }
+
+Hw::Pci::Root_bridge *(*acpi_create_pci_root_bridge)(int segment,
+    int busnum, Hw::Device *device) = create_port_bridge;
 
 namespace {
 using namespace Hw;
@@ -878,7 +881,8 @@ setup_pci_root_mmconfig()
       unsigned num_busses = e->EndBusNumber - e->StartBusNumber + 1;
       Hw::Pci::register_root_bridge(
           new Hw::Pci::Mmio_root_bridge(e->PciSegment, e->StartBusNumber,
-                                        0, e->Address, num_busses));
+                                        0, e->Address, num_busses,
+                                        pci_platform_adapter));
 
       acpi_create_pci_root_bridge = create_additional_mmio_bridge;
 
@@ -908,7 +912,7 @@ static void setup_pci_root()
 
   // fall-back to port-based bridge
   Hw::Pci::register_root_bridge(
-      new Hw::Pci::Port_root_bridge(0, 0, 0));
+      new Hw::Pci::Port_root_bridge(0, 0, 0, pci_platform_adapter));
 }
 
 
@@ -939,6 +943,7 @@ int acpica_init()
   if(ACPI_FAILURE(status))
     return status;
 
+  pci_platform_adapter = Hw::Acpi::setup_pci_platform();
   setup_pci_root();
 
   d_printf(DBG_DEBUG, "enable ACPI subsystem\n");

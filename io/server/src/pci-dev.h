@@ -92,39 +92,6 @@ public:
   };
 
   /**
-   * Intel VT-d interrupt remapping table entry format.
-   *
-   * This format is used by Fiasco as `source` parameter to the system Icu
-   * `msi_info()` call on x86. It it programmed directly into the IOMMU.
-   */
-  struct Vtd_irte_src_id
-  {
-    l4_uint64_t v = 0;
-    Vtd_irte_src_id(l4_uint64_t v) : v(v) {}
-
-    CXX_BITFIELD_MEMBER(18, 19, svt, v);
-
-    enum Source_validation_type
-    {
-      Svt_none         = 0,
-      Svt_requester_id = 1,
-      Svt_bus_range    = 2,
-    };
-
-    CXX_BITFIELD_MEMBER(16, 17, sq, v);
-
-    // svt == Svt_requester_id
-    CXX_BITFIELD_MEMBER( 8, 15, bus, v);
-    CXX_BITFIELD_MEMBER( 3,  7, dev, v);
-    CXX_BITFIELD_MEMBER( 0,  2, fn, v);
-    CXX_BITFIELD_MEMBER( 0,  7, devfn, v);
-
-    // svt == Svt_bus_range
-    CXX_BITFIELD_MEMBER( 8, 15, start_bus, v);
-    CXX_BITFIELD_MEMBER( 0,  7, end_bus, v);
-  };
-
-  /**
    * Intel VT-d dma source id.
    *
    * This format is used by Fiasco as `src_id` parameter to Iommu::bind() on
@@ -158,21 +125,15 @@ public:
 
   Msi_src *get_msi_src() override
   {
-    if (_external_msi_src)
-      return _external_msi_src;
-
     return this;
   }
 
   int get_msi_src_id(l4_uint64_t *si) override
   {
-    Vtd_irte_src_id id(0);
-    id.svt() = Vtd_irte_src_id::Svt_requester_id;
-    id.sq() = _phantomfn_bits;
-    id.bus() = bus_nr();
-    id.devfn() = devfn();
-    *si = id.v;
-    return 0;
+    if (_bridge)
+      return _bridge->translate_msi_src(this, si);
+    else
+      return -L4_ENODEV;
   }
 
   ::Dma_requester *get_dma_src() override
@@ -214,7 +175,6 @@ public:
 protected:
   Hw::Device *_host;
   Bridge_if *_bridge = nullptr;
-  Io_irq_pin::Msi_src *_external_msi_src = nullptr;
   ::Dma_requester *_external_dma_src = nullptr;
 
 public:
@@ -275,17 +235,17 @@ public:
   bool enable_rom() override;
 
   explicit Dev(Hw::Device *host, Bridge_if *bridge,
-               Msi_src *ext_msi, ::Dma_requester *ext_dma,
+               ::Dma_requester *ext_dma,
                Config_cache const &cfg)
   : _host(host), _bridge(bridge),
-    _external_msi_src(ext_msi), _external_dma_src(ext_dma), cfg(cfg),
+    _external_dma_src(ext_dma), cfg(cfg),
     _rom(0)
   {
     for (unsigned i = 0; i < sizeof(_bars)/sizeof(_bars[0]); ++i)
       _bars[i] = 0;
   }
 
-  Bridge_if *bridge() const { return _bridge; }
+  Bridge_if *bridge() const override final { return _bridge; }
 
   Hw::Device *host() const { return _host; }
 

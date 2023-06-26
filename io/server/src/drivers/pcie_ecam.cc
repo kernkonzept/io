@@ -101,7 +101,7 @@ class Ecam_pcie_bridge
 public:
   explicit Ecam_pcie_bridge(int segment = 0, unsigned bus_nr = 0)
   : Hw::Device(0xffee0000), // just don't use the default 0xffffffff ID
-    Hw::Pci::Root_bridge(segment, bus_nr, this)
+    Hw::Pci::Root_bridge(segment, bus_nr, this, nullptr)
   {
     // Use a default name as long as no name was set with the Lua script.
     set_name_if_empty("pcie_ecam");

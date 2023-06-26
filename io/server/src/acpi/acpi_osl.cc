@@ -234,7 +234,7 @@ AcpiOsReadPciConfiguration (
           return AE_BAD_PARAMETER;
         }
 
-      Hw::Pci::Port_root_bridge prb(0, 0, 0);
+      Hw::Pci::Port_root_bridge prb(0, 0, 0, nullptr);
       int r = prb.cfg_read(Hw::Pci::Cfg_addr(PciId->Bus, PciId->Device,
                                              PciId->Function, Register),
                            (l4_uint32_t *)Value, Hw::Pci::cfg_w_to_o(Width));
@@ -289,7 +289,7 @@ AcpiOsWritePciConfiguration (
           return AE_BAD_PARAMETER;
         }
 
-      Hw::Pci::Port_root_bridge prb(0, 0, 0);
+      Hw::Pci::Port_root_bridge prb(0, 0, 0, nullptr);
       int r = prb.cfg_write(Hw::Pci::Cfg_addr(PciId->Bus, PciId->Device,
                                               PciId->Function, Register),
                             Value, Hw::Pci::cfg_w_to_o(Width));

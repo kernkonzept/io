@@ -13,6 +13,8 @@
 
 namespace Hw { namespace Pci {
 
+class Bridge_if;
+
 /**
  * Abstract interface of a generic PCI device
  */
@@ -43,6 +45,8 @@ public:
   unsigned function_nr() const { return devfn() & 7; }
   virtual unsigned phantomfn_bits() const = 0;
   virtual Config_space *config_space() const = 0;
+
+  virtual Bridge_if *bridge() const = 0;
   virtual Io_irq_pin::Msi_src *get_msi_src() = 0;
   virtual Dma_requester *get_dma_src() = 0;
 
@@ -133,12 +137,29 @@ struct Dma_requester_id
   }
 };
 
-class Bridge_if
+/**
+ * Abstract interface for PCI source id translation.
+ *
+ * The translation of PCI requester IDs towards the MSI controller is
+ * architecture and platform specific.
+ */
+struct Platform_adapter_if
+{
+  virtual ~Platform_adapter_if() = default;
+
+  /**
+   * Translate a generic PCI device to a MSI source id.
+   */
+  virtual int translate_msi_src(If *dev, l4_uint64_t *si) = 0;
+};
+
+class Bridge_if : public Platform_adapter_if
 {
 protected:
   ~Bridge_if() = default;
 
 public:
+  virtual Bridge_if *parent_bridge() const = 0;
   virtual unsigned alloc_bus_number() = 0;
   virtual bool check_bus_number(unsigned bus) = 0;
   virtual bool ari_forwarding_enable() = 0;

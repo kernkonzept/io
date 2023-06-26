@@ -17,18 +17,33 @@ class Root_bridge : public Dev_feature, public Bridge_base, public Config_space
 {
 private:
   Hw::Device *_host;
+  Platform_adapter_if *_platform_adapter;
   unsigned _segment;
 
 protected:
+  int translate_msi_src(If *dev, l4_uint64_t *si) override
+  {
+    // Forward to platform provided MSI translator
+    if (_platform_adapter)
+      return _platform_adapter->translate_msi_src(dev, si);
+    else
+      return -L4_ENODEV;
+  }
+
   Dma_requester_id dma_alias() const override
   {
     // Root bridges don't create aliases
     return Dma_requester_id();
   }
 
+  Bridge_if *parent_bridge() const override
+  { return nullptr; }
+
 public:
-  explicit Root_bridge(unsigned segment, unsigned bus_nr, Hw::Device *host)
-  : Bridge_base(bus_nr), _host(host), _segment(segment)
+  explicit Root_bridge(unsigned segment, unsigned bus_nr, Hw::Device *host,
+                       Platform_adapter_if *platform_adapter)
+  : Bridge_base(bus_nr), _host(host), _platform_adapter(platform_adapter),
+    _segment(segment)
   {}
 
 
@@ -50,8 +65,8 @@ public:
 struct Port_root_bridge : public Root_bridge
 {
   explicit Port_root_bridge(unsigned segment, unsigned bus_nr,
-                            Hw::Device *host)
-  : Root_bridge(segment, bus_nr, host) {}
+                            Hw::Device *host, Platform_adapter_if *platform_adapter)
+  : Root_bridge(segment, bus_nr, host, platform_adapter) {}
 
   int cfg_read(Cfg_addr addr, l4_uint32_t *value, Cfg_width) override;
   int cfg_write(Cfg_addr addr, l4_uint32_t value, Cfg_width) override;
@@ -64,8 +79,9 @@ struct Mmio_root_bridge : public Root_bridge
 {
   explicit Mmio_root_bridge(unsigned segment, unsigned bus_nr,
                             Hw::Device *host,
-                            l4_uint64_t phys_base, unsigned num_busses)
-  : Root_bridge(segment, bus_nr, host)
+                            l4_uint64_t phys_base, unsigned num_busses,
+                            Platform_adapter_if *platform_adapter)
+  : Root_bridge(segment, bus_nr, host, platform_adapter)
   {
     _mmio = res_map_iomem(phys_base, num_busses * (1 << 20));
     if (!_mmio)

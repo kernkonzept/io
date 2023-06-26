@@ -391,7 +391,7 @@ Pci_irq_router_rs::request(Resource *parent, ::Device *pdev,
 }
 
 Pcie_imx8_bridge::Pcie_imx8_bridge(int segment, unsigned bus_nr)
-: Dwc_pcie(segment, bus_nr, this)
+: Dwc_pcie(segment, bus_nr, this, nullptr)
 {
   set_name_if_empty("pcie_imx8");
 
