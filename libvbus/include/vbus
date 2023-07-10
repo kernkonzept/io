@@ -85,8 +85,20 @@ public:
 class Device : public Pm<Device>
 {
 public:
+  /**
+   * Construct a new vbus device using the NULL device #L4VBUS_NULL.
+   */
   Device() : _dev(L4VBUS_NULL) {}
 
+  /**
+   * Construct a new vbus device using a device handle.
+   *
+   * Specifying the special root bus device handle #L4VBUS_ROOT_BUS forms the
+   * root device of the corresponding vbus, see Vbus::root.
+   *
+   * \param  bus  The vbus capability where this device is assigned.
+   * \param  dev  The device handle of the device.
+   */
   Device(L4::Cap<Vbus> bus, l4vbus_device_handle_t dev)
   : _bus(bus), _dev(dev) {}
 
@@ -123,7 +135,7 @@ public:
    *                          tree the search should start. To start searching
    *                          from the beginning `child` must be initialized
    *                          using the default (#L4VBUS_NULL). If a matching
-   *                          device is found its handle is returned through
+   *                          device is found, its handle is returned through
    *                          this parameter.
    * \param          hid      HID of the device
    * \param          depth    Maximum depth for the recursive lookup
@@ -150,8 +162,9 @@ public:
    * \param[in, out]  child   Handle of the device that precedes the device
    *                          that shall be returned. To start from the
    *                          beginning, `child` must be initialized with
-   *                          #L4VBUS_NULL. If a device is found, its handle is
-   *                          returned through this parameter.
+   *                          #L4VBUS_NULL (Device::Device). If a device is
+   *                          found, its handle is returned through this
+   *                          parameter.
    * \param          depth    Depth to look for
    * \param[out]     devinfo  Device information (might be NULL)
    *
@@ -222,7 +235,7 @@ public:
   }
 
   /**
-   * Test if two devices are not the same.
+   * Test if two Vbus devices are not the same.
    * \return true if the two devices are different, false else.
    */
   bool operator != (Device const &o) const
@@ -231,8 +244,8 @@ public:
   }
 
 protected:
-  L4::Cap<Vbus> _bus;          /*!< The Vbus capability (where this device is
-                                    located on). */
+  L4::Cap<Vbus> _bus;          ///< The Vbus capability where this device is
+                               ///< located on.
   l4vbus_device_handle_t _dev; ///< The device handle for this device.
 };
 
@@ -316,6 +329,10 @@ public:
 
   /**
    * Get the root device of the device tree of this bus.
+   *
+   * The root device is usually the starting point for iterating the bus,
+   * see Device::next_device.
+   *
    * \return A Vbus device representing the root of the device tree.
    */
   Device root() const
