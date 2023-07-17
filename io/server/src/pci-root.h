@@ -30,6 +30,15 @@ protected:
       return -L4_ENODEV;
   }
 
+  int translate_dma_src(Dma_requester_id rid, l4_uint64_t *si) const override
+  {
+    // Forward to platform provided DMA translator
+    if (_platform_adapter)
+      return _platform_adapter->translate_dma_src(rid, si);
+    else
+      return -L4_ENODEV;
+  }
+
   Dma_requester_id dma_alias() const override
   {
     // Root bridges don't create aliases

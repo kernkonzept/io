@@ -33,19 +33,14 @@ public:
 
   virtual ~Bridge_base() = default;
 
-  void discover_bus(Hw::Device *host, Config_space *cfg,
-                    ::Dma_requester *ext_dma = nullptr);
+  void discover_bus(Hw::Device *host, Config_space *cfg);
   void dump(int) const;
 
 protected:
-  virtual void discover_devices(Hw::Device *host, Config_space *cfg,
-                                ::Dma_requester *ext_dma);
-  void discover_device(Hw::Device *host_bus, Config_space *cfg,
-                       ::Dma_requester *ext_dma,
-                       int devnum);
-  Dev *discover_func(Hw::Device *host_bus, Config_space *cfg,
-                     ::Dma_requester *ext_dma,
-                     int devnum, int func);
+  virtual void discover_devices(Hw::Device *host, Config_space *cfg);
+  void discover_device(Hw::Device *host_bus, Config_space *cfg, int devnum);
+  Dev *discover_func(Hw::Device *host_bus, Config_space *cfg, int devnum,
+                     int func);
 };
 
 class Irq_router : public Resource
@@ -119,9 +114,8 @@ public:
    *                     bridge.
    * \param[in] cfg      Config cache object for this generic bridge.
    */
-  Generic_bridge(Hw::Device *host, Bridge_if *bridge, ::Dma_requester *ext_dma,
-                 Config_cache const &cfg)
-  : Dev(host, bridge, ext_dma, cfg), pri(0)
+  Generic_bridge(Hw::Device *host, Bridge_if *bridge, Config_cache const &cfg)
+  : Dev(host, bridge, cfg), pri(0)
   {}
 
   unsigned alloc_bus_number() override
@@ -139,7 +133,7 @@ public:
 
   void discover_bus(Hw::Device *host) override
   {
-    Bridge_base::discover_bus(host, cfg.cfg_spc(), _external_dma_src);
+    Bridge_base::discover_bus(host, cfg.cfg_spc());
     Dev::discover_bus(host);
   }
 
@@ -165,6 +159,17 @@ public:
     else
       return -L4_ENODEV;
   }
+
+  int translate_dma_src(Dma_requester_id rid, l4_uint64_t *si) const override
+  {
+    // Unless we know better, pass upwards...
+    if (auto *b = bridge())
+      return b->translate_dma_src(rid, si);
+    else
+      return -L4_ENODEV;
+  }
+
+  int enumerate_dma_src_ids(::Dma_requester::Dma_src_id_cb cb) const override;
 };
 
 class Bridge : public Generic_bridge
@@ -174,9 +179,9 @@ public:
   Resource *pref_mmio = nullptr;
   Resource *io = nullptr;
 
-  explicit Bridge(Hw::Device *host, Bridge_if *bridge, ::Dma_requester *ext_dma,
+  explicit Bridge(Hw::Device *host, Bridge_if *bridge,
                   Config_cache const &cfg)
-  : Generic_bridge(host, bridge, ext_dma, cfg)
+  : Generic_bridge(host, bridge, cfg)
   {}
 
   void setup_children(Hw::Device *host) override;

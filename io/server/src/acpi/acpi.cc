@@ -713,46 +713,20 @@ public:
 
   int iommu_bind(L4::Cap<L4::Iommu> iommu, l4_uint64_t src)
   {
-    Pci::Dev::Vtd_dma_src_id src_inf(src);
+    int r = l4_error(iommu->bind(src, _kern_dma_space));
+    if (r < 0)
+      d_printf(DBG_ERR, "error: setting DMA for device: %d\n", r);
 
-    unsigned phantomfn = 0;
-    if (src_inf.match() == Pci::Dev::Vtd_dma_src_id::Match_requester_id)
-      phantomfn = src_inf.phantomfn();
-
-    for (unsigned i = 0; i < (1u << phantomfn); ++i)
-      {
-        int r = l4_error(iommu->bind(src | (i << (3 - phantomfn)),
-                                     _kern_dma_space));
-        if (r < 0)
-          {
-            d_printf(DBG_ERR, "error: setting DMA for device: %d\n", r);
-            return r;
-          }
-      }
-
-    return 0;
+    return r;
   }
 
   int iommu_unbind(L4::Cap<L4::Iommu> iommu, l4_uint64_t src)
   {
-    Pci::Dev::Vtd_dma_src_id src_inf(src);
+    int r = l4_error(iommu->unbind(src, _kern_dma_space));
+    if (r < 0)
+      d_printf(DBG_ERR, "error: unbinding DMA for device: %d\n", r);
 
-    unsigned phantomfn = 0;
-    if (src_inf.match() == Pci::Dev::Vtd_dma_src_id::Match_requester_id)
-      phantomfn = src_inf.phantomfn();
-
-    for (unsigned i = 0; i < (1u << phantomfn); ++i)
-      {
-        int r = l4_error(iommu->unbind(src | (i << (3 - phantomfn)),
-                                       _kern_dma_space));
-        if (r < 0)
-          {
-            d_printf(DBG_ERR, "error: unbinding DMA for device: %d\n", r);
-            return r;
-          }
-      }
-
-    return 0;
+    return r;
   }
 
   void set_managed_kern_dma_space(L4::Cap<L4::Task> s) override
@@ -766,7 +740,10 @@ public:
         return;
       }
 
-    iommu_bind(iommu, _src->get_dma_src_id());
+    _src->enumerate_dma_src_ids([this, iommu](l4_uint64_t src) -> int
+                                  {
+                                    return this->iommu_bind(iommu, src);
+                                  });
   }
 
   int create_managed_kern_dma_space() override
@@ -805,14 +782,24 @@ public:
     if (set)
       {
         _kern_dma_space = dma_task;
-        return iommu_bind(iommu, _src->get_dma_src_id());
+        auto cb = [this, iommu](l4_uint64_t src) -> int
+                    {
+                      return this->iommu_bind(iommu, src);
+                    };
+        int r = _src->enumerate_dma_src_ids(cb);
+        if (r < 0)
+          return r;
       }
     else
       {
         if (!_kern_dma_space)
           return 0;
 
-        int r = iommu_unbind(iommu, _src->get_dma_src_id());
+        auto cb = [this, iommu](l4_uint64_t src) -> int
+                    {
+                      return this->iommu_unbind(iommu, src);
+                    };
+        int r = _src->enumerate_dma_src_ids(cb);
         if (r < 0)
           return r;
 
@@ -829,18 +816,13 @@ private:
 class Dmar_dma_domain_factory : public Dma_domain_factory
 {
 public:
-  Dmar_dma_domain *create(Hw::Device *bridge, Hw::Device *dev) override
+  Dmar_dma_domain *create(Hw::Device * /* bridge */, Hw::Device *dev) override
   {
-    Dma_requester *s = nullptr;
     if (!dev)
-      {
-        Pci::Dev *p = bridge->find_feature<Pci::Dev>();
-        if (!p)
-          return nullptr;
+      return nullptr;
 
-        s = p->get_downstream_dma_src();
-      }
-    else if (Pci::Dev *p = dev->find_feature<Pci::Dev>())
+    Dma_requester *s = nullptr;
+    if (Pci::Dev *p = dev->find_feature<Pci::Dev>())
       s = p->get_dma_src();
 
     if (!s)

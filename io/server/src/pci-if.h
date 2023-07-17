@@ -79,6 +79,15 @@ struct Dma_requester_id
     None,
 
     /**
+     * Original requester ID of a device.
+     *
+     * Represents one requester ID of a device. Note that some devices have
+     * phantom functions. In this case, multiple distinct Dma_requester_id's
+     * will be enumerated.
+     */
+    Source,
+
+    /**
      * Alias DMA requester ID.
      *
      * PCIe-to-PCI(-X) bridges may alias transactions of an originating
@@ -113,6 +122,10 @@ struct Dma_requester_id
   : addr(segment << 16 | bus << 8 | devfn), type(t)
   {}
 
+  static constexpr Dma_requester_id source(unsigned segment, unsigned bus,
+                                    unsigned devfn)
+  { return Dma_requester_id(Type::Source, segment, bus, devfn); }
+
   static constexpr Dma_requester_id alias(unsigned segment, unsigned bus,
                                           unsigned devfn)
   { return Dma_requester_id(Type::Alias, segment, bus, devfn); }
@@ -122,6 +135,7 @@ struct Dma_requester_id
   { return Dma_requester_id(Type::Rewrite, segment, bus, devfn); }
 
   operator bool() const { return type != Type::None; }
+  bool is_source() const { return type == Type::Source; }
   bool is_alias() const { return type == Type::Alias; }
   bool is_rewrite() const { return type == Type::Rewrite; }
 
@@ -130,6 +144,7 @@ struct Dma_requester_id
     switch (type)
       {
         case Type::None:    return "none";
+        case Type::Source:  return "source";
         case Type::Alias:   return "alias";
         case Type::Rewrite: return "rewrite";
         default:            return "?";
@@ -151,6 +166,11 @@ struct Platform_adapter_if
    * Translate a generic PCI device to a MSI source id.
    */
   virtual int translate_msi_src(If *dev, l4_uint64_t *si) = 0;
+
+  /**
+   * Translate a generic DMA requester ID to a platform specific DMA source id.
+   */
+  virtual int translate_dma_src(Dma_requester_id rid, l4_uint64_t *si) const = 0;
 };
 
 class Bridge_if : public Platform_adapter_if

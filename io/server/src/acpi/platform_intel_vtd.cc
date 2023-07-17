@@ -46,6 +46,35 @@ class Vtd_platform_adapter : public Hw::Pci::Platform_adapter_if
     CXX_BITFIELD_MEMBER( 0,  7, end_bus, v);
   };
 
+  /**
+   * Intel VT-d dma source id.
+   *
+   * This format is used by Fiasco as `src_id` parameter to Iommu::bind() on
+   * x86.
+   */
+  struct Vtd_dma_src_id
+  {
+    l4_uint64_t v = 0;
+    Vtd_dma_src_id(l4_uint64_t v) : v(v) {}
+
+    CXX_BITFIELD_MEMBER(18, 19, match, v);
+
+    enum Mode
+    {
+      Match_requester_id = 1,
+      Match_bus          = 2,
+    };
+
+    // match == Match_requester_id
+    CXX_BITFIELD_MEMBER( 8, 15, bus, v);
+    CXX_BITFIELD_MEMBER( 3,  7, dev, v);
+    CXX_BITFIELD_MEMBER( 0,  2, fn, v);
+    CXX_BITFIELD_MEMBER( 0,  7, devfn, v);
+
+    // match == Match_bus
+    CXX_BITFIELD_MEMBER( 8, 15, whole_bus, v);
+  };
+
 public:
   /**
    * Translate PCI device into an opaque MSI source-ID.
@@ -97,6 +126,26 @@ public:
       }
 
     *si = id.v;
+    return 0;
+  }
+
+  /**
+   * Translate DMA source ID.
+   *
+   * We always match the exact requester ID as this is the only thing that is
+   * supported by hardware. Matching the bus (Match_bus) is a Fiasco extension.
+   */
+  int translate_dma_src(Hw::Pci::Dma_requester_id rid, l4_uint64_t *si) const override
+  {
+    if (!rid)
+      return -L4_EINVAL;
+
+    Vtd_dma_src_id id(0);
+    id.match() = Vtd_dma_src_id::Match_requester_id;
+    id.bus() = rid.bus();
+    id.devfn() = rid.devfn();
+    *si = id.v;
+
     return 0;
   }
 };

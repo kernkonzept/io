@@ -107,6 +107,36 @@ unsigned
 Dev::bus_nr() const
 { return cfg.addr().bus(); }
 
+int
+Dev::enumerate_dma_src_ids(Dma_src_id_cb cb) const
+{
+  if (!_bridge)
+    return 0;
+
+  // Look at upstream bridges first. Failures (ret < 0) or rewrites (ret > 0)
+  // will stop iteration.
+  if (auto *parent_dma = dynamic_cast<Dma_requester*>(_bridge))
+    if (int ret = parent_dma->enumerate_dma_src_ids(cb))
+      return ret;
+
+  for (unsigned i = 0; i < (1u << _phantomfn_bits); ++i)
+    {
+      l4_uint64_t si = 0;
+      int ret = _bridge->translate_dma_src(
+        Dma_requester_id::source(segment_nr(), bus_nr(),
+                                 devfn() | (i << (3 - _phantomfn_bits))),
+        &si);
+      if (ret < 0)
+        return ret;
+
+      ret = cb(si);
+      if (ret < 0)
+        return ret;
+    }
+
+  return 0;
+}
+
 l4_uint32_t
 Dev::checked_cmd_read()
 {

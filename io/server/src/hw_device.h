@@ -223,9 +223,7 @@ public:
   }
 
   /**
-   * \param dev  The device for which the DMA domain is requested,
-   *             if `dev` is NULL a single DMA domain for all devices
-   *             downstream of this device is requested.
+   * \param dev  The device for which the DMA domain is requested.
    */
   Dma_domain *dma_domain_for(Device *dev)
   {

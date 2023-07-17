@@ -107,9 +107,6 @@ class Arm_dma_domain_factory : public Dma_domain_factory
 public:
   Arm_dma_domain *create(Hw::Device * /* bridge */, Hw::Device *dev) override
   {
-    // `dev == nullptr` is a request for a DMA domain for all devices downstream
-    // of `bridge`. This happens only in context of PCI and was not yet
-    // observed on ARM. See also Device::dma_domain_for().
     if (!dev)
       return nullptr;
 

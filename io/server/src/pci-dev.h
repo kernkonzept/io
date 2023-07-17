@@ -91,38 +91,6 @@ public:
     Flags() : _raw(0) {}
   };
 
-  /**
-   * Intel VT-d dma source id.
-   *
-   * This format is used by Fiasco as `src_id` parameter to Iommu::bind() on
-   * x86.
-   */
-  struct Vtd_dma_src_id
-  {
-    l4_uint64_t v = 0;
-    Vtd_dma_src_id(l4_uint64_t v) : v(v) {}
-
-    CXX_BITFIELD_MEMBER(18, 19, match, v);
-
-    enum Mode
-    {
-      Match_requester_id = 1,
-      Match_bus          = 2,
-    };
-
-    //CXX_BITFIELD_MEMBER( 0, 15, sid, v);
-    CXX_BITFIELD_MEMBER(16, 17, phantomfn, v);
-
-    // match == Match_requester_id
-    CXX_BITFIELD_MEMBER( 8, 15, bus, v);
-    CXX_BITFIELD_MEMBER( 3,  7, dev, v);
-    CXX_BITFIELD_MEMBER( 0,  2, fn, v);
-    CXX_BITFIELD_MEMBER( 0,  7, devfn, v);
-
-    // match == Match_bus
-    CXX_BITFIELD_MEMBER( 8, 15, whole_bus, v);
-  };
-
   Msi_src *get_msi_src() override
   {
     return this;
@@ -138,27 +106,10 @@ public:
 
   ::Dma_requester *get_dma_src() override
   {
-    if (_external_dma_src)
-      return _external_dma_src;
-
     return this;
   }
 
-  l4_uint64_t get_dma_src_id() override
-  {
-    Vtd_dma_src_id id(0);
-    id.match() = Vtd_dma_src_id::Match_requester_id;
-    id.phantomfn() = _phantomfn_bits;
-    id.bus() = bus_nr();
-    id.devfn() = devfn();
-    return id.v;
-  }
-
-  /// Get the Dma_requester for devices downstream if this is a bridge
-  virtual ::Dma_requester *get_downstream_dma_src()
-  {
-    return get_dma_src();
-  }
+  int enumerate_dma_src_ids(Dma_src_id_cb cb) const override;
 
   void add_saved_cap(Saved_cap *cap) { _saved_state.add_cap(cap); }
 
@@ -175,7 +126,6 @@ public:
 protected:
   Hw::Device *_host;
   Bridge_if *_bridge = nullptr;
-  ::Dma_requester *_external_dma_src = nullptr;
 
 public:
   Config_cache const cfg;
@@ -235,11 +185,8 @@ public:
   bool enable_rom() override;
 
   explicit Dev(Hw::Device *host, Bridge_if *bridge,
-               ::Dma_requester *ext_dma,
                Config_cache const &cfg)
-  : _host(host), _bridge(bridge),
-    _external_dma_src(ext_dma), cfg(cfg),
-    _rom(0)
+  : _host(host), _bridge(bridge), cfg(cfg), _rom(0)
   {
     for (unsigned i = 0; i < sizeof(_bars)/sizeof(_bars[0]); ++i)
       _bars[i] = 0;
