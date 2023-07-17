@@ -148,6 +148,15 @@ public:
 
     return 0;
   }
+
+  int map_msi_src(::Hw::Pci::If *, l4_uint64_t msi_addr_phys,
+                  l4_uint64_t *msi_addr_iova) override
+  {
+    // MSI controller address is handled specially on Intel VT-d and requires
+    // no mapping in the device IOVA.
+    *msi_addr_iova = msi_addr_phys;
+    return 0;
+  }
 };
 
 Hw::Pci::Platform_adapter_if *

@@ -169,6 +169,16 @@ public:
       return -L4_ENODEV;
   }
 
+  int map_msi_src(If *dev, l4_uint64_t msi_addr_phys,
+                  l4_uint64_t *msi_addr_iova) override
+  {
+    // Unless we know better, pass upwards...
+    if (auto *b = bridge())
+      return b->map_msi_src(dev, msi_addr_phys, msi_addr_iova);
+    else
+      return -L4_ENODEV;
+  }
+
   int enumerate_dma_src_ids(Dma_src_feature::Dma_src_id_cb cb) const override;
 };
 

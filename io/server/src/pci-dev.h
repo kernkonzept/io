@@ -103,6 +103,15 @@ public:
       return -L4_ENODEV;
   }
 
+  int map_msi_ctrl(l4_uint64_t msi_addr_phys,
+                   l4_uint64_t *msi_addr_iova) override
+  {
+    if (_bridge)
+      return _bridge->map_msi_src(this, msi_addr_phys, msi_addr_iova);
+    else
+      return -L4_ENODEV;
+  }
+
   virtual int enumerate_dma_src_ids(Dma_src_feature::Dma_src_id_cb cb) const;
 
   void add_saved_cap(Saved_cap *cap) { _saved_state.add_cap(cap); }
@@ -202,7 +211,7 @@ public:
 
   Bridge_if *bridge() const override final { return _bridge; }
 
-  Hw::Device *host() const { return _host; }
+  Hw::Device *host() const override { return _host; }
 
   bool supports_msi() const override
   { return flags.msi(); }

@@ -47,6 +47,7 @@ public:
   virtual Config_space *config_space() const = 0;
 
   virtual Bridge_if *bridge() const = 0;
+  virtual Hw::Device *host() const = 0;
   virtual Io_irq_pin::Msi_src *get_msi_src() = 0;
 
   virtual ~If() = 0;
@@ -170,6 +171,12 @@ struct Platform_adapter_if
    * Translate a generic DMA requester ID to a platform specific DMA source id.
    */
   virtual int translate_dma_src(Dma_requester_id rid, l4_uint64_t *si) const = 0;
+
+  /**
+   * Map the MSI controller for a generic PCI device.
+   */
+  virtual int map_msi_src(If *dev, l4_uint64_t msi_addr_phys,
+                          l4_uint64_t *msi_addr_iova) = 0;
 };
 
 class Bridge_if : public Platform_adapter_if

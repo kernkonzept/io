@@ -39,6 +39,16 @@ protected:
       return -L4_ENODEV;
   }
 
+  int map_msi_src(If *dev, l4_uint64_t msi_addr_phys,
+                  l4_uint64_t *msi_addr_iova) override
+  {
+    // Forward to platform provided MSI translator
+    if (_platform_adapter)
+      return _platform_adapter->map_msi_src(dev, msi_addr_phys, msi_addr_iova);
+    else
+      return -L4_ENODEV;
+  }
+
   Dma_requester_id dma_alias() const override
   {
     // Root bridges don't create aliases

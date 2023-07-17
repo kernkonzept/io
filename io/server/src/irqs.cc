@@ -177,7 +177,11 @@ Msi_irq_pin::msi_info(Msi_src *src, l4_icu_msi_info_t *info)
   if (res < 0)
     return res;
 
-  return Kernel_irq_pin::_msi_info(si, info);
+  res = Kernel_irq_pin::_msi_info(si, info);
+  if (res < 0)
+    return res;
+
+  return src->map_msi_ctrl(info->msi_addr, &info->msi_addr);
 }
 
 

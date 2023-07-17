@@ -56,6 +56,18 @@ public:
      * \retval Negative error value or zero on success
      */
     virtual int get_msi_src_id(l4_uint64_t *si) = 0;
+
+    /**
+     * Map MSI controller to MSI source.
+     *
+     * \param msi_addr_phys[in]   Physical address of MSI controller.
+     * \param msi_addr_iova[out]  The device virtual address of the MSI
+     *                            controller.
+     *
+     * \retval Negative error value or zero on success.
+     */
+    virtual int map_msi_ctrl(l4_uint64_t msi_addr_phys,
+                             l4_uint64_t *msi_addr_iova) = 0;
   };
 
   void add_sw_irq() { ++_max_sw_irqs; }
