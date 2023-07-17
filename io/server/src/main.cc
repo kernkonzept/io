@@ -301,6 +301,127 @@ public:
   { return -L4_ENODEV; }
 };
 
+class Iommu_dma_domain : public Dma_domain
+{
+public:
+  Iommu_dma_domain(Hw::Dma_src_feature *src)
+  : _src(src)
+  {}
+
+  static void init()
+  {
+    _supports_remapping = true;
+  }
+
+  int iommu_bind(L4::Cap<L4::Iommu> iommu, l4_uint64_t src)
+  {
+    int r = l4_error(iommu->bind(src, _kern_dma_space));
+    if (r < 0)
+      d_printf(DBG_ERR, "error: setting DMA for device: %d\n", r);
+
+    return r;
+  }
+
+  int iommu_unbind(L4::Cap<L4::Iommu> iommu, l4_uint64_t src)
+  {
+    int r = l4_error(iommu->unbind(src, _kern_dma_space));
+    if (r < 0)
+      d_printf(DBG_ERR, "error: unbinding DMA for device: %d\n", r);
+
+    return r;
+  }
+
+  void set_managed_kern_dma_space(L4::Cap<L4::Task> s) override
+  {
+    Dma_domain::set_managed_kern_dma_space(s);
+
+    L4::Cap<L4::Iommu> iommu = L4Re::Env::env()->get_cap<L4::Iommu>("iommu");
+
+    _src->enumerate_dma_src_ids([this, iommu](l4_uint64_t src) -> int
+                                  {
+                                    return this->iommu_bind(iommu, src);
+                                  });
+  }
+
+  int create_managed_kern_dma_space() override
+  {
+    assert (!_kern_dma_space);
+
+    auto dma = L4Re::chkcap(L4Re::Util::make_unique_cap<L4::Task>());
+    L4Re::chksys(L4Re::Env::env()->factory()->create(dma.get(), L4_PROTO_DMA_SPACE));
+
+    set_managed_kern_dma_space(dma.release());
+    return 0;
+  }
+
+  int set_dma_task(bool set, L4::Cap<L4::Task> dma_task) override
+  {
+    if (managed_kern_dma_space())
+      return -EBUSY;
+
+    if (set && kern_dma_space())
+      return -EBUSY;
+
+    if (!set && !kern_dma_space())
+      return -L4_EINVAL;
+
+    static L4::Cap<L4::Task> const &me = L4Re::This_task;
+    if (!set && !me->cap_equal(kern_dma_space(), dma_task).label())
+      return -L4_EINVAL;
+
+    L4::Cap<L4::Iommu> iommu = L4Re::Env::env()->get_cap<L4::Iommu>("iommu");
+
+    if (set)
+      {
+        _kern_dma_space = dma_task;
+        auto cb = [this, iommu](l4_uint64_t src) -> int
+                    {
+                      return this->iommu_bind(iommu, src);
+                    };
+        int r = _src->enumerate_dma_src_ids(cb);
+        if (r < 0)
+          return r;
+      }
+    else
+      {
+        if (!_kern_dma_space)
+          return 0;
+
+        auto cb = [this, iommu](l4_uint64_t src) -> int
+                    {
+                      return this->iommu_unbind(iommu, src);
+                    };
+        int r = _src->enumerate_dma_src_ids(cb);
+        if (r < 0)
+          return r;
+
+        _kern_dma_space = L4::Cap<L4::Task>::Invalid;
+      }
+
+    return 0;
+  }
+
+private:
+  Hw::Dma_src_feature *_src = nullptr;
+};
+
+class Iommu_dma_domain_factory : public Hw::Dma_domain_factory
+{
+public:
+  Dma_domain *create(Hw::Device *dev) override
+  {
+    if (!dev)
+      return nullptr;
+
+    Hw::Dma_src_feature *s = dev->find_feature<Hw::Dma_src_feature>();
+    if (!s)
+      return nullptr;
+
+    return new Iommu_dma_domain(s);
+  }
+};
+
+
 static
 int
 run(int argc, char * const *argv)
@@ -324,6 +445,11 @@ run(int argc, char * const *argv)
       Dma_domain *d = new Dma_domain_phys;
       system_bus()->add_resource(d);
       system_bus()->set_downstream_dma_domain(d);
+    }
+  else
+    {
+      system_bus()->set_dma_domain_factory(new Iommu_dma_domain_factory());
+      Iommu_dma_domain::init();
     }
 
 #if defined(ARCH_x86) || defined(ARCH_amd64)

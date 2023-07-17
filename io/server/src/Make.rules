@@ -55,8 +55,8 @@ WARNINGS_lua_glue.swg.cc += -Wno-unused-but-set-variable
 
 SRC_DATA     := io.lua
 
-SRC_CC_arm-l4f    += arm_dma_domain.cc arm_dma_device.cc optee.cc
-SRC_CC_arm64-l4f  += arm_dma_domain.cc arm_dma_device.cc optee.cc
+SRC_CC_arm-l4f    += arm_dma_device.cc optee.cc
+SRC_CC_arm64-l4f  += arm_dma_device.cc optee.cc
 
 OPTS         := -g -O3
 
