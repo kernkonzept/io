@@ -75,8 +75,7 @@ class Extended_cap_handler;
 
 class Dev :
   public virtual If,
-  private Io_irq_pin::Msi_src,
-  private Dma_requester
+  private Io_irq_pin::Msi_src
 {
 public:
   class Flags
@@ -104,12 +103,7 @@ public:
       return -L4_ENODEV;
   }
 
-  ::Dma_requester *get_dma_src() override
-  {
-    return this;
-  }
-
-  int enumerate_dma_src_ids(Dma_src_id_cb cb) const override;
+  virtual int enumerate_dma_src_ids(Dma_src_feature::Dma_src_id_cb cb) const;
 
   void add_saved_cap(Saved_cap *cap) { _saved_state.add_cap(cap); }
 
@@ -124,6 +118,19 @@ public:
   }
 
 protected:
+  struct Pci_dma_src_feature : public Dma_src_feature
+  {
+    Pci_dma_src_feature(Dev *parent) : parent(parent) {}
+
+    int enumerate_dma_src_ids(Dma_src_id_cb cb) const override
+    {
+      return parent->enumerate_dma_src_ids(cb);
+    }
+
+    Dev *parent;
+  };
+
+  Pci_dma_src_feature _dma_src_feature;
   Hw::Device *_host;
   Bridge_if *_bridge = nullptr;
 
@@ -186,10 +193,11 @@ public:
 
   explicit Dev(Hw::Device *host, Bridge_if *bridge,
                Config_cache const &cfg)
-  : _host(host), _bridge(bridge), cfg(cfg), _rom(0)
+  : _dma_src_feature(this), _host(host), _bridge(bridge), cfg(cfg), _rom(0)
   {
     for (unsigned i = 0; i < sizeof(_bars)/sizeof(_bars[0]); ++i)
       _bars[i] = 0;
+    host->add_feature(&_dma_src_feature);
   }
 
   Bridge_if *bridge() const override final { return _bridge; }

@@ -2,40 +2,11 @@
 
 #include "resource.h"
 
-#include <functional>
 #include <l4/sys/task>
 #include <l4/re/dma_space>
 
 class Dma_domain_set;
 class Dma_domain_group;
-
-/**
- * DMA capable device that may be bound to an IOMMU.
- */
-struct Dma_requester
-{
-  virtual ~Dma_requester() = default;
-
-  /**
-   * Callback for DMA source-IDs.
-   *
-   * \return Negative error value. Non-negative value on success.
-   */
-  using Dma_src_id_cb = std::function<int(l4_uint64_t sid)>;
-
-  /**
-   * Enumerate IOMMU source-ID for device.
-   *
-   * The `cb` callback is invoked for each possible source-ID of the device.
-   * These source-IDs are used in L4::Iommu::bind() to bind the device to a DMA
-   * task.
-   *
-   * \return 0 to continue enumeration on downstream bridges/devices, >0 to
-   *         stop enumeration because the bridge takes ownership of all
-   *         transactions or <0 on errors.
-   */
-  virtual int enumerate_dma_src_ids(Dma_src_id_cb cb) const = 0;
-};
 
 class Dma_domain_if
 {

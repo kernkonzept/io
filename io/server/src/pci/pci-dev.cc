@@ -108,14 +108,14 @@ Dev::bus_nr() const
 { return cfg.addr().bus(); }
 
 int
-Dev::enumerate_dma_src_ids(Dma_src_id_cb cb) const
+Dev::enumerate_dma_src_ids(Dma_src_feature::Dma_src_id_cb cb) const
 {
   if (!_bridge)
     return 0;
 
   // Look at upstream bridges first. Failures (ret < 0) or rewrites (ret > 0)
   // will stop iteration.
-  if (auto *parent_dma = dynamic_cast<Dma_requester*>(_bridge))
+  if (auto *parent_dma = dynamic_cast<Dev*>(_bridge))
     if (int ret = parent_dma->enumerate_dma_src_ids(cb))
       return ret;
 

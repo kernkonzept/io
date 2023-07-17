@@ -169,7 +169,7 @@ public:
       return -L4_ENODEV;
   }
 
-  int enumerate_dma_src_ids(::Dma_requester::Dma_src_id_cb cb) const override;
+  int enumerate_dma_src_ids(Dma_src_feature::Dma_src_id_cb cb) const override;
 };
 
 class Bridge : public Generic_bridge

@@ -16,6 +16,7 @@
 
 #include <cerrno>
 
+#include <functional>
 #include <string>
 #include <vector>
 #include <l4/cxx/unique_ptr>
@@ -299,6 +300,37 @@ private:
   /// DMA domain that **must** be used for all children of this device.
   Dma_domain *_downstream_dma_domain = 0;
   Dma_domain_factory *_dma_domain_factory = 0;
+};
+
+
+/**
+ * Feature for DMA capable device that may be bound to an IOMMU.
+ */
+struct Dma_src_feature : public Dev_feature
+{
+public:
+  /**
+   * Callback for DMA source-IDs.
+   *
+   * \return Negative error value. Non-negative value on success.
+   */
+  using Dma_src_id_cb = std::function<int(l4_uint64_t sid)>;
+
+  /**
+   * Enumerate IOMMU source-ID for device.
+   *
+   * The `cb` callback is invoked for each possible source-ID of the device.
+   * These source-IDs are used in L4::Iommu::bind() to bind the device to a DMA
+   * task.
+   *
+   * \return 0 to continue enumeration on downstream bridges/devices, >0 to
+   *         stop enumeration because the bridge takes ownership of all
+   *         transactions or <0 on errors.
+   */
+  virtual int enumerate_dma_src_ids(Dma_src_id_cb cb) const = 0;
+
+protected:
+  virtual ~Dma_src_feature() = default;
 };
 
 

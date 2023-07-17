@@ -702,7 +702,7 @@ using namespace Hw;
 class Dmar_dma_domain : public Dma_domain
 {
 public:
-  Dmar_dma_domain(Dma_requester *src)
+  Dmar_dma_domain(Dma_src_feature *src)
   : _src(src)
   {}
 
@@ -810,7 +810,7 @@ public:
   }
 
 private:
-  Dma_requester *_src = nullptr;
+  Dma_src_feature *_src = nullptr;
 };
 
 class Dmar_dma_domain_factory : public Dma_domain_factory
@@ -821,10 +821,7 @@ public:
     if (!dev)
       return nullptr;
 
-    Dma_requester *s = nullptr;
-    if (Pci::Dev *p = dev->find_feature<Pci::Dev>())
-      s = p->get_dma_src();
-
+    Dma_src_feature *s = dev->find_feature<Dma_src_feature>();
     if (!s)
       return nullptr;
 

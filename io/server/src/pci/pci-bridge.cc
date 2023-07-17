@@ -88,9 +88,9 @@ Generic_bridge::check_bus_config()
 }
 
 int
-Generic_bridge::enumerate_dma_src_ids(::Dma_requester::Dma_src_id_cb cb) const
+Generic_bridge::enumerate_dma_src_ids(Dma_src_feature::Dma_src_id_cb cb) const
 {
-  if (auto *parent = dynamic_cast<::Dma_requester*>(parent_bridge()))
+  if (auto *parent = dynamic_cast<Dma_src_feature*>(parent_bridge()))
     if (int ret = parent->enumerate_dma_src_ids(cb))
       return ret;
 
