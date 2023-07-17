@@ -105,7 +105,7 @@ private:
 class Arm_dma_domain_factory : public Dma_domain_factory
 {
 public:
-  Arm_dma_domain *create(Hw::Device * /* bridge */, Hw::Device *dev) override
+  Arm_dma_domain *create(Hw::Device *dev) override
   {
     if (!dev)
       return nullptr;

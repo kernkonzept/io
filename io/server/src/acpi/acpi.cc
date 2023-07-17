@@ -816,7 +816,7 @@ private:
 class Dmar_dma_domain_factory : public Dma_domain_factory
 {
 public:
-  Dmar_dma_domain *create(Hw::Device * /* bridge */, Hw::Device *dev) override
+  Dmar_dma_domain *create(Hw::Device *dev) override
   {
     if (!dev)
       return nullptr;

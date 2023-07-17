@@ -29,7 +29,7 @@ class Device;
 class Dma_domain_factory
 {
 public:
-  virtual Dma_domain *create(Hw::Device *bridge, Hw::Device *dev) = 0;
+  virtual Dma_domain *create(Hw::Device *dev) = 0;
   virtual ~Dma_domain_factory() = default;
 };
 
@@ -238,7 +238,7 @@ public:
 
         if (auto *f = c->_dma_domain_factory)
           {
-            d = f->create(this, dev);
+            d = f->create(dev);
             break;
           }
       }
