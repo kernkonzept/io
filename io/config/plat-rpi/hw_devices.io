@@ -30,4 +30,15 @@ Io.hw_add_devices(function()
     Resource.regs = Res.mmio(0x20805000, 0x20805fff);
     Resource.irq = Res.irq(53, Io.Resource.Irq_type_raising_edge);
   end);
+
+  EMMC = Hw.Device(function()
+    compatible = {"brcm,bcm2711-emmc2"};
+    Property.hid = "EMMC-bcm2711-emmc2";
+    Property.flags = Io.Hw_device_DF_dma_supported;
+    -- The device lives at the local address 0x7e340000, but the bus translates
+    -- that range.
+    Resource.regs = Res.mmio(0xfe340000, 0xfe340000 + 0x100 - 1);
+
+    Resource.irq = Res.irq(32 + 126, Io.Resource.Irq_type_level_high);
+  end);
 end)
