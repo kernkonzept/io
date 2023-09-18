@@ -136,7 +136,7 @@ public:
   void set_handle(l4vbus_device_handle_t h) { _handle = h; }
 
   l4vbus_device_t get_device_info() const;
-  l4vbus_resource_t get_resource_info(int index) const;
+  l4vbus_resource_t get_resource_info(unsigned index) const;
 
 protected:
   Device *get_root()

@@ -57,7 +57,7 @@ enum l4io_resource_types_t {
 
 
 typedef l4vbus_device_handle_t l4io_device_handle_t;
-typedef int l4io_resource_handle_t;
+typedef unsigned l4io_resource_handle_t;
 
 /**
  * \brief Resource descriptor.

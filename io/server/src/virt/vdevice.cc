@@ -35,11 +35,11 @@ Device::resource_allocated(Resource const *r) const
 }
 
 l4vbus_resource_t
-Device::get_resource_info(int index) const
+Device::get_resource_info(unsigned index) const
 {
   auto *resources = this->resources();
 
-  if (index < 0 || (unsigned)index >= resources->size())
+  if (index >= resources->size())
     L4Re::throw_error(-L4_ENOENT);
 
   Resource *r = resources->at(index);

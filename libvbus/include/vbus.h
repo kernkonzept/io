@@ -114,7 +114,7 @@ l4vbus_get_device(l4_cap_idx_t vbus, l4vbus_device_handle_t dev,
  */
 int L4_CV
 l4vbus_get_resource(l4_cap_idx_t vbus, l4vbus_device_handle_t dev,
-                    int res_idx, l4vbus_resource_t *res);
+                    unsigned res_idx, l4vbus_resource_t *res);
 
 
 /**

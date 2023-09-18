@@ -208,7 +208,7 @@ public:
    * \retval 0           Success.
    * \retval -L4_ENOENT  Invalid resource index `res_idx`.
    */
-  int get_resource(int res_idx, l4vbus_resource_t *res) const
+  int get_resource(unsigned res_idx, l4vbus_resource_t *res) const
   {
     return l4vbus_get_resource(_bus.cap(), _dev, res_idx, res);
   }

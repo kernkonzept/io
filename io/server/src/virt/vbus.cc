@@ -697,7 +697,7 @@ System_bus::dispatch_generic(L4vbus::Vbus::Rights obj, Device *dev,
           return rpc_device_get(dev, ios);
 
         case L4vbus_vdevice_get_resource:
-          ios.put(dev->get_resource_info(rpc_get<int>(ios)));
+          ios.put(dev->get_resource_info(rpc_get<unsigned>(ios)));
           return L4_EOK;
 
         case L4vbus_vdevice_is_compatible:

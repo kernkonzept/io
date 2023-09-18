@@ -75,7 +75,7 @@ l4vbus_get_device(l4_cap_idx_t vbus, l4vbus_device_handle_t dev,
 
 int
 l4vbus_get_resource(l4_cap_idx_t vbus, l4vbus_device_handle_t dev,
-                    int res_idx, l4vbus_resource_t *res)
+                    unsigned res_idx, l4vbus_resource_t *res)
 {
   L4::Ipc::Iostream s(l4_utcb());
   s << dev << l4_uint32_t(L4vbus_vdevice_get_resource) << res_idx;
