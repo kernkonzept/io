@@ -26,7 +26,11 @@ update:
 	$(VERBOSE)wget -O - https://pci-ids.ucw.cz/v2.2/pci.ids.bz2 \
 	   | bzcat > pci.ids
 
+update-ci: update
+	git commit -m "Update PCI-IDs" .
+
+
 clean::
 	$(VERBOSE)$(RM) devlist.h classlist.h gen-devlist
 
-.PHONY: update
+.PHONY: update update-ci
