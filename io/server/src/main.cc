@@ -16,7 +16,6 @@
 #include <l4/re/error_helper>
 #include <l4/re/dataspace>
 #include <l4/util/kip.h>
-#include <l4/cxx/std_exc_io>
 
 #include "main.h"
 #include "hw_root_bus.h"
@@ -423,14 +422,13 @@ main(int argc, char * const *argv)
     }
   catch (L4::Runtime_error &e)
     {
-      std::cerr << "FATAL uncaught exception: " << e
-                << "\nterminating...\n";
-
+      fprintf(stderr, "FATAL uncaught exception: %s: %s\n"
+                      "terminating...\n", e.str(), e.extra_str());
     }
   catch (...)
     {
-      std::cerr << "FATAL uncaught exception of unknown type\n"
-                << "terminating...\n";
+      fprintf(stderr, "FATAL uncaught exception of unknown type\n"
+                      "terminating...\n");
     }
   return -1;
 }
