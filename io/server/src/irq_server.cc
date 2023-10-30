@@ -42,8 +42,7 @@ L4Re::Util::Object_registry *irq_queue()
       return 0;
     }
 
-  irq_server = new Irq_server(Pthread::L4::utcb(irq_server_thread),
-                              Pthread::L4::cap(irq_server_thread),
+  irq_server = new Irq_server(Pthread::L4::cap(irq_server_thread),
                               L4Re::Env::env()->factory());
 
   e = Pthread::L4::start(irq_server_thread, _server_loop_func, irq_server);
