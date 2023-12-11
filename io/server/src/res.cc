@@ -41,9 +41,9 @@ struct Phys_region
   l4_addr_t phys;
   l4_addr_t size;
 
-  bool operator < (Phys_region const &o) const throw()
+  bool operator < (Phys_region const &o) const noexcept
   { return phys + size - 1 < o.phys; }
-  bool contains(Phys_region const &o) const throw()
+  bool contains(Phys_region const &o) const noexcept
   { return o.phys >= phys && o.phys + o.size -1 <= phys + size -1; }
   Phys_region() = default;
   Phys_region(l4_addr_t phys, l4_addr_t size) : phys(phys), size(size) {}

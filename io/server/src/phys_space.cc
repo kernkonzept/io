@@ -19,10 +19,10 @@
 #include "cfg.h"
 #include "phys_space.h"
 
-void *operator new (size_t sz, cxx::Nothrow const &) throw()
+void *operator new (size_t sz, cxx::Nothrow const &) noexcept
 { return malloc(sz); }
 
-void operator delete(void *p, cxx::Nothrow const &) throw()
+void operator delete(void *p, cxx::Nothrow const &) noexcept
 { return free(p); }
 
 Phys_space Phys_space::space;

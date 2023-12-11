@@ -26,11 +26,11 @@ public:
     Addr end() const { return _e; }
     Addr size() const { return _e - _s + 1; }
 
-    bool operator < (Phys_region const &o) const throw()
+    bool operator < (Phys_region const &o) const noexcept
     { return _e < o._s; }
-    bool contains(Phys_region const &o) const throw()
+    bool contains(Phys_region const &o) const noexcept
     { return o._s >= _s && o._e <= _e; }
-    bool operator == (Phys_region const &o) const throw()
+    bool operator == (Phys_region const &o) const noexcept
     { return o._s == _s && o._e == _e; }
 
     bool valid() const { return _e > _s; }
