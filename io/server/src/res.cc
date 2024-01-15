@@ -55,7 +55,7 @@ struct Io_region : public Phys_region, public cxx::Avl_tree_node
 
   mutable cxx::Bitmap_base pages;
 
-  Io_region() : pages(0) {}
+  Io_region() : virt(0), pages(0) {}
   Io_region(Phys_region const &pr) : Phys_region(pr), virt(0), pages(0) {}
 };
 
