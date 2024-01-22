@@ -20,8 +20,8 @@
 
 /** Constants for device nodes */
 enum {
-  L4VBUS_NULL = (l4_mword_t)-1,    /**< NULL device */
-  L4VBUS_ROOT_BUS = 0,             /**< Root device on the vbus */
+  L4VBUS_NULL = -1L,            /**< NULL device */
+  L4VBUS_ROOT_BUS = 0,          /**< Root device on the vbus */
 };
 
 /** Flags that can be used with the ICU on a vbus device */
