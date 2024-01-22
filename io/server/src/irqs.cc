@@ -124,7 +124,7 @@ Msi_irq_pin::alloc_msi()
   if (res < 0)
     return -L4_ENOMEM;
 
-  if ((unsigned)res >= system_icu()->info.nr_msis)
+  if (static_cast<unsigned>(res) >= system_icu()->info.nr_msis)
     return -L4_ENOMEM;
 
   _msi_allocator.set_bit(res);

@@ -390,7 +390,7 @@ System_bus::assign_dma_domain(L4::Ipc::Iostream &ios)
 
   L4::Ipc::Snd_fpage spc;
   int r = L4::Ipc::Msg::msg_get(
-      (char *)&l4_utcb_mr_u(ios.ios_utcb())->mr[tag.words()],
+      reinterpret_cast<char *>(&l4_utcb_mr_u(ios.ios_utcb())->mr[tag.words()]),
       0, L4::Ipc::Msg::Item_bytes, spc);
 
   if (r < 0)
@@ -604,7 +604,7 @@ rpc_get_dev_adr(Device *dev, L4::Ipc::Iostream &ios)
 Device *
 System_bus::dev_from_id(l4vbus_device_handle_t dev, int err) const
 {
-  if (dev >= 0 && dev < (int)_devices_by_id.size())
+  if (dev >= 0 && dev < static_cast<int>(_devices_by_id.size()))
     if (Device *d = _devices_by_id[dev])
       return d;
 
@@ -682,7 +682,7 @@ System_bus::dispatch_generic(L4vbus::Vbus::Rights obj, Device *dev,
   switch (l4vbus_subinterface(func))
     {
     case L4VBUS_INTERFACE_GENERIC:
-      switch ((L4vbus_vdevice_op)func)
+      switch (static_cast<L4vbus_vdevice_op>(func))
         {
         case L4vbus_vdevice_hid:
         case L4vbus_vdevice_get_hid:

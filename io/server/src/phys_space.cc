@@ -51,7 +51,7 @@ Phys_space::Phys_space()
 	      bool r = reserve(re);
 	      d_printf(DBG_INFO, "  reserve phys memory space %014lx-%014lx (%s)\n",
                        md.start(), md.end(), r ? "ok" : "failed");
-	      (void)r;
+	      static_cast<void>(r);
 	    }
 	  break;
 	default:

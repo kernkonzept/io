@@ -26,7 +26,7 @@ public:
 
   int set(int, l4_int64_t i) override
   {
-    _table.push_back((unsigned)i);
+    _table.push_back(static_cast<unsigned>(i));
     return 0;
   }
 };
@@ -189,7 +189,7 @@ private:
     l4_uint32_t d[4];
     // view on data block
     L4drivers::Register_block<32> data{
-      new L4drivers::Mmio_register_block<32>((l4_addr_t)d)};
+      new L4drivers::Mmio_register_block<32>(reinterpret_cast<l4_addr_t>(d))};
 
     explicit Scu_msg(l4_uint8_t svc, l4_uint8_t func, l4_uint8_t sz)
     {

@@ -119,7 +119,7 @@ Resource_provider::_RS::alloc(Resource *parent, Device *pdev,
       Size align = cxx::max<Size>(child->alignment(), min_align);
       start = (start + align) & ~align; // pad to get alignment
 
-      if (start < end && end - start >= (Addr)child->size() - 1)
+      if (start < end && end - start >= static_cast<Addr>(child->size()) - 1)
        {
          child->start(start);
          break;

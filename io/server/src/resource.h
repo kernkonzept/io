@@ -153,7 +153,8 @@ public:
   {}
 
   Resource(unsigned type, unsigned long flags, Addr start, Addr end)
-  : _f((type & F_type_mask) | (flags & ~(unsigned long)F_type_mask)),
+  : _f((type & F_type_mask)
+       | (flags & ~static_cast<unsigned long>(F_type_mask))),
     _id(0), _p(0), _s(start), _e(end), _a(end - start)
   {}
 
@@ -182,7 +183,7 @@ public:
   {
     l4_uint32_t res = 0;
     for (unsigned i = 0; i < 4 && id && id[i]; ++i)
-      res |= (l4_uint32_t)id[i] << (8 * i);
+      res |= static_cast<l4_uint32_t>(id[i]) << (8 * i);
     return res;
   }
 
@@ -258,7 +259,7 @@ public:
 
   Addr start() const { return _s; }
   Addr end() const { return _e; }
-  Size size() const { return (Size)_e + 1 - _s; }
+  Size size() const { return static_cast<Size>(_e) + 1 - _s; }
 
   bool contains(Resource const &o) const
   { return start() <= o.start() && end() >= o.end(); }
