@@ -15,6 +15,7 @@
 #include <l4/cxx/minmax>
 #include <l4/cxx/string>
 #include <l4/cxx/bitfield>
+#include <l4/cxx/unique_ptr>
 
 #include "resource.h"
 #include "debug.h"
@@ -321,11 +322,11 @@ public:
     if (hid() == nullptr)
       return false;
 
-    char cid_cstr[cid.len() + 1];
-    __builtin_memcpy(cid_cstr, cid.start(), cid.len());
-    cid_cstr[cid.len()]  = 0;
+    auto cid_cstr = cxx::make_unique<char[]>(cid.len() + 1);
+    __builtin_memcpy(cid_cstr.get(), cid.start(), cid.len());
+    cid_cstr[cid.len()] = 0;
 
-    if (!fnmatch(cid_cstr, hid(), 0))
+    if (!fnmatch(cid_cstr.get(), hid(), 0))
       return true;
 
     return false;
