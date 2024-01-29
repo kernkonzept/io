@@ -378,7 +378,7 @@ System_bus::request_resource(L4::Ipc::Iostream &ios)
 int
 System_bus::assign_dma_domain(L4::Ipc::Iostream &ios)
 {
-  l4_msgtag_t tag = ios.tag();
+  l4_msgtag_t tag = ios.ios_tag();
   if (!tag.items())
     return -L4_EINVAL;
 
@@ -390,7 +390,7 @@ System_bus::assign_dma_domain(L4::Ipc::Iostream &ios)
 
   L4::Ipc::Snd_fpage spc;
   int r = L4::Ipc::Msg::msg_get(
-      (char *)&l4_utcb_mr_u(ios.utcb())->mr[tag.words()],
+      (char *)&l4_utcb_mr_u(ios.ios_utcb())->mr[tag.words()],
       0, L4::Ipc::Msg::Item_bytes, spc);
 
   if (r < 0)
