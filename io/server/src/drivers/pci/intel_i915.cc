@@ -114,6 +114,7 @@ struct Init
     _pci_intel_i915_drv.register_driver(0x8086, 0x1916);
     _pci_intel_i915_drv.register_driver(0x8086, 0x5912); // "HD Graphics 630"
     _pci_intel_i915_drv.register_driver(0x8086, 0x9bc8); // "UHD Graphics 630"
+    _pci_intel_i915_drv.register_driver(0x8086, 0x3ea0); // "UHD Graphics 620"
     _pci_intel_i915_drv.register_driver(0x8086, 0x46d1); // "UHD Graphics"
   }
 };
