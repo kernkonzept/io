@@ -204,9 +204,8 @@ l4io_request_iomem_region(l4_addr_t phys, l4_addr_t virt, unsigned long size,
 }
 
 long
-l4io_release_iomem(l4_addr_t virt, unsigned long size)
+l4io_release_iomem(l4_addr_t virt, unsigned long /* size */)
 {
-  (void)size;
   return L4Re::Env::env()->rm()->detach(virt, 0);
 }
 
