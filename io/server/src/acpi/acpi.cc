@@ -34,6 +34,7 @@ extern "C" {
 
 #include <errno.h>
 #include <l4/cxx/list>
+#include <l4/cxx/unique_ptr>
 #include <l4/sys/platform_control>
 #include <l4/re/env>
 #include <l4/re/util/unique_cap>
@@ -632,8 +633,6 @@ struct Acpi_pm : Hw::Root_bus::Pm
 
 };
 
-static Acpi_pm _acpi_pm;
-
 static Hw::Device *find_dev(char const *hid)
 {
   for (auto i = Hw::Device::iterator(0, system_bus(), L4VBUS_MAX_DEPTH); i != Hw::Device::iterator(); ++i)
@@ -1035,7 +1034,8 @@ int acpica_init()
       exit(status);
     }
 
-  dynamic_cast<Hw::Root_bus*>(system_bus())->set_pm(&_acpi_pm);
+  dynamic_cast<Hw::Root_bus*>(system_bus())
+    ->set_pm(cxx::unique_ptr<Hw::Root_bus::Pm>(new Acpi_pm));
 
   return 0;
 }

@@ -224,7 +224,7 @@ struct Generic_pm : Hw::Root_bus::Pm
 namespace Hw {
 
 Root_bus::Root_bus(char const *name)
-: Hw::Device(), _pm(new Generic_pm)
+: Hw::Device(), _pm(new Generic_pm)  // cannot use make_unique because of upcast
 {
   set_name(name);
 

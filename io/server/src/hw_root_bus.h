@@ -11,6 +11,7 @@
 #include "hw_device.h"
 
 #include <functional>
+#include <l4/cxx/unique_ptr>
 
 namespace Hw {
 
@@ -27,11 +28,9 @@ public:
 
   explicit Root_bus(char const *name);
 
-  Pm *set_pm(Pm *pm)
+  void set_pm(cxx::unique_ptr<Pm>&& pm)
   {
-    Pm *old = _pm;
-    _pm = pm;
-    return old;
+    _pm = cxx::move(pm);
   }
 
   /// Test if power management API is supported
@@ -62,7 +61,7 @@ public:
   }
 
 private:
-  Pm *_pm;
+  cxx::unique_ptr<Pm> _pm;
 
   std::function<bool(Resource const *r)> _can_alloc_cb;
 };
