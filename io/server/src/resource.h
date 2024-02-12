@@ -91,7 +91,7 @@ public:
     Dma_domain_res = L4VBUS_RESOURCE_DMA_DOMAIN
   };
 
-  enum Flags
+  enum Flags : unsigned long
   {
     F_type_mask    = 0x00ff,
     F_disabled     = 0x0100,
@@ -153,8 +153,7 @@ public:
   {}
 
   Resource(unsigned type, unsigned long flags, Addr start, Addr end)
-  : _f((type & F_type_mask)
-       | (flags & ~static_cast<unsigned long>(F_type_mask))),
+  : _f((type & F_type_mask) | (flags & ~F_type_mask)),
     _s(start), _e(end), _a(end - start)
   {}
 
