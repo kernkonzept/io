@@ -91,10 +91,10 @@ class Device :
   public Pm
 {
 private:
-  unsigned long _ref_cnt;
-  l4_umword_t _uid;
-  Int_property _adr;
-  Int_property _flags;
+  unsigned long _ref_cnt = 0;
+  l4_umword_t _uid       = reinterpret_cast<l4_umword_t>(this);
+  Int_property _adr      = ~0;
+  Int_property _flags    = 0;
 
 public:
   enum Status
@@ -113,16 +113,13 @@ public:
   void inc_ref_count() { ++_ref_cnt; }
   void dec_ref_count() { --_ref_cnt; }
 
-  Device(l4_umword_t uid, l4_uint32_t adr)
-  : _ref_cnt(0), _uid(uid), _adr(adr), _flags(0), _sta(Disabled)
+  Device(l4_umword_t uid, l4_uint32_t adr) : _uid(uid), _adr(adr)
   { register_properties(); }
 
-  explicit Device(l4_uint32_t adr)
-  : _ref_cnt(0), _uid((l4_umword_t)this), _adr(adr), _flags(0), _sta(Disabled)
+  explicit Device(l4_uint32_t adr) : _adr(adr)
   { register_properties(); }
 
   Device()
-  : _ref_cnt(0), _uid((l4_umword_t)this), _adr(~0), _flags(0), _sta(Disabled)
   { register_properties(); }
 
 
@@ -290,7 +287,7 @@ private:
   }
 
 protected:
-  Status _sta;
+  Status _sta = Disabled;
 
 private:
   std::string _name;
