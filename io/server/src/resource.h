@@ -72,9 +72,9 @@ protected:
 class Resource
 {
 private:
-  unsigned long _f;
-  l4_uint32_t _id;
-  Resource *_p;
+  unsigned long _f = 0;
+  l4_uint32_t _id = 0;
+  Resource *_p = nullptr;
 
 public:
   typedef l4_uint64_t Addr;
@@ -146,20 +146,20 @@ public:
   { return (_f & Irq_type_mask) & (L4_IRQ_F_NEG   * Irq_type_base); }
 
   explicit Resource(unsigned long flags = 0)
-  : _f(flags), _id(0), _p(0), _s(0), _e(0), _a(0) {}
+  : _f(flags) {}
 
   Resource(unsigned long flags, Addr start, Addr end)
-  : _f(flags), _id(0), _p(0), _s(start), _e(end), _a(end - start)
+  : _f(flags), _s(start), _e(end), _a(end - start)
   {}
 
   Resource(unsigned type, unsigned long flags, Addr start, Addr end)
   : _f((type & F_type_mask)
        | (flags & ~static_cast<unsigned long>(F_type_mask))),
-    _id(0), _p(0), _s(start), _e(end), _a(end - start)
+    _s(start), _e(end), _a(end - start)
   {}
 
   Resource(char const *id, unsigned type, Addr start, Addr end)
-  : _f(type), _id(str_to_id(id)), _p(0), _s(start), _e(end), _a(end - start)
+  : _f(type), _id(str_to_id(id)), _s(start), _e(end), _a(end - start)
   {}
 
   unsigned long flags() const { return _f; }
@@ -236,8 +236,8 @@ public:
   virtual ~Resource() = default;
 
 private:
-  Addr _s, _e;
-  l4_umword_t _a;
+  Addr _s = 0, _e = 0;
+  l4_umword_t _a = 0;
 
   void _start_end(Addr s, Addr e) { _s = s; _e = e; }
 
