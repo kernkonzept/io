@@ -10,6 +10,7 @@
 #include "debug.h"
 #include "hw_device.h"
 #include "resource_provider.h"
+#include <l4/cxx/unique_ptr>
 #include <l4/drivers/hw_mmio_register_block>
 
 namespace Hw {
@@ -230,7 +231,7 @@ private:
 
   bool _initialized = false;
   Sids_property _sids;
-  Mu *_mu = nullptr;
+  cxx::unique_ptr<Mu> _mu;
 };
 
 template<class DEV>

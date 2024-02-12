@@ -48,7 +48,7 @@ void Scu_imx8qm::init()
   d_printf(DBG_INFO, "%s: mapped %lx registers to %08lx\n",
            name(), phys_base, vbase);
 
-  _mu = new Mu(vbase);
+  _mu = cxx::make_unique<Mu>(vbase);
 
   for (size_t i = 0; i < _sids.size(); ++i)
     {
