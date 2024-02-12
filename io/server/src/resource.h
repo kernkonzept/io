@@ -78,7 +78,7 @@ private:
 
 public:
   typedef l4_uint64_t Addr;
-  typedef l4_int64_t Size;
+  typedef l4_uint64_t Size;
 
   enum Type
   {

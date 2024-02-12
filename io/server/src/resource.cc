@@ -77,7 +77,7 @@ Resource::dump(char const *ty, int indent) const
     printf("%*.s%-6s  <EMPTY>\n", indent, " ", ty);
   else
     printf("%*.s%-6s%c [%014llx-%014llx %llx]%s%s (align=%llx flags=%lx)\n",
-           indent, "", ty, provided() ? '*' : ' ', _s, _e, (l4_uint64_t)size(),
+           indent, "", ty, provided() ? '*' : ' ', _s, _e, size(),
            tp ? " " : "", tp ? tp : "", alignment(), flags());
 }
 
@@ -122,7 +122,7 @@ void Mmio_data_space::alloc_ram(Size size, unsigned long alloc_flags)
                L4Re::Dma_space::Attributes::None,
                L4Re::Dma_space::Bidirectional,
                &phys_start));
-  if (size > (Size)ds_size)
+  if (size > ds_size)
     throw(L4::Out_of_memory("not really"));
 
   start(phys_start);
