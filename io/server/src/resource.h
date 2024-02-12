@@ -236,7 +236,7 @@ public:
 
 private:
   Addr _s = 0, _e = 0;
-  l4_umword_t _a = 0;
+  l4_uint64_t _a = 0;
 
   void _start_end(Addr s, Addr e) { _s = s; _e = e; }
 
@@ -290,7 +290,7 @@ public:
 
   bool is_64bit() const { return flags() & F_width_64bit; }
 
-  l4_umword_t alignment() const
+  l4_uint64_t alignment() const
   {
     return  flags() & F_size_aligned ? (_e - _s) : _a;
   }

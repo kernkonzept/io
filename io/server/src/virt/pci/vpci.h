@@ -221,7 +221,7 @@ namespace Pci {
           return 1;
         }
 
-      l4_uint32_t a = r->alignment();
+      l4_uint32_t a = static_cast<l4_uint32_t>(r->alignment());
       for (; order < 32 && (a >> order); ++order)
         ;
 
