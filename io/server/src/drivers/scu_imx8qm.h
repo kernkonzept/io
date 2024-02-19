@@ -132,8 +132,7 @@ private:
     };
 
   public:
-    Mu(l4_addr_t vbase)
-    { _mu = new L4drivers::Mmio_register_block<32>(vbase); }
+    Mu(l4_addr_t vbase) : _mmio_mu(vbase), _mu(&_mmio_mu) { }
 
     void write_mu(unsigned int regIndex, l4_uint32_t msg)
     {
@@ -156,6 +155,7 @@ private:
     }
 
   private:
+    L4drivers::Mmio_register_block<32> _mmio_mu;
     L4drivers::Register_block<32> _mu;
   };
 
@@ -188,9 +188,9 @@ private:
     };
     // data block
     l4_uint32_t d[4];
+    L4drivers::Mmio_register_block<32> _data{reinterpret_cast<l4_addr_t>(d)};
     // view on data block
-    L4drivers::Register_block<32> data{
-      new L4drivers::Mmio_register_block<32>(reinterpret_cast<l4_addr_t>(d))};
+    L4drivers::Register_block<32> data{&_data};
 
     explicit Scu_msg(l4_uint8_t svc, l4_uint8_t func, l4_uint8_t sz)
     {
