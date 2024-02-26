@@ -44,6 +44,10 @@ SRC_CC := main.cc res.cc phys_space.cc resource.cc hw_device.cc \
           inhibitor_mux.cc \
           platform_control.cc
 
+# WARNING EXCEPTION: This is auto generated code and thus the code may contain
+# variables that are set but never read.
+WARNINGS_lua_glue.swg.cc += -Wno-unused-but-set-variable
+
 SRC_DATA     := io.lua
 
 SRC_CC_x86-l4f    = ux.cc
