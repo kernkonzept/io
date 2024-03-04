@@ -375,7 +375,7 @@ Res::search(enum l4io_resource_types_t t, l4_addr_t d1)
   return 0;
 }
 
-void
+[[maybe_unused]] void
 Res::dump()
 {
   printf("Resource list dump:\n");
