@@ -13,11 +13,11 @@ config L4IO_GPIO_OMAP
 		Add support for the OMAP3/4/5 GPIO chips (omap35x,omap44x,omap54x)
 
 config L4IO_GPIO_QCOM
-	bool "GPIO Qualcom TLMN / MSM8916"
+	bool "GPIO Qualcomm TLMM"
 	default y
 	help
 		Add support for the Qualcomm "Top-Level Mode Multiplexer" (TLMM) GPIO
-		controller.
+		controller used in most Qualcomm Snapdragon chips (e.g. MSM8916).
 
 config L4IO_GPIO_IMX
 	bool "GPIO IMX / IMX8QM"
