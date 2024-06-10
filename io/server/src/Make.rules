@@ -13,8 +13,11 @@ $(foreach i,$(SRC_CC_ACPI),$(eval CXXFLAGS_acpi/$(i) = -DL4_ACPICA))
 SRC_CC-$(CONFIG_L4IO_ACPI) += $(addprefix acpi/,$(SRC_CC_ACPI))
 
 SRC_CC-$(CONFIG_L4IO_PCI)  += virt/pci/vpci.cc \
-                              virt/pci/vpci_virtual_root.cc \
+                              virt/pci/vpci_bridge.cc \
                               virt/pci/vpci_pci_bridge.cc \
+                              virt/pci/vpci_proxy_dev.cc \
+                              virt/pci/vpci_virtual_dev.cc \
+                              virt/pci/vpci_virtual_root.cc \
                               pci/pci-bridge.cc \
                               pci/pci-dev.cc \
                               pci/pci-driver.cc \

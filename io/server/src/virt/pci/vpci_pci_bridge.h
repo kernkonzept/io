@@ -10,13 +10,14 @@
 #pragma once
 
 #include "vpci.h"
+#include "vpci_bridge.h"
+#include "vpci_virtual_dev.h"
 
 namespace Vi {
 
-// -----------------------------------------------------------------------
-// Virtual PCI to PCI bridge
-// -----------------------------------------------------------------------
-
+/**
+ * Virtual PCI to PCI bridge
+ */
 class Pci_to_pci_bridge : public Pci_bridge, public Pci_virtual_dev
 {
 private:

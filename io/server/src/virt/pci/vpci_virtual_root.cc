@@ -9,6 +9,7 @@
 
 #include "vpci.h"
 #include "vpci_pci_bridge.h"
+#include "vpci_proxy_dev.h"
 #include "virt/vbus_factory.h"
 
 #include <l4/vbus/vbus_pci-ops.h>
