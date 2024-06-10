@@ -197,6 +197,13 @@ Bridge::discover_resources(Hw::Device *host)
   Dev::discover_resources(host);
 }
 
+Hw::Pci::Dma_requester_id
+Bridge::dma_alias() const
+{
+  // Legacy PCI bridges take ownership of DMA transactions
+  return Dma_requester_id::rewrite(segment_nr(), bus_nr(), devfn());
+}
+
 class Pcie_downstream_port : public Bridge
 {
 private:
@@ -244,6 +251,21 @@ public:
       for (int function = 1; function < 8; ++function)
         discover_func(host_bus, cfg, nullptr, nullptr, 0, function);
   }
+
+  Dma_requester_id dma_alias() const override
+  { return Dma_requester_id(); }
+};
+
+class Pcie_upstream_port : public Bridge
+{
+public:
+  explicit Pcie_upstream_port(Hw::Device *host, Bridge_if *bridge,
+                              Config_cache const &cfg)
+  : Bridge(host, bridge, nullptr, nullptr, cfg)
+  {}
+
+  Dma_requester_id dma_alias() const override
+  { return Dma_requester_id(); }
 };
 
 class Pcie_bridge : public Bridge
@@ -304,6 +326,16 @@ public:
     Bridge_base::discover_bus(host, cfg.cfg_spc(), &_bus_src, &_bus_src);
     Dev::discover_bus(host);
   }
+
+  Dma_requester_id dma_alias() const override
+  {
+    /*
+     * PCIe-to-PCI(-X) bridges alias _some_ transactions with their secondary
+     * bus number. See PCI Express to PCI/PCI-X Bridge Specification Revision
+     * 1.0, section 2.3.
+     */
+    return Dma_requester_id::alias(segment_nr(), num, 0);
+  }
 };
 
 class Cardbus_bridge : public Generic_bridge
@@ -316,6 +348,12 @@ public:
   {}
 
   void discover_resources(Hw::Device *host) override;
+
+  Dma_requester_id dma_alias() const override
+  {
+    // TODO: does the cardbus bridge really take ownership?
+    return Dma_requester_id::rewrite(segment_nr(), bus_nr(), devfn());
+  }
 };
 
 void
@@ -397,7 +435,7 @@ create_pci_pci_bridge(Bridge_if *bridge, Io_irq_pin::Msi_src *ext_msi,
           break;
 
         case 0x5: // Upstream Port of PCI Express Switch
-          b = new Bridge(hw, bridge, nullptr, nullptr, cc);
+          b = new Pcie_upstream_port(hw, bridge, cc);
           break;
 
         case 0x7: // PCI Express to PCI/PCI-X bridge

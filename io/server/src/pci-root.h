@@ -19,6 +19,13 @@ private:
   Hw::Device *_host;
   unsigned _segment;
 
+protected:
+  Dma_requester_id dma_alias() const override
+  {
+    // Root bridges don't create aliases
+    return Dma_requester_id();
+  }
+
 public:
   explicit Root_bridge(unsigned segment, unsigned bus_nr, Hw::Device *host)
   : Bridge_base(bus_nr), _host(host), _segment(segment)

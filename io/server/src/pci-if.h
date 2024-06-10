@@ -57,6 +57,82 @@ public:
 
 inline If::~If() = default;
 
+/**
+ * DMA requester ID of a PCI device.
+ *
+ * Some bridges may take the ownership of some or all memory transactions of a
+ * device. This applies to MSI writes as well. So we not only store the ID
+ * itself but also the nature of their origin so that platform code can take
+ * the appropriate action.
+ */
+struct Dma_requester_id
+{
+  enum class Type : unsigned char
+  {
+    /**
+     * Invalid DMA requester ID.
+     */
+    None,
+
+    /**
+     * Alias DMA requester ID.
+     *
+     * PCIe-to-PCI(-X) bridges may alias transactions of an originating
+     * device on the bus. The upstream bridges and the IOMMU must thus be
+     * prepared to see different device or function numbers for the same
+     * device.
+     */
+    Alias,
+
+    /**
+     * DMA requester ID rewrite.
+     *
+     * Legacy PCI bridges take the ownership of all downstream devices.
+     * Effectively, all downstream IDs are rewritten to the bridge requester
+     * ID.
+     */
+    Rewrite
+  };
+
+  l4_uint32_t addr = 0;
+  Type type = Type::None;
+
+  CXX_BITFIELD_MEMBER(16, 31, segment,  addr);
+  CXX_BITFIELD_MEMBER( 8, 15, bus,      addr);
+  CXX_BITFIELD_MEMBER( 3,  7, dev,      addr);
+  CXX_BITFIELD_MEMBER( 0,  2, fn,       addr);
+  CXX_BITFIELD_MEMBER( 0,  7, devfn,    addr);
+
+  constexpr Dma_requester_id() = default;
+  constexpr Dma_requester_id(Type t, unsigned segment, unsigned bus,
+                             unsigned devfn)
+  : addr(segment << 16 | bus << 8 | devfn), type(t)
+  {}
+
+  static constexpr Dma_requester_id alias(unsigned segment, unsigned bus,
+                                          unsigned devfn)
+  { return Dma_requester_id(Type::Alias, segment, bus, devfn); }
+
+  static constexpr Dma_requester_id rewrite(unsigned segment, unsigned bus,
+                                            unsigned devfn)
+  { return Dma_requester_id(Type::Rewrite, segment, bus, devfn); }
+
+  operator bool() const { return type != Type::None; }
+  bool is_alias() const { return type == Type::Alias; }
+  bool is_rewrite() const { return type == Type::Rewrite; }
+
+  char const *as_cstr() const
+  {
+    switch (type)
+      {
+        case Type::None:    return "none";
+        case Type::Alias:   return "alias";
+        case Type::Rewrite: return "rewrite";
+        default:            return "?";
+      }
+  }
+};
+
 class Bridge_if
 {
 protected:
@@ -67,6 +143,7 @@ public:
   virtual bool check_bus_number(unsigned bus) = 0;
   virtual bool ari_forwarding_enable() = 0;
   virtual unsigned segment() const = 0;
+  virtual Dma_requester_id dma_alias() const = 0;
 };
 
 class Transparent_msi
