@@ -453,6 +453,23 @@ System_bus::assign_dma_domain(L4::Ipc::Iostream &ios)
                  : d->clear_dma_space();
 }
 
+void
+System_bus::reset_dma_domains()
+{
+  Dma_domain_if *d = 0;
+  d = _dma_domain_group.get();
+  if (d)
+    {
+      // The Dma_domain_if::clear_dma_space() method currently does
+      // not handle Dma_domain_sets correctly. So we explicitly invoke
+      // clear_managed_dma_space() if d is a Dma_domain_set.
+      if (dynamic_cast<Dma_domain_set *>(d))
+        d->clear_managed_dma_space();
+      else
+        d->clear_dma_space();
+    }
+}
+
 int
 System_bus::op_map(L4Re::Dataspace::Rights,
                    L4Re::Dataspace::Offset offset,

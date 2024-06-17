@@ -241,4 +241,17 @@
  *
  *  Space separated list of Lua configuration files specifying real hardware
  *  and virtual buses. See example on \ref vbus_desc "Virtual Bus Description".
+ *
+ * Vbus end points
+ * ---------------
+ * The IO server provides access to the configured vbus via capabilities
+ * - passed to IO as named capability during startup, the capability
+ *   names have to match the name of the vbus they are supposed to provide
+ *   access to.
+ * - created using the factory protocol, which IO provides if a capability
+ *   name svr is present in IOs capability space, e.g. using
+ *
+ *      vbus = L4.cast(L4.Proto.Factory, io):create(0, "vbus=<vbus name>");
+ *
+ *   in a ned script.
  */

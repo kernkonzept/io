@@ -41,6 +41,10 @@
 #include <lauxlib.h>
 #include <lualib.h>
 
+#include "vbus_factory.h"
+
+static IO_factory factory;
+
 namespace {
 
 static Hw::Root_bus *
@@ -174,11 +178,9 @@ int add_vbus(Vi::Device *dev)
   b->allocate_pending_child_resources();
   b->finalize();
 
-  if (!registry->register_obj(b, b->name()).is_valid())
-    {
-      d_printf(DBG_WARN, "WARNING: Service registration failed: '%s'\n", b->name());
-      return -1;
-    }
+  if (!factory.add_vbus(b))
+    return -1;
+
   if (dlevel(DBG_DEBUG2))
     dump(b);
   return 0;

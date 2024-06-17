@@ -215,6 +215,8 @@ public:
 
   void inhibitor_signal(l4_umword_t id) override;
 
+  void reset_dma_domains();
+
 private:
   int request_resource(L4::Ipc::Iostream &ios);
   int assign_dma_domain(L4::Ipc::Iostream &ios);
