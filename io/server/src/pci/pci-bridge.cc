@@ -214,12 +214,12 @@ public:
       return true;
 
     Cap pcie = pcie_cap();
-    l4_uint32_t v = pcie.read<l4_uint32_t>(0x24);
-    if (v & (1UL << 5))
+    auto dev_caps2 = pcie.read<Pcie_cap::Dev_caps2>();
+    if (dev_caps2.ari_forwarding_supported())
       {
-        v = pcie.read<l4_uint16_t>(0x28);
-        v |= (1UL << 5); // enable ARI forwarding
-        pcie.write<l4_uint16_t>(0x28, v);
+        auto dev_ctrl2 = pcie.read<Pcie_cap::Dev_ctrl2>();
+        dev_ctrl2.ari_forwarding_enable() = true;
+        pcie.write(dev_ctrl2);
 
         _ari = true;
       }

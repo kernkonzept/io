@@ -35,6 +35,19 @@ struct Capability
   };
 };
 
+struct Pcie_cap : Capability
+{
+  struct Dev_caps2 : R<0x24, l4_uint32_t>
+  {
+    CXX_BITFIELD_MEMBER( 5,  5, ari_forwarding_supported, v);
+  };
+
+  struct Dev_ctrl2 : R<0x28, l4_uint16_t>
+  {
+    CXX_BITFIELD_MEMBER( 5,  5, ari_forwarding_enable, v);
+  };
+};
+
 struct Pm_cap : Capability
 {
   struct Pmc : R<0x02, l4_uint16_t>
