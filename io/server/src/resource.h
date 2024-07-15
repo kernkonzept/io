@@ -242,6 +242,14 @@ private:
 
 public:
   void set_empty() { _s = _e = 0; set_empty(true); }
+
+  /**
+   * Set the alignment required by the resource.
+   *
+   * \param a  The resource alignment, encoded as `alignment size - 1`, i.e. for
+   *           example, to require a resource to be aligned on a page boundary
+   *           its alignment needs to be set to `L4_PAGESIZE - 1`.
+   */
   void alignment(Size a)
   {
     _a = a;
@@ -290,6 +298,13 @@ public:
 
   bool is_64bit() const { return flags() & F_width_64bit; }
 
+  /**
+   * Get the alignment required by the resource.
+   *
+   * \return The resource alignment, encoded as `alignment size - 1`, i.e. for
+   *         example, a resource that is required to be aligned on a page
+   *         boundary has an alignment of `L4_PAGESIZE - 1`.
+   */
   l4_uint64_t alignment() const
   {
     return  flags() & F_size_aligned ? (_e - _s) : _a;
