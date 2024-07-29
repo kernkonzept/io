@@ -34,12 +34,18 @@ inline Cfg_width cfg_w_to_o(int width)
 
 /**
  * Convert a Cfg_width parameter to the corresponding bit mask:
- * Cfg_byte => 0xff, Cfg_short => 0xffff, Cfg_log => 0xffffffff.
+ * Cfg_byte => 0xff, Cfg_short => 0xffff, Cfg_long => 0xffffffff.
  *
  * This function is only defined for width={Cfg_byte, Cfg_short, Cfg_long}!
  */
 constexpr inline l4_uint32_t cfg_o_to_mask(Cfg_width order)
 { return 0xffffffffU >> (32 - (8U << order)); }
+
+/**
+ * Convert a Cfg_width parameter to the corresponding size in bytes:
+ */
+constexpr inline unsigned cfg_o_to_size(Cfg_width order)
+{ return 1U << order; }
 
 template<unsigned S> struct _cfg_width;
 template<> struct _cfg_width<1> { static const Cfg_width width = Cfg_byte; };
