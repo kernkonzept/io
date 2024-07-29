@@ -780,9 +780,10 @@ Dev::dump(int indent) const
         classname = pci_bridges[sc];
     }
 
-  printf("%*.s%04x:%02x:%02x.%x: %s (0x%06x) [%d]\n", indent, " ",
+  printf("%*.s%04x:%02x:%02x.%x: %s (0x%06x) [%d%s]\n", indent, " ",
          segment_nr(), (int)bus_nr(), cfg.addr().dev(), cfg.addr().fn(),
-         classname, cfg.cls_rev >> 8, (int)cfg.hdr_type);
+         classname, cfg.cls_rev >> 8, cfg.type(),
+         cfg.is_multi_function() ? ", multi-func" : "");
 
   printf("%*.s0x%04x 0x%04x\n", indent + 14, " ", cfg.vendor(), cfg.device());
 #ifdef CONFIG_L4IO_PCIID_DB
