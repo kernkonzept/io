@@ -82,6 +82,7 @@ Generic_bridge::check_bus_config()
   b |= static_cast<l4_uint32_t>(num) << 8;
   b |= static_cast<l4_uint32_t>(subordinate) << 16;
 
+  // Write Config::Primary, Config::Secondary and Config::Subordinate.
   c.write(Config::Primary, b);
 }
 
