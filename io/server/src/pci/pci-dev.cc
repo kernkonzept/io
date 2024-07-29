@@ -471,6 +471,11 @@ void
 Dev::discover_pcie_caps()
 {
   handle_ext_cap(Ari_cap::Id, Dev::handle_ari_cap);
+#ifdef CONFIG_L4IO_PCI_SRIOV
+  // Before handling SR-IOV, first the ARI cap must have been handled, as SR-IOV
+  // depends on ARI forwarding being configured.
+  handle_ext_cap(Sr_iov_cap::Id, Dev::handle_sriov_cap);
+#endif
   handle_ext_cap(Acs_cap::Id, Dev::handle_acs_cap);
 }
 

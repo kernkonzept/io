@@ -16,8 +16,9 @@
 # include <pciids.h>
 #endif
 
-#include "vpci_proxy_dev.h"
 #include "virt/vbus_factory.h"
+#include "vpci_proxy_dev.h"
+#include "vpci_sriov.h"
 
 namespace Vi {
 
@@ -99,7 +100,12 @@ Pci_proxy_dev::scan_pcie_caps()
           break;
 
         case Hw::Pci::Sr_iov_cap::Id:
+#ifdef CONFIG_L4IO_PCI_SRIOV
+          add_pcie_cap(new Sr_iov_proxy_cap(_hwf, cap.header(), offset, offset));
+          offset = cap.next();
+#else
           offset = _skip_pcie_cap(cap, Hw::Pci::Sr_iov_cap::Size);
+#endif
           continue;
         case Hw::Pci::Extended_cap::Acs:
           offset = _skip_pcie_cap(cap, 8);

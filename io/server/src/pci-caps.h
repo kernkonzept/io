@@ -117,6 +117,7 @@ struct Sr_iov_cap : Capability
   using Supported_ps = R<0x1C, l4_uint32_t>;
   using System_ps    = R<0x20, l4_uint32_t>;
   using Vf_bar0      = R<0x24, l4_uint32_t>;
+  using Vf_bar5      = R<0x38, l4_uint32_t>;
   using Vf_migration_state = R<0x3C, l4_uint32_t>;
 };
 

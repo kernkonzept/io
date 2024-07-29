@@ -19,6 +19,16 @@ config L4IO_PCIID_DB
 	depends on L4IO_PCI
 	default y
 
+config L4IO_PCI_SRIOV
+	bool "Include support for PCI SR-IOV devices"
+	depends on EXPERIMENTAL
+	depends on L4IO_PCI
+
+config L4IO_PCI_SRIOV_MAX_VFS
+	int "Maximum number of virtual functions (VFs)"
+	depends on L4IO_PCI_SRIOV
+	default 255
+
 menu "Device drivers"
 
 source "server/src/drivers/Kconfig.L4"

@@ -159,6 +159,7 @@ private:
   void handle_ext_cap(unsigned char id, Ext_cap_handler handler);
 
   static bool handle_ari_cap(Dev *dev, Extended_cap cap);
+  static bool handle_sriov_cap(Dev *dev, Extended_cap cap);
   static bool handle_acs_cap(Dev *dev, Extended_cap cap);
 
 public:
@@ -280,11 +281,13 @@ public:
   unsigned segment_nr() const override
   { return bridge()->segment(); }
 
+protected:
+  void discover_pci_caps();
+  void discover_pcie_caps();
+
 private:
   int discover_bar(int bar);
   void discover_expansion_rom();
-  void discover_pci_caps();
-  void discover_pcie_caps();
 };
 
 Dev *
