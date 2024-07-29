@@ -312,10 +312,7 @@ public:
     else
       cap_read(reg, &res, order);
 
-    if (order < Hw::Pci::Cfg_long)
-      res &= (1UL << ((1UL << order) * 8)) - 1;
-
-    *v = res;
+    *v = res & cfg_o_to_mask(order);
     return 0;
   }
 
