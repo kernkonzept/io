@@ -27,7 +27,6 @@
 #include "virt/vbus.h"
 #include "virt/vbus_factory.h"
 #include "phys_space.h"
-#include "ux.h"
 #include "cfg.h"
 
 #include <cstdio>
@@ -339,20 +338,13 @@ run(int argc, char * const *argv)
                                           return true;
                                         });
 
-  bool is_ux = l4util_kip_kernel_is_ux(l4re_kip());
   //res_get_ioport(0xcf8, 4);
   res_get_ioport(0, 16);
 
-  if (!is_ux)
-    acpica_init();
+  acpica_init();
 #endif
 
   system_bus()->plugin();
-
-#if defined(ARCH_x86) || defined(ARCH_amd64)
-  if (is_ux)
-    ux_setup(system_bus());
-#endif
 
   lua_State *lua = luaL_newstate();
 
