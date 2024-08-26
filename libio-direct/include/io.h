@@ -19,7 +19,7 @@
 #include <l4/sys/linkage.h>
 #include <l4/io/types.h>
 
-EXTERN_C_BEGIN
+__BEGIN_DECLS
 
 /**
  * \defgroup api_l4io IO interface
@@ -219,4 +219,4 @@ L4_CV int L4_EXPORT
 l4io_has_resource(enum l4io_resource_types_t type,
                   l4_addr_t start, l4_addr_t end);
 
-EXTERN_C_END
+__END_DECLS

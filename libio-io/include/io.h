@@ -17,7 +17,7 @@
 #include <l4/sys/linkage.h>
 #include <l4/io/types.h>
 
-EXTERN_C_BEGIN
+__BEGIN_DECLS
 
 /**
  * \defgroup api_l4io IO interface
@@ -258,4 +258,4 @@ L4_INLINE
 l4io_device_handle_t l4io_get_root_device(void)
 { return 0; }
 
-EXTERN_C_END
+__END_DECLS
