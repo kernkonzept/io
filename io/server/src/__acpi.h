@@ -28,4 +28,5 @@ struct acpica_pci_irq
 
 int acpica_init();
 int acpi_ecdt_scan();
+void acpi_late_setup();
 

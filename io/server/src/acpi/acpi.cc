@@ -876,6 +876,10 @@ int acpica_init()
   return 0;
 }
 
+void acpi_late_setup()
+{
+  Hw::Acpi::setup_iommus();
+}
 
 
 

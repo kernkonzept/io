@@ -312,4 +312,8 @@ public:
   Extended_cap_handler_t() { Dev::add_ext_cap_handler(this); }
 };
 
+Dev *
+find_pci_device(l4_uint16_t seg, l4_uint8_t bus, l4_uint8_t devnr,
+                l4_uint8_t fn);
+
 } }

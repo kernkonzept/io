@@ -128,6 +128,7 @@ namespace Acpi {
 
 Hw::Pci::Platform_adapter_if *setup_pci_platform();
 void register_sci(Io_irq_pin *sci);
+void setup_iommus();
 
 }
 }

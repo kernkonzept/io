@@ -828,4 +828,74 @@ Dev::dump(int indent) const
 #endif
 }
 
+Dev *
+find_pci_device(l4_uint16_t seg, l4_uint8_t bus, l4_uint8_t devnr,
+                l4_uint8_t fn)
+{
+  // start iterating at the root of the device tree to find the device with
+  // the Pci::Dev feature that matches the PCI address.
+  Hw::Device *root = system_bus();
+  Hw::Device *dev = root->children();
+  Hw::Device *peek_dev = dev;
+  bool parent_move = false;
+
+  d_printf(DBG_DEBUG,
+           "Start search for %04x::%02x:%x.%x at root dev: %p (name: %s, hid: "
+           "%s), child dev %p\n",
+           seg, bus, devnr, fn, root, root->name(), root->hid(), dev);
+
+  while (dev != root)
+    {
+      d_printf(DBG_DEBUG,
+               "> Step: current dev %p (name: %s, hid: %s), parent_move %i\n",
+               dev, dev->name(), dev->hid(), parent_move);
+      if (parent_move)
+        {
+          // parent already checked
+          peek_dev = dev->next();
+          if (!peek_dev)
+            {
+              dev = dev->parent();
+              continue; // skip check and back up
+            }
+          else
+            {
+              parent_move = false;
+              dev = peek_dev;
+            }
+        }
+
+      // do check
+      Hw::Pci::Dev *pdev = dev->find_feature<Hw::Pci::Dev>();
+      if (pdev != nullptr)
+        {
+          if (pdev->segment_nr() == seg && pdev->bus_nr() == bus
+              && pdev->device_nr() == devnr && pdev->function_nr() == fn)
+            {
+              d_printf(DBG_DEBUG, "\tPCI Dev found for %04x::%02x:%x.%x: %p\n",
+                     pdev->segment_nr(), bus, devnr, fn, pdev);
+              return pdev;
+            }
+          else
+            d_printf(DBG_DEBUG, "\tPCI dev is: %04x::%02x:%x.%x\n",
+                     pdev->segment_nr(), pdev->bus_nr(), pdev->device_nr(),
+                     pdev->function_nr());
+        }
+
+      peek_dev = dev->children();
+      if (!peek_dev)
+        // no children
+        peek_dev = dev->next();
+      if (!peek_dev)
+        {
+          // no children and no sibling
+          peek_dev = dev->parent();
+          parent_move = true;
+        }
+      dev = peek_dev;
+    }
+
+  return nullptr;
+}
+
 } }
