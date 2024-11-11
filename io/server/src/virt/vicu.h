@@ -151,7 +151,6 @@ private:
   protected:
     int _unbind(bool deleted);
 //    int share(L4Re::Util::Auto_cap<L4::Irq>::Cap const &irq);
-    L4::Cap<L4::Irq_mux> allocate_master_irq();
   };
 
   Sw_irq_pin *get_msi_pin(unsigned msin);

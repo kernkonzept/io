@@ -17,7 +17,6 @@ public:
   enum Flags
   {
     F_shareable = 0x1,
-    F_chained   = 0x2,
   };
   typedef L4Re::Util::Ref_cap<L4::Triggerable>::Cap Triggerable;
 
@@ -42,9 +41,6 @@ public:
 
   void set_shareable(bool s)
   { chg_flags(s, F_shareable); }
-
-  void set_chained(bool s)
-  { chg_flags(s, F_chained); }
 
 public:
   struct Msi_src
@@ -73,7 +69,6 @@ public:
 
   bool shared() const { return _max_sw_irqs > 1; }
   bool shareable() const { return _flags & F_shareable; }
-  bool chained() const { return _flags & F_chained; }
 };
 
 inline Io_irq_pin::~Io_irq_pin() {}

@@ -289,22 +289,6 @@ Sw_icu::Sw_irq_pin::set_mode(l4_umword_t mode)
   return _master->set_mode(mode);
 }
 
-L4::Cap<L4::Irq_mux>
-Sw_icu::Sw_irq_pin::allocate_master_irq()
-{
-  assert (_master->shared());
-  Ref_cap<L4::Irq_mux>::Cap lirq = chkcap(L4Re::Util::cap_alloc.alloc<L4::Irq_mux>(),
-      "allocating IRQ capability");
-
-  if (0)
-    printf("IRQ mode = %x -> %x\n", type(), l4_type());
-
-  chksys(L4Re::Env::env()->factory()->create(lirq.get()), "allocating IRQ");
-  chksys(_master->bind(lirq, l4_type()), "binding IRQ");
-  _master->set_chained(true);
-  return lirq.get();
-}
-
 bool
 Sw_icu::Sw_irq_pin::bound()
 {
@@ -350,46 +334,15 @@ Sw_icu::Sw_irq_pin::bind(L4::Cap<void> rc)
 
   irq.get().move(L4::cap_cast<L4::Triggerable>(rc));
 
-  unsigned swis = _master->sw_irqs();
-  if (swis == 0)
+  if (_master->sw_irqs() == 0)
     return _direct_bind(irq);
   else if (!_master->shared())
     return -L4_EBUSY;
-  else if (swis == 1 && !_master->chained())
+  else
     {
-      // need to switch to IRQ chaining
-      Triggerable old_irq = _master->irq();
-      if (l4_error(old_irq.validate()) != 1)
-        {
-          // so the old IRQ object that used to be attached to this IRQ
-          // is gone (deleted), remove the last traces and directly bind
-          // the new IRQ
-          _master->unbind(true);
-          return _direct_bind(irq);
-        }
-
-      _master->unbind(false);
-
-      L4::Cap<L4::Irq_mux> mux = allocate_master_irq();
-      assert (_master->chained());
-      d_printf(DBG_DEBUG2, "IRQ %d -> proxy -> %d clients\n", irqn(), swis);
-      int err = l4_error(mux->chain(old_irq.get()));
-      if (err == -L4_EINVAL)
-        {
-          // returns -EINVAL when old_irq is somehow invalid, not existent
-          // this might happen in the case someone deleted the old IRQ object
-          // after the test above
-          _unbind(false); // remove the Irq_mux again
-          return _direct_bind(irq);
-        }
+      d_printf(DBG_ERR, "IRQ %d: chaining not supported\n", irqn());
+      return -L4_EBUSY;
     }
-
-  d_printf(DBG_DEBUG2, "IRQ %d -> proxy -> %d clients\n", irqn(), _master->sw_irqs() + 1);
-  L4Re::chksys(L4::cap_cast<L4::Irq_mux>(_master->irq())->chain(irq.get()), "attach");
-  _irq = irq;
-  _master->inc_sw_irqs();
-
-  return 0;
 }
 
 int
@@ -398,11 +351,7 @@ Sw_icu::Sw_irq_pin::_unbind(bool deleted)
   int err = 0;
   _master->dec_sw_irqs();
   if (_master->sw_irqs() == 0)
-    {
-      _master->unbind(!_master->chained() && deleted);
-      if (_master->chained())
-        _master->set_chained(false);
-    }
+    _master->unbind(deleted);
 
   _irq = L4::Cap<L4::Irq>::Invalid;
   _state &= S_user_mask;
