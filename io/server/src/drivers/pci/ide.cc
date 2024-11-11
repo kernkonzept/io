@@ -3,9 +3,7 @@
  *               Alexander Warg <alexander.warg@kernkonzept.com>
  *               Steffen Liebergeld <steffen.liebergeld@kernkonzept.com>
  *
- * This file is part of TUD:OS and distributed under the terms of the
- * GNU General Public License 2.
- * Please see the COPYING-GPL-2 file for details.
+ * License: see LICENSE.spdx (in this directory or the directories above)
  */
 #include "cfg.h"
 #include "debug.h"

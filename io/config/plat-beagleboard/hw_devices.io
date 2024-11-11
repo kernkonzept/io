@@ -2,9 +2,7 @@
 --
 -- (c) 2008-2009 Technische Universität Dresden
 --          2014 Matthias Lange <matthias.lange@kernkonzept.com>
--- This file is part of TUD:OS and distributed under the terms of the
--- GNU General Public License 2.
--- Please see the COPYING-GPL-2 file for details.
+-- License: see LICENSE.spdx (in this directory or the directories above)
 --
 
 -- OMAP3 (OMAP3EVM, Beagleboard)

@@ -1,9 +1,10 @@
 -- vim:set ft=lua:
 --
--- SPDX-License-Identifier: GPL-2.0-only OR License-Ref-kk-custom
 -- Copyright (C) 2023 Kernkonzept GmbH.
 -- Author(s): Christian Pötzsch <christian.poetzsch@kernkonzept.com>
 --            Frank Mehnert <frank.mehnert@kernkonzept.com>
+--
+-- License: see LICENSE.spdx (in this directory or the directories above)
 --
 -- NXP/Freescale i.MX8
 

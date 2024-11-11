@@ -1,7 +1,8 @@
 -- vim:set ft=lua:
 --
--- SPDX-License-Identifier: GPL-2.0-only OR License-Ref-kk-custom
 -- Copyright (C) 2021-2023 Stephan Gerhold <stephan@gerhold.net>
+--
+-- License: see LICENSE.spdx (in this directory or the directories above)
 --
 -- Qualcomm Snapdragon 800 (MSM8974)
 

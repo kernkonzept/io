@@ -1,8 +1,6 @@
 -- vim:set ft=lua:
 -- (c) 2014 Kernkonzept GmbH
--- This file is distributed under the terms of the
--- GNU General Public License 2.
--- Please see the COPYING-GPL-2 file for details.
+-- License: see LICENSE.spdx (in this directory or the directories above)
 
 local Res = Io.Res
 local Hw = Io.Hw

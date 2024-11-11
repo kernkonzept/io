@@ -1,8 +1,7 @@
 /*
  * (c) 2014 Steffen Liebergeld <steffen.liebergeld@kernkonzept.com>
  *
- * This file is licensed under the terms of the Gnu General Public license 2.
- * See file COPYING-GPL-2 for details.
+ * License: see LICENSE.spdx (in this directory or the directories above)
  */
 #include "io_acpi.h"
 #include "__acpi.h"

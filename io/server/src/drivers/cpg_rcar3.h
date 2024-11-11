@@ -1,11 +1,9 @@
-// SPDX-License-Identifier: GPL-2.0-only or License-Ref-kk-custom
 /*
  * Copyright (C) 2019-2022 Kernkonzept GmbH.
  * Author(s): Frank Mehnert <frank.mehnert@kernkonzept.com>
  *            Matthias Lange <matthias.lange@kernkonzept.com>
  *
- * This file is distributed under the terms of the GNU General Public
- * License, version 2. Please see the COPYING-GPL-2 file for details.
+ * License: see LICENSE.spdx (in this directory or the directories above)
  */
 
 #pragma once

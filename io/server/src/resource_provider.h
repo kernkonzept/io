@@ -1,12 +1,10 @@
-// SPDX-License-Identifier: GPL-2.0-only or License-Ref-kk-custom
 /*
  * Copyright (C) 2010 Technische Universität Dresden (Germany)
  * Author(s): Adam Lackorzynski <adam@os.inf.tu-dresden.de>,
  *            Alexander Warg <warg@os.inf.tu-dresden.de>
  * Copyright (C) 2019 Kernkonzept GmbH.
  *
- * This file is distributed under the terms of the GNU General Public
- * License, version 2.  Please see the COPYING-GPL-2 file for details.
+ * License: see LICENSE.spdx (in this directory or the directories above)
  */
 #pragma once
 

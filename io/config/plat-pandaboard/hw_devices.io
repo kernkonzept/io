@@ -3,8 +3,7 @@
 -- Copyright (C) 2014 Kernkonzept GmbH.
 -- Author(s): Matthias Lange <matthias.lange@kernkonzept.com>
 --
--- This file is distributed under the terms of the GNU General Public
--- License, version 2.  Please see the COPYING-GPL-2 file for details.
+-- License: see LICENSE.spdx (in this directory or the directories above)
 --
 -- OMAP4 (OMAP4, Pandaboard)
 

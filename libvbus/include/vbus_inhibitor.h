@@ -1,8 +1,7 @@
 /**
  * (c) 2014 Steffen Liebergeld <steffen.liebergeld@kernkonzept.com>
  *
- * This file is licensed under the terms of the GNU General Public License 2.
- * See the file COPYING-GPL-2 for details.
+ * License: see LICENSE.spdx (in this directory or the directories above)
  */
 #pragma once
 

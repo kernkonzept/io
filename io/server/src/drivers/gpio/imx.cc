@@ -1,9 +1,9 @@
-/* SPDX-License-Identifier: GPL-2.0-only or License-Ref-kk-custom */
 /*
  * Copyright (C) 2021-2023 Kernkonzept GmbH.
  * Author(s): Adam Lackorzynski <adam.lackorzynski@kernkonzept.com>
  *            Christian Pötzsch <christian.poetzsch@kernkonzept.com>
  *
+ * License: see LICENSE.spdx (in this directory or the directories above)
  */
 
 #include "debug.h"
