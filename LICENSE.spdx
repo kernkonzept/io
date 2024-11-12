@@ -16,11 +16,13 @@ Created: 2018-11-13T00:00:00Z
 PackageName: io
 SPDXID: SPDXRef-io
 PackageOriginator: Organization: Kernkonzept GmbH (info@kernkonzept.com)
-PackageLicenseDeclared: GPL-2.0-only
-PackageLicenseConcluded: GPL-2.0-only
+PackageLicenseDeclared: MIT
+PackageLicenseConcluded: MIT
 FilesAnalyzed: true
 PackageCopyrightText: NOASSERTION
 PackageDownloadLocation: NOASSERTION
+PackageComment: <text>If CONFIG_L4IO_PCIID_DB is set, then io-libpciids is
+pulled in and the license of this package changes to GPL-2.0.</text>
 
 PackageName: io-libpciids
 SPDXID: SPDXRef-io-libpciids
@@ -31,6 +33,20 @@ FilesAnalyzed: true
 PackageCopyrightText: NOASSERTION
 PackageDownloadLocation: NOASSERTION
 
+FileName: ./io/server/libpciids/src/gen-devlist.c
+SPDXID: SPDXRef-libpciids-gen-devlist.c
+LicenseConcluded: GPL-2.0-only
+LicenseInfoInFile: NOASSERTION
+FileCopyrightText: NOASSERTION
+PackageComment: <text>This is a separate tool and does not influence the
+license of io-libpciids</text>
+
+FileName: ./io/server/libpciids/src/names.c
+SPDXID: SPDXRef-libpciids-names.c
+LicenseConcluded: GPL-2.0-only
+LicenseInfoInFile: NOASSERTION
+FileCopyrightText: NOASSERTION
+
 FileName: ./io/server/libpciids/src/pci.ids
 SPDXID: SPDXRef-libpciids-pci.ids
 LicenseConcluded: (GPL-2.0-or-later OR BSD-3-Clause)
@@ -40,8 +56,8 @@ FileCopyrightText: NOASSERTION
 PackageName: io-libio
 SPDXID: SPDXRef-io-libio
 PackageOriginator: Organization: Kernkonzept GmbH (info@kernkonzept.com)
-PackageLicenseDeclared: GPL-2.0-only WITH GCC-exception-2.0
-PackageLicenseConcluded: GPL-2.0-only WITH GCC-exception-2.0
+PackageLicenseDeclared: MIT
+PackageLicenseConcluded: MIT
 FilesAnalyzed: false
 PackageCopyrightText: NOASSERTION
 PackageDownloadLocation: NOASSERTION
@@ -49,8 +65,8 @@ PackageDownloadLocation: NOASSERTION
 PackageName: io-libio-direct
 SPDXID: SPDXRef-io-libio-direct
 PackageOriginator: Organization: Kernkonzept GmbH (info@kernkonzept.com)
-PackageLicenseDeclared: GPL-2.0-only WITH GCC-exception-2.0
-PackageLicenseConcluded: GPL-2.0-only WITH GCC-exception-2.0
+PackageLicenseDeclared: MIT
+PackageLicenseConcluded: MIT
 FilesAnalyzed: false
 PackageCopyrightText: NOASSERTION
 PackageDownloadLocation: NOASSERTION
@@ -58,8 +74,8 @@ PackageDownloadLocation: NOASSERTION
 PackageName: io-libio-io
 SPDXID: SPDXRef-io-libio-io
 PackageOriginator: Organization: Kernkonzept GmbH (info@kernkonzept.com)
-PackageLicenseDeclared: GPL-2.0-only WITH GCC-exception-2.0
-PackageLicenseConcluded: GPL-2.0-only WITH GCC-exception-2.0
+PackageLicenseDeclared: MIT
+PackageLicenseConcluded: MIT
 FilesAnalyzed: false
 PackageCopyrightText: NOASSERTION
 PackageDownloadLocation: NOASSERTION
@@ -67,8 +83,8 @@ PackageDownloadLocation: NOASSERTION
 PackageName: io-libvbus
 SPDXID: SPDXRef-io-libvbus
 PackageOriginator: Organization: Kernkonzept GmbH (info@kernkonzept.com)
-PackageLicenseDeclared: GPL-2.0-only WITH GCC-exception-2.0
-PackageLicenseConcluded: GPL-2.0-only WITH GCC-exception-2.0
+PackageLicenseDeclared: MIT
+PackageLicenseConcluded: MIT
 FilesAnalyzed: false
 PackageCopyrightText: NOASSERTION
 PackageDownloadLocation: NOASSERTION
