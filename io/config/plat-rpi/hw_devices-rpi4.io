@@ -31,6 +31,7 @@ Io.hw_add_devices(function()
     Property.hid = "BCM2835_bsc1";
     Resource.regs = Res.mmio(0xfe804000, 0xfe804fff);
     Resource.irq = Res.irq(32 + 117, Io.Resource.Irq_type_level_high);
+    Resource.pins = Io.Gpio_resource(GPIO, 2, 3)
   end);
 
   cprman = Hw.Device(function()
