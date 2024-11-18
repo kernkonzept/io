@@ -28,7 +28,7 @@ Io.hw_add_devices(function()
 
   i2c1 = Hw.Device(function()
     compatible = {"brcm,bcm2835-i2c"};
-    Property.hid = "BCM2835_bsc2";
+    Property.hid = "BCM2835_bsc1";
     Resource.regs = Res.mmio(0xfe804000, 0xfe804fff);
     Resource.irq = Res.irq(32 + 117, Io.Resource.Irq_type_level_high);
   end);
