@@ -47,7 +47,7 @@ public:
         return;
       }
 
-    l4_umword_t p[4];
+    l4_umword_t p[4] = {};
 
     // check for OP-TEE OS
     long ret = fast_call(smc, Smc_call_trusted_os_uid, p);
