@@ -17,13 +17,13 @@ namespace Hw {
   {
   public:
     Arm_dma_device(l4_umword_t uid, l4_uint32_t adr) : Device(uid, adr)
-    { setup(); }
+    { setup_device(); }
 
     Arm_dma_device(l4_uint32_t adr) : Device(adr)
-    { setup(); }
+    { setup_device(); }
 
     Arm_dma_device() : Device()
-    { setup(); }
+    { setup_device(); }
 
     int enumerate_dma_src_ids(Dma_src_feature::Dma_src_id_cb cb) const override
     {
@@ -40,7 +40,7 @@ namespace Hw {
     }
 
   private:
-    void setup()
+    void setup_device()
     {
       register_property("iommu", &_iommu);
       register_property("sid", &_sid);
