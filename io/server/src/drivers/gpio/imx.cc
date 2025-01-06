@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2021-2023 Kernkonzept GmbH.
+ * Copyright (C) 2021-2024 Kernkonzept GmbH.
  * Author(s): Adam Lackorzynski <adam.lackorzynski@kernkonzept.com>
  *            Christian Pötzsch <christian.poetzsch@kernkonzept.com>
  *

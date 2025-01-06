@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2017, 2022-2023 Kernkonzept GmbH.
+ * Copyright (C) 2017, 2022-2024 Kernkonzept GmbH.
  * Author(s): Matthias Lange <matthias.lange@kernkonzept.com>
  *            Frank Mehnert <frank.mehnert@kernkonzept.com>
  *
