@@ -17,6 +17,7 @@ Io.hw_add_devices(function()
   MBOX = Hw.Device(function()
     compatible = {"brcm,bcm2835-mbox"};
     Property.hid = "BCM2835_mbox";
+    Property.flags = Io.Hw_device_DF_dma_supported;
     Resource.regs = Res.mmio(0xfe00b880, 0xfe00b8bf);
     Resource.irq0 = Res.irq(32 + 0x21, Io.Resource.Irq_type_level_high);
   end);
