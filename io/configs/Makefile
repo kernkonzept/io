@@ -11,6 +11,7 @@ SRC_ASSETS_IO	= plat-arm_virt/hw_devices.io \
 		  plat-omap5/hw_devices.io \
 		  plat-pandaboard/hw_devices.io \
 		  plat-rpi/hw_devices.io \
+		  plat-rpi/hw_devices-rpi4.io \
 		  plat-rv/hw_devices.io \
 		  plat-rv_pbx/hw_devices.io \
 		  plat-rv_vexpress/hw_devices.io \
