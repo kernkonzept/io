@@ -28,12 +28,29 @@ class Vtd_iommu
 {
   struct Info
   {
+    /// Range of a PCI subhierarchy with inclusive start and end.
+    struct Bus_range
+    {
+      Bus_range(l4_uint8_t s, l4_uint8_t e) : start_bus_nr(s), end_bus_nr(e) {}
+      l4_uint8_t start_bus_nr;
+      l4_uint8_t end_bus_nr;
+    };
+
     Info(l4_uint8_t idx, l4_uint64_t addr, l4_uint16_t seg, l4_uint8_t flags)
     : base_addr(addr), segment(seg), idx(idx), flags(flags)
     {}
 
     bool match_bus(l4_uint8_t b) const
-    { return start_bus_nr <= b && b <= end_bus_nr; }
+    {
+      for (Bus_range const &r : subhierarchies)
+        if (r.start_bus_nr <= b && b <= r.end_bus_nr)
+          return true;
+
+      return false;
+    }
+
+    void add_subhierarchy(l4_uint8_t start, l4_uint8_t end)
+    { subhierarchies.emplace_back(start, end); }
 
     bool pci_all() const
     { return flags & 1; }
@@ -41,22 +58,26 @@ class Vtd_iommu
     l4_uint64_t base_addr = 0;
     l4_uint16_t segment = 0;
     l4_uint8_t idx = 0;
-    l4_uint8_t start_bus_nr = 0xff;
-    l4_uint8_t end_bus_nr = 0;
     l4_uint8_t flags = 0;
+    std::vector<Bus_range> subhierarchies;
   };
 
   struct Dev_mmu
   {
-    Dev_mmu( l4_uint8_t d, l4_uint8_t fn, Info const &mmu)
-    : devfn(d << 3 | fn), iommu(mmu)
+    Dev_mmu(l4_uint16_t b, l4_uint8_t d, l4_uint8_t fn, Info const &mmu)
+    : bus(b), devfn(d << 3 | fn), iommu(mmu)
     {}
 
+    l4_uint16_t bus;
     l4_uint8_t devfn;
     Info const &iommu;
 
     bool match(l4_uint16_t seg, l4_uint8_t b, l4_uint8_t df) const
-    { return seg == iommu.segment && iommu.match_bus(b) && df == devfn; }
+    {
+      return    seg == iommu.segment
+             && b == bus
+             && df == devfn;
+    }
 
     l4_uint8_t iommu_idx() const
     { return iommu.idx; }
@@ -167,7 +188,6 @@ void Vtd_iommu::parse_drhd_dev_scope(Dev_scope_vect const &devs,
       switch (dev_scope.type)
         {
         case Dmar_dev_scope::Pci_endpoint:
-          iommu.start_bus_nr = cxx::min(bus, iommu.start_bus_nr);
           if (path_length > 1)
             {
               auto bdf = find_pci_bdf(segment, bus, path_it, dev_scope.end());
@@ -178,8 +198,7 @@ void Vtd_iommu::parse_drhd_dev_scope(Dev_scope_vect const &devs,
                 break;
             }
 
-          iommu.end_bus_nr = cxx::max(bus, iommu.end_bus_nr);
-          _devs.emplace_back(dev, fn, iommu);
+          _devs.emplace_back(bus, dev, fn, iommu);
           break;
 
         case Dmar_dev_scope::Pci_subhierarchy:
@@ -208,19 +227,14 @@ void Vtd_iommu::parse_drhd_dev_scope(Dev_scope_vect const &devs,
                 break;
               }
 
-            iommu.start_bus_nr = cxx::min(bus, iommu.start_bus_nr);
-            iommu.end_bus_nr = cxx::max(iommu.end_bus_nr, bridge->subordinate);
+            iommu.add_subhierarchy(bus, bridge->subordinate);
           }
           break;
 
-        case Dmar_dev_scope::Io_apic: // fall-through
-        case Dmar_dev_scope::Hpet_msi: // fall-through
-        case Dmar_dev_scope::Acpi_namespace_device:
-          // Parse the dev_scope's bus number into the iommu structure to not
-          // have misleading debug output printed.
-          iommu.start_bus_nr = cxx::min(bus, iommu.start_bus_nr);
-          iommu.end_bus_nr = cxx::max(bus, iommu.end_bus_nr);
-          break;
+        // Unhandled types:
+        // case Dmar_dev_scope::Io_apic:
+        // case Dmar_dev_scope::Hpet_msi:
+        // case Dmar_dev_scope::Acpi_namespace_device:
         default:
           break;
         }
@@ -263,10 +277,6 @@ bool Vtd_iommu::probe()
       // next IOMMU
       ++count;
     }
-
-  for (Info const &i: _iommus)
-    d_printf(DBG_DEBUG, "iommu 0x%llx: [0x%x : 0x%x , %i]\n", i.base_addr,
-             i.start_bus_nr, i.end_bus_nr, i.flags);
 
   return count > 0;
 }
