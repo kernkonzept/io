@@ -51,6 +51,14 @@ Io.hw_add_devices(function()
     Resource.irq = Res.irq(32 + 126, Io.Resource.Irq_type_level_high);
   end);
 
+  SPI = Hw.Device(function()
+    compatible = {"brcm,brcm2835-spi"};
+    Property.hid = "BCM2835_spi";
+    Resource.regs = Res.mmio(0xFE204000, 0xFE204000 + 0x200 - 1);
+    Resource.irq0 = Res.irq(32 + 118, Io.Resource.Irq_type_level_high);
+    Resource.pins = Io.Gpio_resource(GPIO, 7, 11);
+  end);
+
   dma_7e007000 = Io.Hw.Device(function()
     compatible    = { "brcm,bcm2835-dma" };
     --                      [0x7e007000, 0x00000b00]
