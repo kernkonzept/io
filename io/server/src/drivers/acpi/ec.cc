@@ -58,11 +58,12 @@ struct Acpi_ec : Acpi_dev
 
   static bool discover_ecdt()
   {
-    ACPI_TABLE_ECDT *ecdt;
-    ACPI_STATUS status = AcpiGetTable(ACPI_STRING(ACPI_SIG_ECDT), 1, (ACPI_TABLE_HEADER**)&ecdt);
+    ACPI_TABLE_HEADER *ecdt_hdr;
+    ACPI_STATUS status = AcpiGetTable(ACPI_STRING(ACPI_SIG_ECDT), 1, &ecdt_hdr);
     if (ACPI_FAILURE(status))
       return false;
 
+    ACPI_TABLE_ECDT *ecdt = reinterpret_cast<ACPI_TABLE_ECDT *>(ecdt_hdr);
     d_printf(DBG_DEBUG, "ACPI: EC via ECDT found\n");
 
     Acpi_ec *ec = new Acpi_ec(ACPI_ROOT_OBJECT);
