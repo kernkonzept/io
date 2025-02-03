@@ -881,7 +881,9 @@ int acpica_init()
 
 void acpi_late_setup()
 {
+#if defined(ARCH_x86) || defined(ARCH_amd64)
   Hw::Acpi::setup_iommus();
+#endif
 }
 
 

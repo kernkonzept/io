@@ -26,16 +26,17 @@ struct acpica_pci_irq
   unsigned char polarity;
 };
 
-#if defined(ARCH_x86) || defined(ARCH_amd64) || defined(ARCH_arm64)
+#ifdef CONFIG_L4IO_ACPI
 int acpica_init();
+void acpi_late_setup();
 #else
 static inline int acpica_init() { return 0; }
+static inline void acpi_late_setup() {}
 #endif
 
-#if defined(ARCH_x86) || defined(ARCH_amd64)
+#if defined(CONFIG_L4IO_ACPI) && (defined(ARCH_x86) || defined(ARCH_amd64))
 int acpi_ecdt_scan();
 #else
 static inline int acpi_ecdt_scan() { return 0; }
 #endif
 
-void acpi_late_setup();

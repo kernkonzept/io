@@ -511,9 +511,7 @@ run(int argc, char * const *argv)
   for (; argfileidx < argc; ++argfileidx)
     read_config(argv[argfileidx], lua);
 
-#if defined(ARCH_x86) || defined(ARCH_amd64)
   acpi_late_setup();
-#endif
 
   if (dlevel(DBG_DEBUG))
     {
