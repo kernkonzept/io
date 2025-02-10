@@ -10,6 +10,7 @@
 
 #include "main.h"
 #include "cfg.h"
+#include <pci-caps.h>
 // -----
 
 // for the printf in discover_pci_caps
@@ -20,8 +21,6 @@
 #endif
 
 namespace Hw { namespace Pci {
-
-cxx::H_list_t<Extended_cap_handler> Dev::_ext_cap_handlers;
 
 void
 Config_cache::_discover_pci_caps(Config const &c)
@@ -461,29 +460,17 @@ Dev::discover_expansion_rom()
 }
 
 void
+Dev::handle_ext_cap(unsigned char id, Ext_cap_handler handler)
+{
+  auto cap = find_ext_cap(id);
+  if (cap.is_valid())
+    handler(this, cap);
+}
+
+void
 Dev::discover_pcie_caps()
 {
-  l4_uint16_t offset = 0x100;
-
-  for (;;)
-    {
-      Hw::Pci::Extended_cap cap = config(offset);
-
-      if (offset == 0x100 && !cap.is_valid())
-        return;
-
-      l4_uint32_t hdr = cap.header();
-
-      for (auto h: _ext_cap_handlers)
-        {
-          if (h->match(hdr & 0xfffff))
-            h->handle_cap(this, cap);
-        }
-
-      offset = cap.next();
-      if (!offset)
-        return;
-    }
+  handle_ext_cap(Acs_cap::Id, Dev::handle_acs_cap);
 }
 
 void
