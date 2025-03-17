@@ -1,0 +1,1039 @@
+-- vi:ft=lua
+
+local Res = Io.Res
+local Hw = Io.Hw
+local Vi = Io.Vi
+local root = Io.system_bus();
+local sb = {}
+
+local add_children = Io.Dt.add_children
+
+add_children(Io.system_bus(), function()
+  serial_e6e68000 = Hw.Device(function() -- scif1, serial1
+    compatible = { "renesas,scif-r8a7796", "renesas,rcar-gen3-scif", "renesas,scif" };
+    Property.hid = "renesas,scif-r8a7796";
+    Resource.reg0 = Res.mmio(0xe6e68000, 0xe6e68063);
+    Resource.irq0 = Io.Res.irq(32 + 153, Io.Resource.Irq_type_level_high);
+  end)
+
+  serial_e6e88000 = Hw.Device(function() -- scif2, serial0
+    compatible = { "renesas,scif-r8a7796", "renesas,rcar-gen3-scif", "renesas,scif" };
+    Property.hid = "renesas,scif-r8a7796";
+    Resource.reg0 = Res.mmio(0xe6e88000, 0xe6e88063);
+    Resource.irq0 = Io.Res.irq(32 + 164, Io.Resource.Irq_type_level_high);
+  end)
+
+  sdhi0 = Hw.Device(function()
+    compatible = "renesas,sdhi-r8a7796";
+    Property.hid = "renesas,sdhi-r8a7796";
+    Resource.reg0 = Res.mmio(0xee100000, 0xee101fff);
+    Resource.irq0 = Io.Res.irq(32 + 165, Io.Resource.Irq_type_level_high);
+  end)
+
+  sdhi1 = Hw.Device(function()
+    compatible = "renesas,sdhi-r8a7796";
+    Property.hid = "renesas,sdhi-r8a7796";
+    Resource.reg0 = Res.mmio(0xee120000, 0xee121fff);
+    Resource.irq0 = Io.Res.irq(32 + 166, Io.Resource.Irq_type_level_high);
+  end)
+
+  sdhi2 = Hw.Device(function()
+    compatible = "renesas,sdhi-r8a7796";
+    Property.hid = "renesas,sdhi-r8a7796";
+    Resource.reg0 = Res.mmio(0xee140000, 0xee141fff);
+    Resource.irq0 = Io.Res.irq(32 + 167, Io.Resource.Irq_type_level_high);
+  end)
+
+  sdhi3 = Hw.Device(function()
+    compatible = "renesas,sdhi-r8a7796";
+    Property.hid = "renesas,sdhi-r8a7796";
+    Resource.reg0 = Res.mmio(0xee160000, 0xee161fff);
+    Resource.irq0 = Io.Res.irq(32 + 168, Io.Resource.Irq_type_level_high);
+  end)
+
+  avb = Hw.Device(function()
+    compatible = { "renesas,etheravb-r8a7796", "renesas,etheravb-rcar-gen3" };
+    Property.hid = "avb";
+    Resource.reg0 = Res.mmio(0xe6800000, 0xe68007ff);
+    Resource.reg1 = Res.mmio(0xe6a00000, 0xe6a0ffff);
+    Resource.irq0 = Io.Res.irq(32 + 39, Io.Resource.Irq_type_level_high);
+    Resource.irq1 = Io.Res.irq(32 + 40, Io.Resource.Irq_type_level_high);
+    Resource.irq2 = Io.Res.irq(32 + 41, Io.Resource.Irq_type_level_high);
+    Resource.irq3 = Io.Res.irq(32 + 42, Io.Resource.Irq_type_level_high);
+    Resource.irq4 = Io.Res.irq(32 + 43, Io.Resource.Irq_type_level_high);
+    Resource.irq5 = Io.Res.irq(32 + 44, Io.Resource.Irq_type_level_high);
+    Resource.irq6 = Io.Res.irq(32 + 45, Io.Resource.Irq_type_level_high);
+    Resource.irq7 = Io.Res.irq(32 + 46, Io.Resource.Irq_type_level_high);
+    Resource.irq8 = Io.Res.irq(32 + 47, Io.Resource.Irq_type_level_high);
+    Resource.irq9 = Io.Res.irq(32 + 48, Io.Resource.Irq_type_level_high);
+    Resource.irqA = Io.Res.irq(32 + 49, Io.Resource.Irq_type_level_high);
+    Resource.irqB = Io.Res.irq(32 + 50, Io.Resource.Irq_type_level_high);
+    Resource.irqC = Io.Res.irq(32 + 51, Io.Resource.Irq_type_level_high);
+    Resource.irqD = Io.Res.irq(32 + 52, Io.Resource.Irq_type_level_high);
+    Resource.irqE = Io.Res.irq(32 + 53, Io.Resource.Irq_type_level_high);
+    Resource.irqF = Io.Res.irq(32 + 54, Io.Resource.Irq_type_level_high);
+    Resource.irqG = Io.Res.irq(32 + 55, Io.Resource.Irq_type_level_high);
+    Resource.irqH = Io.Res.irq(32 + 56, Io.Resource.Irq_type_level_high);
+    Resource.irqI = Io.Res.irq(32 + 57, Io.Resource.Irq_type_level_high);
+    Resource.irqJ = Io.Res.irq(32 + 58, Io.Resource.Irq_type_level_high);
+    Resource.irqK = Io.Res.irq(32 + 59, Io.Resource.Irq_type_level_high);
+    Resource.irqL = Io.Res.irq(32 + 60, Io.Resource.Irq_type_level_high);
+    Resource.irqM = Io.Res.irq(32 + 61, Io.Resource.Irq_type_level_high);
+    Resource.irqN = Io.Res.irq(32 + 62, Io.Resource.Irq_type_level_high);
+    Resource.irqO = Io.Res.irq(32 + 63, Io.Resource.Irq_type_level_high);
+  end)
+
+  sysc = Hw.Device(function()
+    compatible = "renesas,r8a7796-sysc";
+    Property.hid = "renesas,r8a7796-sysc";
+    Resource.reg0 = Res.mmio(0xe6180000, 0xe61803ff);
+  end)
+
+  prr = Hw.Device(function()
+    compatible = "renesas,prr";
+    Property.hid = "renesas,prr";
+    Resource.reg0 = Res.mmio(0xfff00000, 0xfff00fff);
+  end)
+
+  pfc = Hw.Device(function()
+    compatible = "renesas,pfc-r8a7796";
+    Property.hid = "renesas,pfc-r8a7796";
+    Resource.reg0 = Res.mmio(0xe6060000, 0xe606050b);
+  end)
+
+  rst = Hw.Device(function()
+    compatible = "renesas,r8a7796-rst";
+    Property.hid = "renesas,r8a7796-rst";
+    Resource.reg0 = Res.mmio(0xe6160000, 0xe61601ff);
+  end)
+
+  cpg = Hw.Device(function()
+    compatible = "renesas,r8a7796-cpg-mssr";
+    Property.hid = "renesas,r8a7796-cpg-mssr";
+    Resource.reg0 = Res.mmio(0xe6150000, 0xe6150fff);
+  end)
+
+  dmac0 = Hw.Device(function()
+    compatible = { "renesas,dmac-r8a7796", "renesas,rcar-dmac" };
+    Property.hid = "renesas,dmac-r8a7796";
+    Resource.reg0 = Res.mmio(0xe6700000, 0xe670ffff);
+    Resource.irq0 = Io.Res.irq(32 + 199, Io.Resource.Irq_type_level_high);
+    Resource.irq1 = Io.Res.irq(32 + 200, Io.Resource.Irq_type_level_high);
+    Resource.irq2 = Io.Res.irq(32 + 201, Io.Resource.Irq_type_level_high);
+    Resource.irq3 = Io.Res.irq(32 + 202, Io.Resource.Irq_type_level_high);
+    Resource.irq4 = Io.Res.irq(32 + 203, Io.Resource.Irq_type_level_high);
+    Resource.irq5 = Io.Res.irq(32 + 204, Io.Resource.Irq_type_level_high);
+    Resource.irq6 = Io.Res.irq(32 + 205, Io.Resource.Irq_type_level_high);
+    Resource.irq7 = Io.Res.irq(32 + 206, Io.Resource.Irq_type_level_high);
+    Resource.irq8 = Io.Res.irq(32 + 207, Io.Resource.Irq_type_level_high);
+    Resource.irq9 = Io.Res.irq(32 + 208, Io.Resource.Irq_type_level_high);
+    Resource.irqA = Io.Res.irq(32 + 209, Io.Resource.Irq_type_level_high);
+    Resource.irqB = Io.Res.irq(32 + 210, Io.Resource.Irq_type_level_high);
+    Resource.irqC = Io.Res.irq(32 + 211, Io.Resource.Irq_type_level_high);
+    Resource.irqD = Io.Res.irq(32 + 212, Io.Resource.Irq_type_level_high);
+    Resource.irqE = Io.Res.irq(32 + 213, Io.Resource.Irq_type_level_high);
+    Resource.irqF = Io.Res.irq(32 + 214, Io.Resource.Irq_type_level_high);
+    Resource.irqG = Io.Res.irq(32 + 215, Io.Resource.Irq_type_level_high);
+  end)
+
+  dmac1 = Hw.Device(function()
+    compatible = { "renesas,dmac-r8a7796", "renesas,rcar-dmac" };
+    Property.hid = "renesas,dmac-r8a7796";
+    Resource.reg0 = Res.mmio(0xe7300000, 0xe730ffff);
+    Resource.irq0 = Io.Res.irq(32 + 220, Io.Resource.Irq_type_level_high);
+    Resource.irq1 = Io.Res.irq(32 + 216, Io.Resource.Irq_type_level_high);
+    Resource.irq2 = Io.Res.irq(32 + 217, Io.Resource.Irq_type_level_high);
+    Resource.irq3 = Io.Res.irq(32 + 218, Io.Resource.Irq_type_level_high);
+    Resource.irq4 = Io.Res.irq(32 + 219, Io.Resource.Irq_type_level_high);
+    Resource.irq5 = Io.Res.irq(32 + 308, Io.Resource.Irq_type_level_high);
+    Resource.irq6 = Io.Res.irq(32 + 309, Io.Resource.Irq_type_level_high);
+    Resource.irq7 = Io.Res.irq(32 + 310, Io.Resource.Irq_type_level_high);
+    Resource.irq8 = Io.Res.irq(32 + 311, Io.Resource.Irq_type_level_high);
+    Resource.irq9 = Io.Res.irq(32 + 312, Io.Resource.Irq_type_level_high);
+    Resource.irqA = Io.Res.irq(32 + 313, Io.Resource.Irq_type_level_high);
+    Resource.irqB = Io.Res.irq(32 + 314, Io.Resource.Irq_type_level_high);
+    Resource.irqC = Io.Res.irq(32 + 315, Io.Resource.Irq_type_level_high);
+    Resource.irqD = Io.Res.irq(32 + 316, Io.Resource.Irq_type_level_high);
+    Resource.irqE = Io.Res.irq(32 + 317, Io.Resource.Irq_type_level_high);
+    Resource.irqF = Io.Res.irq(32 + 318, Io.Resource.Irq_type_level_high);
+    Resource.irqG = Io.Res.irq(32 + 319, Io.Resource.Irq_type_level_high);
+  end)
+
+  dmac2 = Hw.Device(function()
+    compatible = { "renesas,dmac-r8a7796", "renesas,rcar-dmac" };
+    Property.hid = "renesas,dmac-r8a7796";
+    Resource.reg0 = Res.mmio(0xe7310000, 0xe731ffff);
+    Resource.irq0 = Io.Res.irq(32 + 416, Io.Resource.Irq_type_level_high);
+    Resource.irq1 = Io.Res.irq(32 + 417, Io.Resource.Irq_type_level_high);
+    Resource.irq2 = Io.Res.irq(32 + 418, Io.Resource.Irq_type_level_high);
+    Resource.irq3 = Io.Res.irq(32 + 419, Io.Resource.Irq_type_level_high);
+    Resource.irq4 = Io.Res.irq(32 + 420, Io.Resource.Irq_type_level_high);
+    Resource.irq5 = Io.Res.irq(32 + 421, Io.Resource.Irq_type_level_high);
+    Resource.irq6 = Io.Res.irq(32 + 422, Io.Resource.Irq_type_level_high);
+    Resource.irq7 = Io.Res.irq(32 + 423, Io.Resource.Irq_type_level_high);
+    Resource.irq8 = Io.Res.irq(32 + 424, Io.Resource.Irq_type_level_high);
+    Resource.irq9 = Io.Res.irq(32 + 425, Io.Resource.Irq_type_level_high);
+    Resource.irqA = Io.Res.irq(32 + 426, Io.Resource.Irq_type_level_high);
+    Resource.irqB = Io.Res.irq(32 + 427, Io.Resource.Irq_type_level_high);
+    Resource.irqC = Io.Res.irq(32 + 428, Io.Resource.Irq_type_level_high);
+    Resource.irqD = Io.Res.irq(32 + 429, Io.Resource.Irq_type_level_high);
+    Resource.irqE = Io.Res.irq(32 + 430, Io.Resource.Irq_type_level_high);
+    Resource.irqF = Io.Res.irq(32 + 431, Io.Resource.Irq_type_level_high);
+    Resource.irqG = Io.Res.irq(32 + 397, Io.Resource.Irq_type_level_high);
+  end)
+
+  wdt0 = Hw.Device(function()
+    compatible = { "renesas,r8a7796-wdt", "renesas,rcar-gen3-wdt" };
+    Property.hid = "renesas,r8a7796-wdt";
+    Resource.reg0 = Res.mmio(0xe6020000, 0xe602000b);
+  end)
+
+  gpio0 = Hw.Device(function()
+    compatible = { "renesas,gpio-r8a7796", "renesas,gpio-rcar" };
+    Property.hid = "renesas,gpio-r8a7796";
+    Resource.reg0 = Res.mmio(0xe6050000, 0xe605004f);
+    Resource.irq0 = Io.Res.irq(32 + 4, Io.Resource.Irq_type_level_high);
+  end)
+
+  gpio1 = Hw.Device(function()
+    compatible = { "renesas,gpio-r8a7796", "renesas,gpio-rcar" };
+    Property.hid = "renesas,gpio-r8a7796";
+    Resource.reg0 = Res.mmio(0xe6051000, 0xe605104f);
+    Resource.irq0 = Io.Res.irq(32 + 5, Io.Resource.Irq_type_level_high);
+  end)
+
+  gpio2 = Hw.Device(function()
+    compatible = { "renesas,gpio-r8a7796", "renesas,gpio-rcar" };
+    Property.hid = "renesas,gpio-r8a7796";
+    Resource.reg0 = Res.mmio(0xe6052000, 0xe605204f);
+    Resource.irq0 = Io.Res.irq(32 + 6, Io.Resource.Irq_type_level_high);
+  end)
+
+  gpio3 = Hw.Device(function()
+    compatible = { "renesas,gpio-r8a7796", "renesas,gpio-rcar" };
+    Property.hid = "renesas,gpio-r8a7796";
+    Resource.reg0 = Res.mmio(0xe6053000, 0xe605304f);
+    Resource.irq0 = Io.Res.irq(32 + 7, Io.Resource.Irq_type_level_high);
+  end)
+
+  gpio4 = Hw.Device(function()
+    compatible = { "renesas,gpio-r8a7796", "renesas,gpio-rcar" };
+    Property.hid = "renesas,gpio-r8a7796";
+    Resource.reg0 = Res.mmio(0xe6054000, 0xe605404f);
+    Resource.irq0 = Io.Res.irq(32 + 8, Io.Resource.Irq_type_level_high);
+  end)
+
+  gpio5 = Hw.Device(function()
+    compatible = { "renesas,gpio-r8a7796", "renesas,gpio-rcar" };
+    Property.hid = "renesas,gpio-r8a7796";
+    Resource.reg0 = Res.mmio(0xe6055000, 0xe605504f);
+    Resource.irq0 = Io.Res.irq(32 + 9, Io.Resource.Irq_type_level_high);
+  end)
+
+  gpio6 = Hw.Device(function()
+    compatible = { "renesas,gpio-r8a7796", "renesas,gpio-rcar" };
+    Property.hid = "renesas,gpio-r8a7796";
+    Resource.reg0 = Res.mmio(0xe6055400, 0xe605544f);
+    Resource.irq0 = Io.Res.irq(32 + 10, Io.Resource.Irq_type_level_high);
+  end)
+
+  gpio7 = Hw.Device(function()
+    compatible = { "renesas,gpio-r8a7796", "renesas,gpio-rcar" };
+    Property.hid = "renesas,gpio-r8a7796";
+    Resource.reg0 = Res.mmio(0xe6055800, 0xe605584f);
+    Resource.irq0 = Io.Res.irq(32 + 11, Io.Resource.Irq_type_level_high);
+  end)
+
+  -- begin perf_event, shouldn't be necessary
+  pmu_a57 = Hw.Device(function()
+    compatible = "arm,cortex-a57-pmu";
+    Resource.irq0 = Io.Res.irq(32 + 72, Io.Resource.Irq_type_level_high);
+    Resource.irq0 = Io.Res.irq(32 + 73, Io.Resource.Irq_type_level_high);
+    Resource.irq0 = Io.Res.irq(32 + 74, Io.Resource.Irq_type_level_high);
+    Resource.irq0 = Io.Res.irq(32 + 75, Io.Resource.Irq_type_level_high);
+  end)
+
+  pmu_a53 = Hw.Device(function()
+    compatible = "arm,cortex-a53-pmu";
+    Resource.irq0 = Io.Res.irq(32 + 84, Io.Resource.Irq_type_level_high);
+    Resource.irq0 = Io.Res.irq(32 + 85, Io.Resource.Irq_type_level_high);
+    Resource.irq0 = Io.Res.irq(32 + 86, Io.Resource.Irq_type_level_high);
+    Resource.irq0 = Io.Res.irq(32 + 87, Io.Resource.Irq_type_level_high);
+  end)
+  -- end perf_event, shouldn't be necessary
+
+  -- begin PWM support
+  pwm_e6e31000 = Hw.Device(function() -- pwm1
+    compatible = { "renesas,pwm-r8a7796", "renesas,pwm-rcar" };
+    Resource.reg0 = Res.mmio(0xe6e31000, 0xe6e3100f);
+  end)
+
+  pwm_e6e32000 = Hw.Device(function() -- pwm2
+    compatible = { "renesas,pwm-r8a7796", "renesas,pwm-rcar" };
+    Resource.reg0 = Res.mmio(0xe6e32000, 0xe6e3200f);
+  end)
+  -- end PWM support
+
+  audma0 = Hw.Device(function()
+    compatible = "renesas,rcar-dmac";
+    Property.hid = "renesas,rcar-dmac";
+    Resource.reg0 = Res.mmio(0xec700000, 0xec70ffff);
+    Resource.irq0 = Io.Res.irq(32 + 350, Io.Resource.Irq_type_level_high);
+    Resource.irq1 = Io.Res.irq(32 + 320, Io.Resource.Irq_type_level_high);
+    Resource.irq2 = Io.Res.irq(32 + 321, Io.Resource.Irq_type_level_high);
+    Resource.irq3 = Io.Res.irq(32 + 322, Io.Resource.Irq_type_level_high);
+    Resource.irq4 = Io.Res.irq(32 + 323, Io.Resource.Irq_type_level_high);
+    Resource.irq5 = Io.Res.irq(32 + 324, Io.Resource.Irq_type_level_high);
+    Resource.irq6 = Io.Res.irq(32 + 325, Io.Resource.Irq_type_level_high);
+    Resource.irq7 = Io.Res.irq(32 + 326, Io.Resource.Irq_type_level_high);
+    Resource.irq8 = Io.Res.irq(32 + 327, Io.Resource.Irq_type_level_high);
+    Resource.irq9 = Io.Res.irq(32 + 328, Io.Resource.Irq_type_level_high);
+    Resource.irqA = Io.Res.irq(32 + 329, Io.Resource.Irq_type_level_high);
+    Resource.irqB = Io.Res.irq(32 + 330, Io.Resource.Irq_type_level_high);
+    Resource.irqC = Io.Res.irq(32 + 331, Io.Resource.Irq_type_level_high);
+    Resource.irqD = Io.Res.irq(32 + 332, Io.Resource.Irq_type_level_high);
+    Resource.irqE = Io.Res.irq(32 + 333, Io.Resource.Irq_type_level_high);
+    Resource.irqF = Io.Res.irq(32 + 334, Io.Resource.Irq_type_level_high);
+    Resource.irqG = Io.Res.irq(32 + 335, Io.Resource.Irq_type_level_high);
+  end)
+
+  audma1 = Hw.Device(function()
+    compatible = "renesas,rcar-dmac";
+    Property.hid = "renesas,rcar-dmac";
+    Resource.reg0 = Res.mmio(0xec720000, 0xec72ffff);
+    Resource.irq0 = Io.Res.irq(32 + 351, Io.Resource.Irq_type_level_high);
+    Resource.irq1 = Io.Res.irq(32 + 336, Io.Resource.Irq_type_level_high);
+    Resource.irq2 = Io.Res.irq(32 + 337, Io.Resource.Irq_type_level_high);
+    Resource.irq3 = Io.Res.irq(32 + 338, Io.Resource.Irq_type_level_high);
+    Resource.irq4 = Io.Res.irq(32 + 339, Io.Resource.Irq_type_level_high);
+    Resource.irq5 = Io.Res.irq(32 + 340, Io.Resource.Irq_type_level_high);
+    Resource.irq6 = Io.Res.irq(32 + 341, Io.Resource.Irq_type_level_high);
+    Resource.irq7 = Io.Res.irq(32 + 342, Io.Resource.Irq_type_level_high);
+    Resource.irq8 = Io.Res.irq(32 + 343, Io.Resource.Irq_type_level_high);
+    Resource.irq9 = Io.Res.irq(32 + 344, Io.Resource.Irq_type_level_high);
+    Resource.irqA = Io.Res.irq(32 + 345, Io.Resource.Irq_type_level_high);
+    Resource.irqB = Io.Res.irq(32 + 346, Io.Resource.Irq_type_level_high);
+    Resource.irqC = Io.Res.irq(32 + 347, Io.Resource.Irq_type_level_high);
+    Resource.irqD = Io.Res.irq(32 + 348, Io.Resource.Irq_type_level_high);
+    Resource.irqE = Io.Res.irq(32 + 349, Io.Resource.Irq_type_level_high);
+    Resource.irqF = Io.Res.irq(32 + 382, Io.Resource.Irq_type_level_high);
+    Resource.irqG = Io.Res.irq(32 + 383, Io.Resource.Irq_type_level_high);
+  end)
+
+  usb2_phy0 = Hw.Device(function()
+    compatible = { "renesas,usb2-phy-r8a7796",
+                   "renesas,usb2-phy-r8a7796",
+		   "renesas,rcar-gen3-usb2-phy" };
+    Property.hid = "renesas,usb2-phy-r8a7796";
+    Resource.reg0 = Res.mmio(0xee080200, 0xee0808ff);
+  end)
+
+  usb2_phy1 = Hw.Device(function()
+    compatible = { "renesas,usb2-phy-r8a7796",
+                   "renesas,usb2-phy-r8a7796",
+		   "renesas,rcar-gen3-usb2-phy" };
+    Property.hid = "renesas,usb2-phy-r8a7796";
+    Resource.reg0 = Res.mmio(0xee0a0200, 0xee0a08ff);
+  end)
+
+  usb_e6590000 = Hw.Device(function() -- hsusb0
+    compatible = { "renesas,usbhs-r8a7796", "renesas,rcar-gen3-usbhs" };
+    Property.hid = "renesas,usbhs-r8a7796";
+    Resource.reg0 = Res.mmio(0xe6590000, 0xe65900ff);
+    Resource.irq0 = Io.Res.irq(32 + 107, Io.Resource.Irq_type_level_high);
+  end)
+
+  usb_e659c000 = Hw.Device(function() -- hsusb3
+    compatible = { "renesas,usbhs-r8a7796", "renesas,rcar-gen3-usbhs" };
+    Property.hid = "renesas,usbhs-r8a7796";
+    Resource.reg0 = Res.mmio(0xe659c000, 0xe659c0ff);
+    Resource.irq0 = Io.Res.irq(32 + 37, Io.Resource.Irq_type_level_high);
+  end)
+
+  usb_phy_e65ee000 = Hw.Device(function() -- usb3_phy0
+    compatible = { "renesas,r8a7796-usb3-phy", "renesas,rcar-gen3-usb3-phy" };
+    Property.hid = "renesas,r8a7796-usb3-phy";
+    Resource.reg0 = Res.mmio(0xe65ee000, 0xe65ee08f);
+  end)
+
+  ehci0 = Hw.Device(function()
+    compatible = "generic-ehci";
+    Property.hid = "generic-ehci";
+    Resource.reg0 = Res.mmio(0xee080100, 0xee0801ff);
+    Resource.irq0 = Io.Res.irq(32 + 108, Io.Resource.Irq_type_level_high);
+  end)
+
+  ehci1 = Hw.Device(function()
+    compatible = "generic-ehci";
+    Property.hid = "generic-ehci";
+    Resource.reg0 = Res.mmio(0xee0a0100, 0xee0a01ff);
+    Resource.irq0 = Io.Res.irq(32 + 112, Io.Resource.Irq_type_level_high);
+  end)
+
+  usb_ee0c0100 = Hw.Device(function() -- ehci2
+    compatible = "generic-ehci";
+    Property.hid = "generic-ehci";
+    Resource.reg0 = Res.mmio(0xee0c0100, 0xee0c01ff);
+    Resource.irq0 = Io.Res.irq(32 + 113, Io.Resource.Irq_type_level_high);
+  end)
+
+  usb_ee0e0100 = Hw.Device(function() -- ehci3
+    compatible = "generic-ehci";
+    Property.hid = "generic-ehci";
+    Resource.reg0 = Res.mmio(0xee0e0100, 0xee0e01ff);
+    Resource.irq0 = Io.Res.irq(32 + 36, Io.Resource.Irq_type_level_high);
+  end)
+
+  ohci0 = Hw.Device(function()
+    compatible = "generic-ohci";
+    Property.hid = "generic-ohci";
+    Resource.reg0 = Res.mmio(0xee080000, 0xee0800ff);
+    Resource.irq0 = Io.Res.irq(32 + 108, Io.Resource.Irq_type_level_high);
+  end)
+
+  ohci1 = Hw.Device(function()
+    compatible = "generic-ohci";
+    Property.hid = "generic-ohci";
+    Resource.reg0 = Res.mmio(0xee0a0000, 0xee0a00ff);
+    Resource.irq0 = Io.Res.irq(32 + 112, Io.Resource.Irq_type_level_high);
+  end)
+
+  ohci2 = Hw.Device(function()
+    compatible = "generic-ohci";
+    Property.hid = "generic-ohci";
+    Resource.reg0 = Res.mmio(0xee0c0000, 0xee0c00ff);
+    Resource.irq0 = Io.Res.irq(32 + 113, Io.Resource.Irq_type_level_high);
+  end)
+
+  ohci3 = Hw.Device(function()
+    compatible = "generic-ohci";
+    Property.hid = "generic-ohci";
+    Resource.reg0 = Res.mmio(0xee0e0000, 0xee0e00ff);
+    Resource.irq0 = Io.Res.irq(32 + 36, Io.Resource.Irq_type_level_high);
+  end)
+
+  usb_ee000000 = Hw.Device(function() -- xhci0
+    compatible = { "renesas,xhci-r8a7796", "renesas,rcar-gen3-xhci" };
+    Property.hid = "renesas,xhci-r8a7796";
+    Resource.reg0 = Res.mmio(0xee000000, 0xee000bff);
+    Resource.irq0 = Io.Res.irq(32 + 102, Io.Resource.Irq_type_level_high);
+  end)
+
+  usb_ee020000 = Hw.Device(function() -- usb3_peri0
+    compatible = { "renesas,r8a7796-usb3-peri" };
+    Property.hid = "renesas,r8a7796-usb3-peri";
+    Resource.reg0 = Res.mmio(0xee020000, 0xee0203ff);
+    Resource.irq0 = Io.Res.irq(32 + 104, Io.Resource.Irq_type_level_high);
+  end)
+
+  usb_ee040000 = Hw.Device(function() -- xhci1 (only ES1.x)
+    compatible = { "renesas,xhci-r8a7796", "renesas,rcar-gen3-xhci" };
+    Property.hid = "renesas,xhci-r8a7796";
+    Resource.reg0 = Res.mmio(0xee040000, 0xee040bff);
+    Resource.irq0 = Io.Res.irq(32 + 98, Io.Resource.Irq_type_level_high);
+  end)
+
+  i2c0 = Hw.Device(function()
+    compatible = "renesas,i2c-r8a7796";
+    Property.hid = "renesas,i2c-r8a7796";
+    Resource.reg0 = Res.mmio(0xe6500000, 0xe650003f);
+    Resource.irq0 = Io.Res.irq(32 + 287, Io.Resource.Irq_type_level_high);
+  end)
+
+  i2c1 = Hw.Device(function()
+    compatible = "renesas,i2c-r8a7796";
+    Property.hid = "renesas,i2c-r8a7796";
+    Resource.reg0 = Res.mmio(0xe6508000, 0xe650803f);
+    Resource.irq0 = Io.Res.irq(32 + 288, Io.Resource.Irq_type_level_high);
+  end)
+
+  i2c2 = Hw.Device(function()
+    compatible = "renesas,i2c-r8a7796";
+    Property.hid = "renesas,i2c-r8a7796";
+    Resource.reg0 = Res.mmio(0xe6510000, 0xe651003f);
+    Resource.irq0 = Io.Res.irq(32 + 286, Io.Resource.Irq_type_level_high);
+  end)
+
+  i2c3 = Hw.Device(function()
+    compatible = "renesas,i2c-r8a7796";
+    Property.hid = "renesas,i2c-r8a7796";
+    Resource.reg0 = Res.mmio(0xe66d0000, 0xe66d003f);
+    Resource.irq0 = Io.Res.irq(32 + 290, Io.Resource.Irq_type_level_high);
+  end)
+
+  i2c4 = Hw.Device(function()
+    compatible = "renesas,i2c-r8a7796";
+    Property.hid = "renesas,i2c-r8a7796";
+    Resource.reg0 = Res.mmio(0xe66d8000, 0xe66d803f);
+    Resource.irq0 = Io.Res.irq(32 + 19, Io.Resource.Irq_type_level_high);
+  end)
+
+  i2c5 = Hw.Device(function()
+    compatible = "renesas,i2c-r8a7796";
+    Property.hid = "renesas,i2c-r8a7796";
+    Resource.reg0 = Res.mmio(0xe66e0000, 0xe66e003f);
+    Resource.irq0 = Io.Res.irq(32 + 20, Io.Resource.Irq_type_level_high);
+  end)
+
+  i2c6 = Hw.Device(function()
+    compatible = "renesas,i2c-r8a7796";
+    Property.hid = "renesas,i2c-r8a7796";
+    Resource.reg0 = Res.mmio(0xe66e8000, 0xe66e803f);
+    Resource.irq0 = Io.Res.irq(32 + 21, Io.Resource.Irq_type_level_high);
+  end)
+
+  i2c_dvfs = Hw.Device(function()
+    compatible = "renesas,iic-r8a7796", "renesas,rcar-gen3-iic",
+                 "renesas,rmobile-iic";
+    Property.hid = "renesas,iic-r8a7796";
+    Resource.reg0 = Res.mmio(0xe60b0000, 0xe60b0427);
+    Resource.irq0 = Io.Res.irq(32 + 173, Io.Resource.Irq_type_level_high);
+  end)
+
+  mfis_e6260000 = Hw.Device(function()
+    compatible = { "renesas,mfis-lock-r8a7796", "renesas,mfis-lock" };
+    Property.hid = "mfis-lock";
+    Resource.reg0 = Res.mmio(0xe6260000, 0xe6260fff);
+  end)
+
+  mfis = Hw.Device(function()
+    compatible = { "renesas,mfis-r8a7796", "renesas,mfis" };
+    Property.hid = "renesas,mfis-r8a7796";
+    Resource.reg0 = Res.mmio(0xe6260000, 0xe62609ff);
+    -- eicrX
+    Resource.irq0 = Io.Res.irq(32 + 180, Io.Resource.Irq_type_level_high);
+    Resource.irq1 = Io.Res.irq(32 + 181, Io.Resource.Irq_type_level_high);
+    Resource.irq2 = Io.Res.irq(32 + 182, Io.Resource.Irq_type_level_high);
+    Resource.irq3 = Io.Res.irq(32 + 183, Io.Resource.Irq_type_level_high);
+    Resource.irq4 = Io.Res.irq(32 + 172, Io.Resource.Irq_type_level_high);
+    Resource.irq5 = Io.Res.irq(32 + 177, Io.Resource.Irq_type_level_high);
+    Resource.irq6 = Io.Res.irq(32 + 178, Io.Resource.Irq_type_level_high);
+    Resource.irq7 = Io.Res.irq(32 + 179, Io.Resource.Irq_type_level_high);
+    -- areicrX
+    Resource.irq8 = Io.Res.irq(32 + 224, Io.Resource.Irq_type_raising_edge);
+    Resource.irq9 = Io.Res.irq(32 + 225, Io.Resource.Irq_type_raising_edge);
+    Resource.irqA = Io.Res.irq(32 + 226, Io.Resource.Irq_type_raising_edge);
+    Resource.irqB = Io.Res.irq(32 + 227, Io.Resource.Irq_type_raising_edge);
+    Resource.irqC = Io.Res.irq(32 + 228, Io.Resource.Irq_type_raising_edge);
+    Resource.irqD = Io.Res.irq(32 + 229, Io.Resource.Irq_type_raising_edge);
+    Resource.irqE = Io.Res.irq(32 + 230, Io.Resource.Irq_type_raising_edge);
+    Resource.irqF = Io.Res.irq(32 + 231, Io.Resource.Irq_type_raising_edge);
+    -- errorX
+    Resource.irqG = Io.Res.irq(32 + 409, Io.Resource.Irq_type_level_high);
+    Resource.irqH = Io.Res.irq(32 + 410, Io.Resource.Irq_type_level_high);
+    Resource.irqI = Io.Res.irq(32 + 411, Io.Resource.Irq_type_level_high);
+    Resource.irqJ = Io.Res.irq(32 + 412, Io.Resource.Irq_type_level_high);
+    Resource.irqK = Io.Res.irq(32 + 413, Io.Resource.Irq_type_level_high);
+    Resource.irqL = Io.Res.irq(32 + 414, Io.Resource.Irq_type_level_high);
+    Resource.irqM = Io.Res.irq(32 + 415, Io.Resource.Irq_type_level_high);
+    Resource.irqN = Io.Res.irq(32 + 307, Io.Resource.Irq_type_level_high);
+  end)
+
+  avs = Hw.Device(function()
+    compatible = { "renesas,r8a7796-avs", "renesas,rcar-gen3-avs" };
+    Property.hid = "renesas,r8a7796-avs";
+    Resource.reg0 = Res.mmio(0xe60a013c, 0xe60a013f);
+  end)
+
+  usb_dmac0 = Hw.Device(function()
+    compatible = { "renesas,r8a7796-usb-dmac", "renesas,usb-dmac" };
+    Property.hid = "renesas,r8a7796-usb-dmac";
+    Resource.reg0 = Res.mmio(0xe65a0000, 0xe65a00ff);
+    Resource.irq0 = Io.Res.irq(32 + 109, Io.Resource.Irq_type_level_high);
+  end)
+
+  usb_dmac1 = Hw.Device(function()
+    compatible = { "renesas,r8a7796-usb-dmac", "renesas,usb-dmac" };
+    Property.hid = "renesas,r8a7796-usb-dmac";
+    Resource.reg0 = Res.mmio(0xe65b0000, 0xe65b00ff);
+    Resource.irq0 = Io.Res.irq(32 + 110, Io.Resource.Irq_type_level_high);
+  end)
+
+  dma_controller_e6460000 = Hw.Device(function() -- usb_dmac2
+    compatible = { "renesas,r8a7796-usb-dmac", "renesas,usb-dmac" };
+    Property.hid = "renesas,r8a7796-usb-dmac";
+    Resource.reg0 = Res.mmio(0xe6460000, 0xe64600ff);
+    Resource.irq0 = Io.Res.irq(32 + 34, Io.Resource.Irq_type_level_high);
+  end)
+
+  dma_controller_e6470000 = Hw.Device(function() -- usb_dmac3
+    compatible = { "renesas,r8a7796-usb-dmac", "renesas,usb-dmac" };
+    Property.hid = "renesas,r8a7796-usb-dmac";
+    Resource.reg0 = Res.mmio(0xe6470000, 0xe64700ff);
+    Resource.irq0 = Io.Res.irq(32 + 35, Io.Resource.Irq_type_level_high);
+  end)
+
+  tsc1 = Hw.Device(function()
+    compatible = { "renesas,thermal-r8a7796" };
+    Property.hid = "renesas,thermal-r8a7796";
+    Resource.reg0 = Res.mmio(0xe6198000, 0xe619805b);
+    Resource.irq0 = Io.Res.irq(32 + 67, Io.Resource.Irq_type_level_high);
+    Resource.irq1 = Io.Res.irq(32 + 68, Io.Resource.Irq_type_level_high);
+    Resource.irq2 = Io.Res.irq(32 + 69, Io.Resource.Irq_type_level_high);
+  end)
+
+  tsc2 = Hw.Device(function()
+    compatible = { "renesas,thermal-r8a7796" };
+    Property.hid = "renesas,thermal-r8a7796";
+    Resource.reg0 = Res.mmio(0xe61a0000, 0xe61a005b);
+    Resource.irq0 = Io.Res.irq(32 + 67, Io.Resource.Irq_type_level_high);
+    Resource.irq1 = Io.Res.irq(32 + 68, Io.Resource.Irq_type_level_high);
+    Resource.irq2 = Io.Res.irq(32 + 69, Io.Resource.Irq_type_level_high);
+  end)
+
+  tsc3 = Hw.Device(function()
+    compatible = { "renesas,thermal-r8a7796" };
+    Property.hid = "renesas,thermal-r8a7796";
+    Resource.reg0 = Res.mmio(0xe61a8000, 0xe61a805b);
+    Resource.irq0 = Io.Res.irq(32 + 67, Io.Resource.Irq_type_level_high);
+    Resource.irq1 = Io.Res.irq(32 + 68, Io.Resource.Irq_type_level_high);
+    Resource.irq2 = Io.Res.irq(32 + 69, Io.Resource.Irq_type_level_high);
+  end)
+
+  vsp_fea20000 = Hw.Device(function() -- vspd0
+    compatible = { "renesas,vsp2" };
+    Property.hid = "renesas,vsp2";
+    Resource.reg0 = Res.mmio(0xfea20000, 0xfea24fff);
+    Resource.irq0 = Io.Res.irq(32 + 466, Io.Resource.Irq_type_level_high);
+  end)
+
+  fcp_fea27000 = Hw.Device(function() -- fcpvd0
+    compatible = { "renesas,fcpv" };
+    Property.hid = "renesas,fcpv";
+    Resource.reg0 = Res.mmio(0xfea27000, 0xfea271ff);
+  end)
+
+  vsp_fea28000 = Hw.Device(function() -- vspd1
+    compatible = { "renesas,vsp2" };
+    Property.hid = "renesas,vsp2";
+    Resource.reg0 = Res.mmio(0xfea28000, 0xfea2cfff);
+    Resource.irq0 = Io.Res.irq(32 + 467, Io.Resource.Irq_type_level_high);
+  end)
+
+  fcp_fea2f000 = Hw.Device(function() -- fcpvd1
+    compatible = { "renesas,fcpv" };
+    Property.hid = "renesas,fcpv";
+    Resource.reg0 = Res.mmio(0xfea2f000, 0xfea2f1ff);
+  end)
+
+  vsp_fea30000 = Hw.Device(function() -- vspd2
+    compatible = { "renesas,vsp2" };
+    Property.hid = "renesas,vsp2";
+    Resource.reg0 = Res.mmio(0xfea30000, 0xfea34fff);
+    Resource.irq0 = Io.Res.irq(32 + 468, Io.Resource.Irq_type_level_high);
+  end)
+
+  fcp_fea37000 = Hw.Device(function() -- fcpvd2
+    compatible = { "renesas,fcpv" };
+    Property.hid = "renesas,fcpv";
+    Resource.reg0 = Res.mmio(0xfea37000, 0xfea371ff);
+  end)
+
+  vsp_fea38000 = Hw.Device(function() -- vspd3
+    compatible = { "renesas,vsp2" };
+    Property.hid = "renesas,vsp2";
+    Resource.reg0 = Res.mmio(0xfea38000, 0xfea3bfff);
+    Resource.irq0 = Io.Res.irq(32 + 469, Io.Resource.Irq_type_level_high);
+  end)
+
+  fcp_fea3f000 = Hw.Device(function() -- fcpvd3
+    compatible = { "renesas,fcpv" };
+    Property.hid = "renesas,fcpv";
+    Resource.reg0 = Res.mmio(0xfea3f000, 0xfea3f1ff);
+  end)
+
+  -- whole device DU0+DU1+DU2+DU3
+  display_feb00000 = Hw.Device(function() -- du
+    compatible = { "renesas,du-r8a7796" };
+    Property.hid = "renesas,du-r8a7796";
+    Resource.reg0 = Res.mmio(0xfeb00000, 0xfeb7ffff);
+    Resource.reg1 = Res.mmio(0xfeb90000, 0xfeb90013);
+    Resource.irq0 = Io.Res.irq(32 + 256, Io.Resource.Irq_type_level_high);
+    Resource.irq1 = Io.Res.irq(32 + 268, Io.Resource.Irq_type_level_high);
+    Resource.irq2 = Io.Res.irq(32 + 269, Io.Resource.Irq_type_level_high);
+    Resource.irq3 = Io.Res.irq(32 + 270, Io.Resource.Irq_type_level_high);
+  end)
+
+  -- only DU0+DU1
+  display_feb00000_01 = Hw.Device(function() -- du01
+    compatible = { "renesas,du-r8a7796" };
+    Property.hid = "renesas,du-r8a7796";
+    Resource.reg0 = Res.mmio(0xfeb00000, 0xfeb3ffff);
+    Resource.irq0 = Io.Res.irq(32 + 256, Io.Resource.Irq_type_level_high);
+    Resource.irq1 = Io.Res.irq(32 + 268, Io.Resource.Irq_type_level_high);
+  end)
+
+  -- only DU2+DU3
+  display_feb00000_23 = Hw.Device(function() -- du23
+    compatible = { "renesas,du-r8a7796" };
+    Property.hid = "renesas,du-r8a7796";
+    Resource.reg0 = Res.mmio(0xfeb40000, 0xfeb7ffff);
+    Resource.irq0 = Io.Res.irq(32 + 269, Io.Resource.Irq_type_level_high);
+    Resource.irq1 = Io.Res.irq(32 + 270, Io.Resource.Irq_type_level_high);
+  end)
+
+  hdmi0_fead0000 = Hw.Device(function() -- hdmi0
+    compatible = { "renesas,rcar-dw-hdmi" };
+    Property.hid = "renesas,rcar-dw-hdmi";
+    Resource.reg0 = Res.mmio(0xfead0000, 0xfeadffff);
+    Resource.irq0 = Io.Res.irq(32 + 389, Io.Resource.Irq_type_level_high);
+  end)
+
+  hdmi1_feae0000 = Hw.Device(function() -- hdmi1
+    compatible = { "renesas,rcar-dw-hdmi" };
+    Property.hid = "renesas,rcar-dw-hdmi";
+    Resource.reg0 = Res.mmio(0xfeae0000, 0xfeaeffff);
+    Resource.irq0 = Io.Res.irq(32 + 436, Io.Resource.Irq_type_level_high);
+  end)
+
+  gsx_fd000000 = Hw.Device(function() -- gsx
+    compatible = { "renesas,gsx" };
+    Property.hid = "renesas,gsx";
+    Resource.reg0 = Res.mmio(0xfd000000, 0xfd03ffff);
+    Resource.irq0 = Io.Res.irq(32 + 119, Io.Resource.Irq_type_level_high);
+  end)
+
+  -- first guest (OSID1)
+  gsx_fd000000_1 = Hw.Device(function() -- gsx1
+    compatible = { "renesas,gsx" };
+    Property.hid = "renesas,gsx";
+    Resource.reg0 = Res.mmio(0xfd010000, 0xfd01ffff);
+  end)
+
+  -- second guest (OSID2)
+  gsx_fd000000_2 = Hw.Device(function() -- gsx2
+    compatible = { "renesas,gsx" };
+    Property.hid = "renesas,gsx";
+    Resource.reg0 = Res.mmio(0xfd020000, 0xfd02ffff);
+  end)
+
+  vsp_fe920000 = Hw.Device(function()
+    compatible = { "renesas,vspm-vsp2" };
+    Property.hid = "renesas,vspm-vsp2";
+    Resource.reg0 = Res.mmio(0xfe920000, 0xfe927fff);
+  end)
+
+  vspm_fe920000 = Hw.Device(function() -- vspbc
+    compatible = { "renesas,vspm" };
+    Property.hid = "renesas,vspm";
+    Resource.reg0 = Res.mmio(0xfe920000, 0xfe927fff);
+    Resource.reg1 = Res.mmio(0xfe92f000, 0xfe92f1ff);
+    Resource.irq0 = Io.Res.irq(32 + 465, Io.Resource.Irq_type_level_high);
+  end)
+
+  vsp_fe960000 = Hw.Device(function()
+    compatible = { "renesas,vspm-vsp2" };
+    Property.hid = "renesas,vspm-vsp2";
+    Resource.reg0 = Res.mmio(0xfe960000, 0xfe967fff);
+  end)
+
+  vspm_fe960000 = Hw.Device(function() -- vspbd
+    compatible = { "renesas,vspm" };
+    Property.hid = "renesas,vspm";
+    Resource.reg0 = Res.mmio(0xfe960000, 0xfe967fff);
+    Resource.reg1 = Res.mmio(0xfe96f000, 0xfe96f1ff);
+    Resource.irq0 = Io.Res.irq(32 + 266, Io.Resource.Irq_type_level_high);
+  end)
+
+  vsp_fe9a0000 = Hw.Device(function()
+    compatible = { "renesas,vspm-vsp2" };
+    Property.hid = "renesas,vspm-vsp2";
+    Resource.reg0 = Res.mmio(0xfe9a0000, 0xfe9a7fff);
+  end)
+
+  vspm_fe9a0000 = Hw.Device(function() -- vspi0
+    compatible = { "renesas,vspm" };
+    Property.hid = "renesas,vspm";
+    Resource.reg0 = Res.mmio(0xfe9a0000, 0xfe9a7fff);
+    Resource.reg1 = Res.mmio(0xfe9af000, 0xfe9af1ff);
+    Resource.irq0 = Io.Res.irq(32 + 444, Io.Resource.Irq_type_level_high);
+  end)
+
+  vsp_fe9b0000 = Hw.Device(function()
+    compatible = { "renesas,vspm-vsp2" };
+    Property.hid = "renesas,vspm-vsp2";
+    Resource.reg0 = Res.mmio(0xfe9b0000, 0xfe9b7fff);
+  end)
+
+  vspm_fe9b0000 = Hw.Device(function() -- vspi1
+    compatible = { "renesas,vspm" };
+    Property.hid = "renesas,vspm";
+    Resource.reg0 = Res.mmio(0xfe9b0000, 0xfe9b7fff);
+    Resource.reg1 = Res.mmio(0xfe9bf000, 0xfe9bf1ff);
+    Resource.irq0 = Io.Res.irq(32 + 445, Io.Resource.Irq_type_level_high);
+  end)
+
+  vsp_fe9c0000 = Hw.Device(function()
+    compatible = { "renesas,vspm-vsp2" };
+    Property.hid = "renesas,vspm-vsp2";
+    Resource.reg0 = Res.mmio(0xfe9c0000, 0xfe9c7fff);
+  end)
+
+  vspm_fe9c0000 = Hw.Device(function() -- vspi2
+    compatible = { "renesas,vspm" };
+    Property.hid = "renesas,vspm";
+    Resource.reg0 = Res.mmio(0xfe9c0000, 0xfe9c7fff);
+    Resource.reg1 = Res.mmio(0xfe9cf000, 0xfe9cf1ff);
+    Resource.irq0 = Io.Res.irq(32 + 446, Io.Resource.Irq_type_level_high);
+  end)
+
+  fdpm_fe940000 = Hw.Device(function() -- fdp0
+    compatible = { "renesas,fdpm" };
+    Property.hid = "renesas,fdpm";
+    Resource.reg0 = Res.mmio(0xfe940000, 0xfe9423ff);
+    Resource.reg1 = Res.mmio(0xfe950000, 0xfe9501ff);
+    Resource.irq0 = Io.Res.irq(32 + 262, Io.Resource.Irq_type_level_high);
+  end)
+
+  fdpm_fe944000 = Hw.Device(function() -- fdp1
+    compatible = { "renesas,fdpm" };
+    Property.hid = "renesas,fdpm";
+    Resource.reg0 = Res.mmio(0xfe944000, 0xfe9463ff);
+    Resource.reg1 = Res.mmio(0xfe951000, 0xfe9511ff);
+    Resource.irq0 = Io.Res.irq(32 + 263, Io.Resource.Irq_type_level_high);
+  end)
+
+  fdpm_fe948000 = Hw.Device(function() -- fdp2 (only ES1.x)
+    compatible = { "renesas,fdpm" };
+    Property.hid = "renesas,fdpm";
+    Resource.reg0 = Res.mmio(0xfe948000, 0xfe94a3ff);
+    Resource.reg1 = Res.mmio(0xfe952000, 0xfe9521ff);
+    Resource.irq0 = Io.Res.irq(32 + 264, Io.Resource.Irq_type_level_high);
+  end)
+
+  -- rcar_sound for icup
+  sound_ec500000 = Hw.Device(function() -- rcar_sound
+    compatible = { "renesas,rcar_sound-r8a7796", "renesas,rcar_sound-gen3" };
+    Property.hid = "renesas,rcar_sound-r8a7796";
+    Resource.reg0 = Res.mmio(0xec500000, 0xec500fff);
+    Resource.reg1 = Res.mmio(0xec5a0000, 0xec5a00ff);
+    Resource.reg2 = Res.mmio(0xec540000, 0xec540fff);
+    Resource.reg3 = Res.mmio(0xec541000, 0xec54127f);
+    Resource.reg4 = Res.mmio(0xec740000, 0xec7401ff);
+  end)
+
+  -- adsp probbably not reqired, sound works without
+  adsp_ec800000 = Hw.Device(function() -- adsp
+    compatible = { "renesas,r8a7796-adsp", "renesas,rcar-gen3-adsp" };
+    Property.hid = "renesas,r8a7796-adsp";
+    Resource.reg0 = Res.mmio(0xec800000, 0xec8080fb);
+    Resource.reg1 = Res.mmio(0xece60000, 0xece6ffff);
+    Resource.reg2 = Res.mmio(0xece78000, 0xece7ffff);
+    Resource.reg3 = Res.mmio(0xece80000, 0xece8ffff);
+    Resource.reg4 = Res.mmio(0xece90000, 0xece9ffff);
+    Resource.irq0 = Io.Res.irq(32 + 237, Io.Resource.Irq_type_level_high);
+  end)
+
+  lossy = Hw.Device(function()
+    compatible = { "renesas,lossy" };
+    Property.hid = "renesas,lossy";
+    Resource.reg0 = Res.mmio(0x47FD7000, 0x47FD7fff);
+  end)
+
+  -- not sure if these are really required
+  vcp4_fe910000 = Hw.Device(function() -- vcplf
+    compatible = { "renesas,vcp4-vcplf" };
+    Property.hid = "renesas,vcp4-vcplf";
+    Resource.reg0 = Res.mmio(0xfe910000, 0xfe9101ff);
+    Resource.reg1 = Res.mmio(0xfe910200, 0xfe9103ff);
+    Resource.irq0 = Io.Res.irq(32 + 260, Io.Resource.Irq_type_level_high);
+    Resource.irq1 = Io.Res.irq(32 + 261, Io.Resource.Irq_type_level_high);
+  end)
+
+  vcp4_fe8f0000 = Hw.Device(function() -- vcpl4
+    compatible = { "renesas,vcp4-vcpl4" };
+    Property.hid = "renesas,vcp4-vcpl4";
+    Resource.reg0 = Res.mmio(0xfe8f0000, 0xfe8f01ff);
+    Resource.reg1 = Res.mmio(0xfe8f0200, 0xfe8f03ff);
+    Resource.irq0 = Io.Res.irq(32 + 258, Io.Resource.Irq_type_level_high);
+    Resource.irq1 = Io.Res.irq(32 + 259, Io.Resource.Irq_type_level_high);
+  end)
+
+  vcp4_fe900000 = Hw.Device(function() -- vdpb
+    compatible = { "renesas,vcp4-vdpb" };
+    Property.hid = "renesas,vcp4-vdpb";
+    Resource.reg0 = Res.mmio(0xfe900000, 0xfe9001ff);
+    Resource.reg1 = Res.mmio(0xfe900200, 0xfe9003ff);
+    Resource.irq0 = Io.Res.irq(32 + 240, Io.Resource.Irq_type_level_high);
+    Resource.irq1 = Io.Res.irq(32 + 241, Io.Resource.Irq_type_level_high);
+  end)
+
+  vcp4_fe8d0000 = Hw.Device(function() -- ivdp1c
+    compatible = { "renesas,vcp4-ivdp1c" };
+    Property.hid = "renesas,vcp4-ivdp1c";
+    Resource.reg0 = Res.mmio(0xfe8d0000, 0xfe8d01ff);
+    Resource.reg1 = Res.mmio(0xfe8d0200, 0xfe8d03ff);
+    Resource.irq0 = Io.Res.irq(32 + 380, Io.Resource.Irq_type_level_high);
+    Resource.irq1 = Io.Res.irq(32 + 381, Io.Resource.Irq_type_level_high);
+    Resource.irq2 = Io.Res.irq(32 + 223, Io.Resource.Irq_type_level_high);
+  end)
+
+  vcp4_fe90f000 = Hw.Device(function() -- fcpcs
+    compatible = { "renesas,vcp4-fcpcs" };
+    Property.hid = "renesas,vcp4-fcpcs";
+    Resource.reg0 = Res.mmio(0xfe90f000, 0xfe90f1ff);
+  end)
+
+  vcp4_fe8df000 = Hw.Device(function() -- fcpci0
+    compatible = { "renesas,vcp4-fcpci0" };
+    Property.hid = "renesas,vcp4-fcpci0";
+    Resource.reg0 = Res.mmio(0xfe8df000, 0xfe8df1ff);
+  end)
+
+  vcp4_fe8ff000 = Hw.Device(function() -- fcpci1
+    compatible = { "renesas,vcp4-fcpci1" };
+    Property.hid = "renesas,vcp4-fcpci1";
+    Resource.reg0 = Res.mmio(0xfe8ff000, 0xfe8ff1ff);
+  end)
+
+  vcp4_fe8a0000 = Hw.Device(function() -- stb
+    compatible = { "renesas,vcp4-stb" };
+    Property.hid = "renesas,vcp4-stb";
+    Resource.reg0 = Res.mmio(0xfe8a0000, 0xfe8a01ff);
+    Resource.irq0 = Io.Res.irq(32 + 160, Io.Resource.Irq_type_level_high);
+  end)
+
+  src_0 = Hw.Device(function()
+    compatible    = { "src-0/rcar_sound,src/sound@ec500000/renesas,rcar_sound-r8a7796" };
+    Resource.irq0 = Io.Res.irq(32 + 352, Io.Resource.Irq_type_level_high);
+  end)
+  src_1 = Hw.Device(function()
+    compatible    = { "src-1/rcar_sound,src/sound@ec500000/renesas,rcar_sound-r8a7796" };
+    Resource.irq0 = Io.Res.irq(32 + 353, Io.Resource.Irq_type_level_high);
+  end)
+  src_2 = Hw.Device(function()
+    compatible    = { "src-2/rcar_sound,src/sound@ec500000/renesas,rcar_sound-r8a7796" };
+    Resource.irq0 = Io.Res.irq(32 + 354, Io.Resource.Irq_type_level_high);
+  end)
+  src_3 = Hw.Device(function()
+    compatible    = { "src-3/rcar_sound,src/sound@ec500000/renesas,rcar_sound-r8a7796" };
+    Resource.irq0 = Io.Res.irq(32 + 355, Io.Resource.Irq_type_level_high);
+  end)
+  src_4 = Hw.Device(function()
+    compatible    = { "src-4/rcar_sound,src/sound@ec500000/renesas,rcar_sound-r8a7796" };
+    Resource.irq0 = Io.Res.irq(32 + 356, Io.Resource.Irq_type_level_high);
+  end)
+  src_5 = Hw.Device(function()
+    compatible    = { "src-5/rcar_sound,src/sound@ec500000/renesas,rcar_sound-r8a7796" };
+    Resource.irq0 = Io.Res.irq(32 + 357, Io.Resource.Irq_type_level_high);
+  end)
+  src_6 = Hw.Device(function()
+    compatible    = { "src-6/rcar_sound,src/sound@ec500000/renesas,rcar_sound-r8a7796" };
+    Resource.irq0 = Io.Res.irq(32 + 358, Io.Resource.Irq_type_level_high);
+  end)
+  src_7 = Hw.Device(function()
+    compatible    = { "src-7/rcar_sound,src/sound@ec500000/renesas,rcar_sound-r8a7796" };
+    Resource.irq0 = Io.Res.irq(32 + 359, Io.Resource.Irq_type_level_high);
+  end)
+  src_8 = Hw.Device(function()
+    compatible    = { "src-8/rcar_sound,src/sound@ec500000/renesas,rcar_sound-r8a7796" };
+    Resource.irq0 = Io.Res.irq(32 + 360, Io.Resource.Irq_type_level_high);
+  end)
+  src_9 = Hw.Device(function()
+    compatible    = { "src-9/rcar_sound,src/sound@ec500000/renesas,rcar_sound-r8a7796" };
+    Resource.irq0 = Io.Res.irq(32 + 361, Io.Resource.Irq_type_level_high);
+  end)
+
+  ssi_0 = Hw.Device(function()
+    compatible    = { "ssi-0/rcar_sound,ssi/sound@ec500000/renesas,rcar_sound-r8a7796" };
+    Resource.irq0 = Io.Res.irq(32 + 370, Io.Resource.Irq_type_level_high);
+  end)
+  ssi_1 = Hw.Device(function()
+    compatible    = { "ssi-1/rcar_sound,ssi/sound@ec500000/renesas,rcar_sound-r8a7796" };
+    Resource.irq0 = Io.Res.irq(32 + 371, Io.Resource.Irq_type_level_high);
+  end)
+  ssi_2 = Hw.Device(function()
+    compatible    = { "ssi-2/rcar_sound,ssi/sound@ec500000/renesas,rcar_sound-r8a7796" };
+    Resource.irq0 = Io.Res.irq(32 + 372, Io.Resource.Irq_type_level_high);
+  end)
+  ssi_3 = Hw.Device(function()
+    compatible    = { "ssi-3/rcar_sound,ssi/sound@ec500000/renesas,rcar_sound-r8a7796" };
+    Resource.irq0 = Io.Res.irq(32 + 373, Io.Resource.Irq_type_level_high);
+  end)
+  ssi_4 = Hw.Device(function()
+    compatible    = { "ssi-4/rcar_sound,ssi/sound@ec500000/renesas,rcar_sound-r8a7796" };
+    Resource.irq0 = Io.Res.irq(32 + 374, Io.Resource.Irq_type_level_high);
+  end)
+  ssi_5 = Hw.Device(function()
+    compatible    = { "ssi-5/rcar_sound,ssi/sound@ec500000/renesas,rcar_sound-r8a7796" };
+    Resource.irq0 = Io.Res.irq(32 + 375, Io.Resource.Irq_type_level_high);
+  end)
+  ssi_6 = Hw.Device(function()
+    compatible    = { "ssi-6/rcar_sound,ssi/sound@ec500000/renesas,rcar_sound-r8a7796" };
+    Resource.irq0 = Io.Res.irq(32 + 376, Io.Resource.Irq_type_level_high);
+  end)
+  ssi_7 = Hw.Device(function()
+    compatible    = { "ssi-7/rcar_sound,ssi/sound@ec500000/renesas,rcar_sound-r8a7796" };
+    Resource.irq0 = Io.Res.irq(32 + 377, Io.Resource.Irq_type_level_high);
+  end)
+  ssi_8 = Hw.Device(function()
+    compatible    = { "ssi-8/rcar_sound,ssi/sound@ec500000/renesas,rcar_sound-r8a7796" };
+    Resource.irq0 = Io.Res.irq(32 + 378, Io.Resource.Irq_type_level_high);
+  end)
+  ssi_9 = Hw.Device(function()
+    compatible    = { "ssi-9/rcar_sound,ssi/sound@ec500000/renesas,rcar_sound-r8a7796" };
+    Resource.irq0 = Io.Res.irq(32 + 379, Io.Resource.Irq_type_level_high);
+  end)
+
+  can_e6c30000 = Hw.Device(function() -- can0
+    compatible = { "renesas,can-r8a7796", "renesas,rcar-gen3-can" };
+    Property.hid = "renesas,can-r8a7796";
+    Resource.reg0 = Res.mmio(0xe6c30000, 0xe6c30fff);
+    Resource.irq0 = Io.Res.irq(32 + 186, Io.Resource.Irq_type_level_high);
+  end)
+
+  can_e6c38000 = Hw.Device(function() -- can1
+    compatible = { "renesas,can-r8a7796", "renesas,rcar-gen3-can" };
+    Property.hid = "renesas,can-r8a7796";
+    Resource.reg0 = Res.mmio(0xe6c38000, 0xe6c38fff);
+    Resource.irq0 = Io.Res.irq(32 + 187, Io.Resource.Irq_type_level_high);
+  end)
+
+  can_e66c0000 = Hw.Device(function() -- canfd
+    compatible = { "renesas,r8a7796-canfd", "renesas,rcar-gen3-canfd" };
+    Property.hid = "renesas,r8a7796-canfd";
+    Resource.reg0 = Res.mmio(0xe66c0000, 0xe66c7fff);
+    Resource.irq0 = Io.Res.irq(32 + 29, Io.Resource.Irq_type_level_high);
+    Resource.irq1 = Io.Res.irq(32 + 30, Io.Resource.Irq_type_level_high);
+  end)
+
+  -- pass the PCIe controller to the VM
+  -- guest drives PCIe controller
+  pcie_fe000000 = Hw.Device(function() -- pcie0
+    compatible = { "renesas,pcie-r8a7796", "renesas,pcie-rcar-gen3" };
+    Property.hid = "renesas,pcie-r8a7796";
+    Resource.reg0 = Res.mmio(0xfe000000, 0xfe07ffff);
+    Resource.reg1 = Res.mmio(0xfe200000, 0xfe3fffff);
+    Resource.reg2 = Res.mmio(0x30000000, 0x37ffffff);
+    Resource.reg3 = Res.mmio(0x38000000, 0x3fffffff);
+    Resource.irq0 = Io.Res.irq(32 + 116, Io.Resource.Irq_type_level_high);
+    Resource.irq1 = Io.Res.irq(32 + 117, Io.Resource.Irq_type_level_high);
+    Resource.irq2 = Io.Res.irq(32 + 118, Io.Resource.Irq_type_level_high);
+  end)
+
+  pcie_ee800000 = Hw.Device(function()
+    compatible = { "renesas,pcie-r8a7796", "renesas,pcie-rcar-gen3" };
+    Property.hid = "renesas,pcie-r8a7796";
+    Resource.reg0 = Res.mmio(0xee800000, 0xee87ffff);
+    Resource.irq0 = Io.Res.irq(32 + 148, Io.Resource.Irq_type_level_high);
+    Resource.irq1 = Io.Res.irq(32 + 149, Io.Resource.Irq_type_level_high);
+    Resource.irq2 = Io.Res.irq(32 + 150, Io.Resource.Irq_type_level_high);
+  end)
+
+  -- IO drives PCIe controller
+--  pciec0 = Io.Hw.Rcar3_pcie_bridge(function()
+--    Property.regs_base  = 0xfe000000;
+--    Property.regs_size  = 0x00080000;
+--    Property.mem_base_1 = 0xfe100000;
+--    Property.mem_size_1 = 0x00100000; -- 1MB
+--    Property.mem_base_2 = 0xfe200000;
+--    Property.mem_size_2 = 0x00200000; -- 2MB
+--    Property.mem_base_3 = 0x30000000;
+--    Property.mem_size_3 = 0x08000000; -- 128MB
+--    Property.mem_base_4 = 0x38000000;
+--    Property.mem_size_4 = 0x08000000; -- 128MB
+--    Property.irq_1      = 32 + 116;
+--    Property.irq_2      = 32 + 117;
+--    Property.irq_pme    = 32 + 118;
+--  end);
+end)
