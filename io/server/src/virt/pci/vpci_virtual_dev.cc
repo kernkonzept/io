@@ -14,7 +14,7 @@
 namespace Vi {
 
 int
-Pci_virtual_dev::cfg_read(int reg, l4_uint32_t *v, Cfg_width order)
+Pci_virtual_dev::cfg_read(l4_uint32_t reg, l4_uint32_t *v, Cfg_width order)
 {
   reg >>= order;
   if ((unsigned)reg >= (_h_len >> order))
@@ -34,7 +34,7 @@ Pci_virtual_dev::cfg_read(int reg, l4_uint32_t *v, Cfg_width order)
 }
 
 int
-Pci_virtual_dev::cfg_write(int reg, l4_uint32_t v, Cfg_width order)
+Pci_virtual_dev::cfg_write(l4_uint32_t reg, l4_uint32_t v, Cfg_width order)
 {
   switch (reg & ~3)
     {

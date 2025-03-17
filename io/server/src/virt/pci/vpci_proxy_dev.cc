@@ -58,13 +58,13 @@ namespace {
         set_size(sz);
       }
 
-      int cap_read(int, l4_uint32_t *v, Cfg_width) override
+      int cap_read(l4_uint32_t, l4_uint32_t *v, Cfg_width) override
       {
         *v = 0xffffffff;
         return 0;
       }
 
-      int cap_write(int, l4_uint32_t, Cfg_width) override
+      int cap_write(l4_uint32_t, l4_uint32_t, Cfg_width) override
       {
         return 0;
       }
@@ -224,7 +224,7 @@ Pci_proxy_dev::add_pcie_cap(Pcie_capability *c)
 }
 
 int
-Pci_proxy_dev::cfg_read(int reg, l4_uint32_t *v, Cfg_width order)
+Pci_proxy_dev::cfg_read(l4_uint32_t reg, l4_uint32_t *v, Cfg_width order)
 {
   Hw::Pci::If *p = _hwf;
 
@@ -321,7 +321,7 @@ Pci_proxy_dev::_do_rom_bar_write(l4_uint32_t mask, l4_uint32_t value)
 
 
 int
-Pci_proxy_dev::cfg_write(int reg, l4_uint32_t v, Cfg_width order)
+Pci_proxy_dev::cfg_write(l4_uint32_t reg, l4_uint32_t v, Cfg_width order)
 {
   Hw::Pci::If *p = _hwf;
 

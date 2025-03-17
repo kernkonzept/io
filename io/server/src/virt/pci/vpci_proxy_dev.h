@@ -39,10 +39,10 @@ public:
     set_id(_hwf->config().read<l4_uint8_t>(offset));
   }
 
-  int cap_read(int offs, l4_uint32_t *v, Cfg_width order) override
+  int cap_read(l4_uint32_t offs, l4_uint32_t *v, Cfg_width order) override
   { return _hwf->cfg_read(offset() + offs, v, order); }
 
-  int cap_write(int offs, l4_uint32_t v, Cfg_width order) override
+  int cap_write(l4_uint32_t offs, l4_uint32_t v, Cfg_width order) override
   { return _hwf->cfg_write(offset() + offs, v, order); }
 };
 
@@ -64,10 +64,10 @@ public:
     set_cap(header);
   }
 
-  int cap_read(int offs, l4_uint32_t *v, Cfg_width order) override
+  int cap_read(l4_uint32_t offs, l4_uint32_t *v, Cfg_width order) override
   { return _hwf->cfg_read(_phys_offset + offs, v, order); }
 
-  int cap_write(int offs, l4_uint32_t v, Cfg_width order) override
+  int cap_write(l4_uint32_t offs, l4_uint32_t v, Cfg_width order) override
   { return _hwf->cfg_write(_phys_offset + offs, v, order); }
 };
 
@@ -79,8 +79,8 @@ class Pci_proxy_dev : public Pci_dev_feature
 public:
   Pci_proxy_dev(Hw::Pci::If *hwf);
 
-  int cfg_read(int reg, l4_uint32_t *v, Cfg_width) override;
-  int cfg_write(int reg, l4_uint32_t v, Cfg_width) override;
+  int cfg_read(l4_uint32_t reg, l4_uint32_t *v, Cfg_width) override;
+  int cfg_write(l4_uint32_t reg, l4_uint32_t v, Cfg_width) override;
   int irq_enable(Irq_info *irq) override;
 
   l4_uint32_t read_rom() const { return _rom; }

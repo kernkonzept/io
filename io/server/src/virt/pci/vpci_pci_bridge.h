@@ -38,8 +38,8 @@ public:
   } __attribute__((packed));
 
   Pci_to_pci_bridge();
-  int cfg_read(int reg, l4_uint32_t *v, Cfg_width o) override;
-  int cfg_write(int reg, l4_uint32_t v, Cfg_width o) override;
+  int cfg_read(l4_uint32_t reg, l4_uint32_t *v, Cfg_width o) override;
+  int cfg_write(l4_uint32_t reg, l4_uint32_t v, Cfg_width o) override;
 
   int irq_enable(Irq_info *irq) override
   {

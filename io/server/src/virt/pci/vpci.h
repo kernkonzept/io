@@ -285,7 +285,7 @@ public:
    * \param v      Pointer to the buffer receiving the config space value.
    * \param order  The config space access size.
    */
-  int cfg_read(int reg, l4_uint32_t *v, Cfg_width order)
+  int cfg_read(l4_uint32_t reg, l4_uint32_t *v, Cfg_width order)
   {
     reg &= ~0U << order;
     reg -= _offset;
@@ -321,7 +321,7 @@ public:
    * \param v      Pointer to the value that shall be written.
    * \param order  The config space access size.
    */
-  int cfg_write(int reg, l4_uint32_t v, Cfg_width order)
+  int cfg_write(l4_uint32_t reg, l4_uint32_t v, Cfg_width order)
   {
     reg &= ~0U << order;
     reg -= _offset;
@@ -343,9 +343,9 @@ public:
   }
 
   /// Abstract read of the contents of this capability.
-  virtual int cap_read(int offs, l4_uint32_t *v, Cfg_width) = 0;
+  virtual int cap_read(l4_uint32_t offs, l4_uint32_t *v, Cfg_width) = 0;
   /// Abstract write to the contents of this capability.
-  virtual int cap_write(int offs, l4_uint32_t v, Cfg_width) = 0;
+  virtual int cap_write(l4_uint32_t offs, l4_uint32_t v, Cfg_width) = 0;
 };
 
 /**
@@ -399,7 +399,7 @@ public:
    * \param v      Pointer to the buffer receiving the config space value.
    * \param order  The config space access size.
    */
-  int cfg_read(int reg, l4_uint32_t *v, Cfg_width order)
+  int cfg_read(l4_uint32_t reg, l4_uint32_t *v, Cfg_width order)
   {
     reg &= ~0U << order;
     reg -= _offset;
@@ -433,7 +433,7 @@ public:
    * \param v      Pointer to the value that shall be written.
    * \param order  The config space access size.
    */
-  int cfg_write(int reg, l4_uint32_t v, Cfg_width order)
+  int cfg_write(l4_uint32_t reg, l4_uint32_t v, Cfg_width order)
   {
     reg &= ~0U << order;
     reg -= _offset;
@@ -445,9 +445,9 @@ public:
   }
 
   /// Abstract read of the contents of this capability.
-  virtual int cap_read(int offs, l4_uint32_t *v, Cfg_width) = 0;
+  virtual int cap_read(l4_uint32_t offs, l4_uint32_t *v, Cfg_width) = 0;
   /// Abstract write to the contents of this capability.
-  virtual int cap_write(int offs, l4_uint32_t v, Cfg_width) = 0;
+  virtual int cap_write(l4_uint32_t offs, l4_uint32_t v, Cfg_width) = 0;
 };
 
 /**
@@ -474,8 +474,8 @@ public:
   };
 
   Pci_dev() = default;
-  virtual int cfg_read(int reg, l4_uint32_t *v, Cfg_width) = 0;
-  virtual int cfg_write(int reg, l4_uint32_t v, Cfg_width) = 0;
+  virtual int cfg_read(l4_uint32_t reg, l4_uint32_t *v, Cfg_width) = 0;
+  virtual int cfg_write(l4_uint32_t reg, l4_uint32_t v, Cfg_width) = 0;
   virtual int irq_enable(Irq_info *irq) = 0;
   virtual bool is_same_device(Pci_dev const *o) const = 0;
   virtual Msi_src *msi_src() const = 0;

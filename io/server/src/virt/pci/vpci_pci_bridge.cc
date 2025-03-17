@@ -37,7 +37,7 @@ Pci_to_pci_bridge::Pci_to_pci_bridge()
 
 
 int
-Pci_to_pci_bridge::cfg_read(int reg, l4_uint32_t *v, Cfg_width o)
+Pci_to_pci_bridge::cfg_read(l4_uint32_t reg, l4_uint32_t *v, Cfg_width o)
 {
   unsigned mask = ~0U >> (32 - (1U << (o + 3)));
   switch (reg & ~3)
@@ -61,7 +61,7 @@ Pci_to_pci_bridge::cfg_read(int reg, l4_uint32_t *v, Cfg_width o)
 
 
 int
-Pci_to_pci_bridge::cfg_write(int reg, l4_uint32_t v, Cfg_width o)
+Pci_to_pci_bridge::cfg_write(l4_uint32_t reg, l4_uint32_t v, Cfg_width o)
 {
   unsigned mask = (~0U >> (32 - (1U << (o + 3)))) << ((reg & 3) * 8);
   switch (reg & ~3)

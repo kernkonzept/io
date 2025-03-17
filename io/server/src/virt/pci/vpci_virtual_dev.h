@@ -32,8 +32,8 @@ public:
   Pci_cfg_header *cfg_hdr() { return (Pci_cfg_header*)_h; }
   Pci_cfg_header const *cfg_hdr() const { return (Pci_cfg_header const *)_h; }
 
-  int cfg_read(int reg, l4_uint32_t *v, Cfg_width) override;
-  int cfg_write(int reg, l4_uint32_t v, Cfg_width) override;
+  int cfg_read(l4_uint32_t reg, l4_uint32_t *v, Cfg_width) override;
+  int cfg_write(l4_uint32_t reg, l4_uint32_t v, Cfg_width) override;
 
   bool is_same_device(Pci_dev const *o) const override
   { return o == this; }
