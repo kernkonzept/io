@@ -1,9 +1,7 @@
+#include <cassert>
 #include "irqs.h"
 #include "debug.h"
 #include "main.h"
-
-#include <cassert>
-#include <l4/cxx/bitmap>
 
 int
 Kernel_irq_pin::unbind(bool deleted)
@@ -57,7 +55,6 @@ Kernel_irq_pin::unmask()
   return -L4_ENOREPLY;
 }
 
-
 int
 Kernel_irq_pin::set_mode(unsigned mode)
 {
@@ -94,11 +91,6 @@ Kernel_irq_pin::mask()
   return l4_error(system_icu()->icu->mask(_idx));
 }
 
-
-namespace {
-static cxx::Bitmap<256> _msi_allocator;
-}
-
 void
 Msi_irq_pin::free_msi()
 {
@@ -107,9 +99,9 @@ Msi_irq_pin::free_msi()
     return;
 
   // if bound we must have a valid MSI number
-  assert (p & L4::Icu::F_msi);
+  assert(p & L4::Icu::F_msi);
 
-  _msi_allocator.clear_bit(p & ~L4::Icu::F_msi);
+  Msi_allocator::get().clear(p & ~L4::Icu::F_msi);
   d_printf(DBG_ALL, "free global MSI %u\n", p & ~L4::Icu::F_msi);
   // reset the internal IRQ number to 0
   _idx = 0;
@@ -118,16 +110,13 @@ Msi_irq_pin::free_msi()
 int
 Msi_irq_pin::alloc_msi()
 {
-  assert (!pin());
+  assert(!pin());
 
-  int res = _msi_allocator.scan_zero();
+  int res = Msi_allocator::get().scan();
   if (res < 0)
     return -L4_ENOMEM;
 
-  if (static_cast<unsigned>(res) >= system_icu()->info.nr_msis)
-    return -L4_ENOMEM;
-
-  _msi_allocator.set_bit(res);
+  Msi_allocator::get().set(res);
   d_printf(DBG_ALL, "allocate global MSI %d\n", res);
   _idx = res | L4::Icu::F_msi;
   return 0;
@@ -183,6 +172,3 @@ Msi_irq_pin::msi_info(Msi_src *src, l4_icu_msi_info_t *info)
 
   return src->map_msi_ctrl(info->msi_addr, &info->msi_addr);
 }
-
-
-

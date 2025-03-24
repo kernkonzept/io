@@ -10,7 +10,9 @@
 #include <l4/sys/irq>
 #include <l4/cxx/bitfield>
 #include <l4/cxx/hlist>
+#include <l4/cxx/bitmap>
 #include <l4/re/util/cap_alloc>
+#include "main.h"
 
 class Io_irq_pin
 {
@@ -131,6 +133,82 @@ public:
   int msi_info(Msi_src *src, l4_icu_msi_info_t *) override;
 
 private:
+  /**
+   * MSI allocator.
+   *
+   * The allocator is implemented as a Meyers singleton to enable allocating
+   * the underlying bitmap with the number of bits that equals to the number of
+   * MSIs supported by the system ICU.
+   */
+  class Msi_allocator
+  {
+  public:
+    Msi_allocator() = delete;
+
+    /**
+     * Get the singleton instance of the MSI allocator.
+     *
+     * The number of supported MSIs is derived from the number of MSIs
+     * supported by the system ICU.
+     *
+     * \return Singleton instance of the MSI allocator.
+     */
+    static Msi_allocator &get()
+    {
+      static Msi_allocator singleton(system_icu()->info.nr_msis);
+      return singleton;
+    }
+
+    /**
+     * Get the first available MSI.
+     *
+     * If the scan is successful, the returned MSI is guaranteed to be within
+     * the bounds of the number of MSIs supported.
+     *
+     * \retval >= 0  Index of first available MSI.
+     * \retval -1    No MSIs available.
+     */
+    int scan()
+    { return _bitmap.scan_zero(_msis); }
+
+    /**
+     * Mark an MSI as not available.
+     *
+     * \note No bounds checking is performed.
+     *
+     * \param msi  MSI index to be marked as not available.
+     */
+    void set(unsigned msi)
+    { _bitmap.set_bit(msi); }
+
+    /**
+     * Mark an MSI as available.
+     *
+     * \note No bounds checking is performed.
+     *
+     * \param msi  MSI index to be marked as available.
+     */
+    void clear(unsigned msi)
+    { _bitmap.clear_bit(msi); }
+
+  private:
+    /**
+     * Construct the MSI allocator.
+     *
+     * Allocate and zero-initialize a bitmap for keeping track of the available
+     * MSIs.
+     *
+     * \param msis  Number of MSIs to support.
+     */
+    explicit Msi_allocator(unsigned msis)
+    : _msis(msis),
+      _bitmap(new unsigned char[cxx::Bitmap_base::bit_buffer_bytes(_msis)]())
+    {}
+
+    unsigned _msis;
+    cxx::Bitmap_base _bitmap;
+  };
+
   void free_msi();
   int alloc_msi();
 };
