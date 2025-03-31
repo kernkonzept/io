@@ -481,35 +481,27 @@ System_bus::op_map(L4Re::Dataspace::Rights,
 
   L4::Ipc::Snd_fpage::Cacheopt f;
 
-  // if cached_mem():  Cached
-  // else:             client gets what it requests, the default is Uncached
   using L4Re::Dataspace;
-  if ((*r)->cached_mem())
+  // Map with least common flags between requested mapping and resource type.
+  switch ((flags & Dataspace::F::Caching_mask).raw)
     {
-      if ((flags & Dataspace::F::Caching_mask) != Dataspace::F::Cacheable)
+    case Dataspace::F::Cacheable:
+      if ((*r)->cached_mem())
         {
-          d_printf(DBG_ERR,
-                   "MMIO resource at 0x%llx requested as 'uncached' or 'bufferable' "
-                   "but marked as cachable only.\n",
-                   offset);
-          return -L4_EINVAL;
-        }
-      f = L4::Ipc::Snd_fpage::Cached;
-    }
-  else
-    {
-      switch ((flags & Dataspace::F::Caching_mask).raw)
-        {
-        case Dataspace::F::Bufferable:
-          f = L4::Ipc::Snd_fpage::Buffered;
-          break;
-        case Dataspace::F::Cacheable:
           f = L4::Ipc::Snd_fpage::Cached;
           break;
-        default:
-          f = L4::Ipc::Snd_fpage::Uncached;
+        }
+      [[fallthrough]];
+    case Dataspace::F::Bufferable:
+      if ((*r)->prefetchable())
+        {
+          f = L4::Ipc::Snd_fpage::Buffered;
           break;
         }
+      [[fallthrough]];
+    default:
+      f = L4::Ipc::Snd_fpage::Uncached;
+      break;
     }
 
   unsigned char rights = 0;
