@@ -53,6 +53,18 @@ enum l4vbus_resource_flags_t {
   L4VBUS_RESOURCE_F_MEM_R = 0x1,
   /** Memory resource is writeable. */
   L4VBUS_RESOURCE_F_MEM_W = 0x2,
+  /**
+   * Memory resource is prefetchable.
+   * Clients may map it buffered or non-cached.
+   */
+  L4VBUS_RESOURCE_F_MEM_PREFETCHABLE = 0x10,
+  /**
+   * Memory resource is cacheable.
+   * This implies that the memory resource is prefetchable. If not set,
+   * clients must not map it cached. If the resource is neither cacheable
+   * nor prefetchable, clients must map it non-cached!
+   */
+  L4VBUS_RESOURCE_F_MEM_CACHEABLE = 0x20,
   /** Reading needs to be performed using the MMIO space protocol. */
   L4VBUS_RESOURCE_F_MEM_MMIO_READ = 0x2000,
   /** Writing needs to be performed using the MMIO space protocol. */

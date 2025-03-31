@@ -91,29 +91,32 @@ public:
 
   enum Flags : unsigned long
   {
-    F_type_mask    = 0x00ff,
+    F_type_mask    = 0x00ff, // covers Resource::Type
     F_disabled     = 0x0100,
     F_hierarchical = 0x0200,
-    F_prefetchable = 0x0400,
     F_size_aligned = 0x0800,
     F_empty        = 0x1000,
     F_rom          = 0x2000,
     F_can_resize   = 0x4000,
     F_can_move     = 0x8000,
 
-    F_width_64bit   = 0x010000,
-    F_cached_mem    = 0x020000,
-    F_relative      = 0x040000,
-    F_internal      = 0x080000, ///< Internal resource not exported to vBUS
+    F_width_64bit  =   0x1'0000,
+    F_relative     =   0x4'0000,
+    F_internal     =   0x8'0000, ///< Internal resource not exported to vBUS
+
+    F_prefetchable = 0x100'0000, ///< exposed on vBUS
+    F_cached_mem   = 0x200'0000, ///< exposed on vBUS
 
     /// The upper 12-bits of the flags are exposed on the vBUS.
-    F_vbus_flags_mask     = 0xfff00000,
+    F_vbus_flags_mask     = 0xfff0'0000,
     F_vbus_flags_shift    = 20,
 
     Mem_type_base         = 1 << F_vbus_flags_shift,
     Mem_type_r            = L4VBUS_RESOURCE_F_MEM_R * Mem_type_base,
     Mem_type_w            = L4VBUS_RESOURCE_F_MEM_W * Mem_type_base,
     Mem_type_rw           = Mem_type_r | Mem_type_w,
+    Mem_type_prefetchable = L4VBUS_RESOURCE_F_MEM_PREFETCHABLE * Mem_type_base,
+    Mem_type_cacheable    = L4VBUS_RESOURCE_F_MEM_CACHEABLE    * Mem_type_base,
 
     Irq_type_base         = 1 << F_vbus_flags_shift,
     Irq_type_mask         = L4_IRQ_F_MASK       * Irq_type_base,
@@ -124,6 +127,8 @@ public:
     Irq_type_falling_edge = L4_IRQ_F_NEG_EDGE   * Irq_type_base,
     Irq_type_both_edges   = L4_IRQ_F_BOTH_EDGE  * Irq_type_base,
   };
+  static_assert(F_prefetchable == Mem_type_prefetchable);
+  static_assert(F_cached_mem == Mem_type_cacheable);
 
   bool is_irq() const
   { return type() == Irq_res; }
