@@ -3,3 +3,9 @@ config L4IO_SCU_IMX8QM
 	default y
 	help
 		Add support for i.MX8 System Controller Unit found on the NXP i.MX8QM.
+
+config L4IO_IOMUXC_IMX8MP
+	bool "NXP i.MX8MP IOMUXC Driver"
+	default y
+	help
+		Add support for i.MX8 IOMUXC controller found on the NXP i.MX8MP.
