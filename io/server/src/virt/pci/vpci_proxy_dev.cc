@@ -110,6 +110,13 @@ Pci_proxy_dev::scan_pcie_caps()
         case Hw::Pci::Extended_cap::Acs:
           offset = _skip_pcie_cap(cap, 8);
           continue;
+        case Hw::Pci::Resizable_bar_cap::Id:
+          {
+            auto ctrl0 = cap.read<Hw::Pci::Resizable_bar_cap::Bar_ctrl_0>();
+            unsigned size = 4 + 8 * ctrl0.num_bars();
+            offset = _skip_pcie_cap(cap, size);
+            continue;
+          }
         }
 
       add_pcie_cap(new Pcie_proxy_cap(_hwf, cap.header(), offset, offset));

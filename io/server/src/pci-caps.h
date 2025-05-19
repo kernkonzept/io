@@ -179,5 +179,75 @@ struct Acs_cap : Capability
   };
 };
 
+struct Resizable_bar_cap : Capability
+{
+  enum { Id = 0x15 };
+
+  struct Bar_cap
+  {
+    l4_uint32_t v; /**< Value container for the register */
+
+    CXX_BITFIELD_MEMBER( 4,  4, sup_1mb,   v);
+    CXX_BITFIELD_MEMBER( 5,  5, sup_2mb,   v);
+    CXX_BITFIELD_MEMBER( 6,  6, sup_4mb,   v);
+    CXX_BITFIELD_MEMBER( 7,  7, sup_8mb,   v);
+    CXX_BITFIELD_MEMBER( 8,  8, sup_16mb,  v);
+    CXX_BITFIELD_MEMBER( 9,  9, sup_32mb,  v);
+    CXX_BITFIELD_MEMBER(10, 10, sup_64mb,  v);
+    CXX_BITFIELD_MEMBER(11, 11, sup_128mb, v);
+    CXX_BITFIELD_MEMBER(12, 12, sup_256mb, v);
+    CXX_BITFIELD_MEMBER(13, 13, sup_512mb, v);
+    CXX_BITFIELD_MEMBER(14, 14, sup_1gb,   v);
+    CXX_BITFIELD_MEMBER(15, 15, sup_2gb,   v);
+    CXX_BITFIELD_MEMBER(16, 16, sup_4gb,   v);
+    CXX_BITFIELD_MEMBER(17, 17, sup_8gb,   v);
+    CXX_BITFIELD_MEMBER(18, 18, sup_16gb,  v);
+    CXX_BITFIELD_MEMBER(19, 19, sup_32gb,  v);
+    CXX_BITFIELD_MEMBER(20, 20, sup_64gb,  v);
+    CXX_BITFIELD_MEMBER(21, 21, sup_128gb, v);
+    CXX_BITFIELD_MEMBER(22, 22, sup_256gb, v);
+    CXX_BITFIELD_MEMBER(23, 23, sup_512gb, v);
+    CXX_BITFIELD_MEMBER(24, 24, sup_1tb,   v);
+    CXX_BITFIELD_MEMBER(25, 25, sup_2tb,   v);
+    CXX_BITFIELD_MEMBER(26, 26, sup_4tb,   v);
+    CXX_BITFIELD_MEMBER(27, 27, sup_8tb,   v);
+    CXX_BITFIELD_MEMBER(28, 28, sup_16tb,  v);
+    CXX_BITFIELD_MEMBER(29, 29, sup_32tb,  v);
+    CXX_BITFIELD_MEMBER(30, 30, sup_64tb,  v);
+    CXX_BITFIELD_MEMBER(31, 31, sup_128tb, v);
+  };
+
+  struct Bar_ctrl
+  {
+    l4_uint32_t v; /**< Value container for the register */
+
+    CXX_BITFIELD_MEMBER( 0,  2, index,     v);
+    CXX_BITFIELD_MEMBER( 5,  7, num_bars,  v);
+    CXX_BITFIELD_MEMBER( 8, 13, size,      v);
+    CXX_BITFIELD_MEMBER(16, 16, sup_256tb, v);
+    CXX_BITFIELD_MEMBER(17, 17, sup_512tb, v);
+    CXX_BITFIELD_MEMBER(18, 18, sup_1pb,   v);
+    CXX_BITFIELD_MEMBER(19, 19, sup_2pb,   v);
+    CXX_BITFIELD_MEMBER(20, 20, sup_4pb,   v);
+    CXX_BITFIELD_MEMBER(21, 21, sup_8pb,   v);
+    CXX_BITFIELD_MEMBER(22, 22, sup_16pb,  v);
+    CXX_BITFIELD_MEMBER(23, 23, sup_32pb,  v);
+    CXX_BITFIELD_MEMBER(24, 24, sup_64pb,  v);
+    CXX_BITFIELD_MEMBER(25, 25, sup_128pb, v);
+    CXX_BITFIELD_MEMBER(26, 26, sup_256pb, v);
+    CXX_BITFIELD_MEMBER(27, 27, sup_512pb, v);
+    CXX_BITFIELD_MEMBER(28, 28, sup_1eb,   v);
+    CXX_BITFIELD_MEMBER(29, 29, sup_2eb,   v);
+    CXX_BITFIELD_MEMBER(30, 30, sup_4eb,   v);
+    CXX_BITFIELD_MEMBER(31, 31, sup_8eb,   v);
+  };
+
+  // BAR control register 0 is always present
+  struct Bar_ctrl_0 : Bar_ctrl
+  {
+    enum { Ofs = 8 /**< Offset of the register in bytes */ };
+  };
+};
+
 } }
 
