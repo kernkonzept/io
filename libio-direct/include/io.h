@@ -13,11 +13,12 @@
 
 #pragma once
 
+#include <l4/sys/compiler.h>
 #include <l4/sys/types.h>
 #include <l4/sys/linkage.h>
 #include <l4/io/types.h>
 
-__BEGIN_DECLS
+L4_BEGIN_DECLS
 
 /**
  * \defgroup api_l4io IO interface
@@ -217,4 +218,4 @@ L4_CV int L4_EXPORT
 l4io_has_resource(enum l4io_resource_types_t type,
                   l4_addr_t start, l4_addr_t end);
 
-__END_DECLS
+L4_END_DECLS

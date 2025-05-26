@@ -12,10 +12,10 @@
 
 #include "debug.h"
 
-__BEGIN_DECLS
+L4_BEGIN_DECLS
 #include "acpi.h"
 #include "acpiosxf.h"
-__END_DECLS
+L4_END_DECLS
 
 #include <pci-root.h>
 #include "res.h"

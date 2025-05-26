@@ -10,11 +10,11 @@
 #include <stdio.h>
 #include <l4/sys/compiler.h>
 
-__BEGIN_DECLS
+L4_BEGIN_DECLS
 #include "acpi.h"
 #include "acpiosxf.h"
 #include "actypes.h"
-__END_DECLS
+L4_END_DECLS
 
 #include <l4/sys/cxx/ipc_epiface>
 #include <l4/re/env>

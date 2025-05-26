@@ -51,7 +51,7 @@ enum l4vbus_icu_src_types {
  * Refer to \ref L4vbus for the C++ API.
  */
 
-__BEGIN_DECLS
+L4_BEGIN_DECLS
 
 /**
  * \copybrief L4vbus::Device::device_by_hid()
@@ -232,6 +232,6 @@ int L4_CV
 l4vbus_vicu_get_cap(l4_cap_idx_t vbus, l4vbus_device_handle_t icu,
                     l4_cap_idx_t cap);
 
-__END_DECLS
+L4_END_DECLS
 
 /** \} */

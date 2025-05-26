@@ -16,7 +16,7 @@
  * \{
  */
 
-__BEGIN_DECLS
+L4_BEGIN_DECLS
 
 /**
  * \copybrief L4vbus::Pm::pm_suspend()
@@ -38,4 +38,4 @@ l4vbus_pm_resume(l4_cap_idx_t vbus, l4vbus_device_handle_t handle);
 
 /**\}*/
 
-__END_DECLS
+L4_END_DECLS

@@ -10,10 +10,10 @@
 #include <sys/cdefs.h>
 #include <l4/sys/compiler.h>
 
-__BEGIN_DECLS
+L4_BEGIN_DECLS
 
 L4_EXPORT
 void libpciids_name_device(char *name, int len,
                            unsigned vendor, unsigned device);
 
-__END_DECLS
+L4_END_DECLS

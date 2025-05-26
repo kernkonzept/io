@@ -16,7 +16,7 @@
  * \{
  */
 
-__BEGIN_DECLS
+L4_BEGIN_DECLS
 
 /**
  * \brief Constants for generic GPIO functions
@@ -165,4 +165,4 @@ l4vbus_gpio_to_irq(l4_cap_idx_t vbus, l4vbus_device_handle_t handle,
 
 /**\}*/
 
-__END_DECLS
+L4_END_DECLS

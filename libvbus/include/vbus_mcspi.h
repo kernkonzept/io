@@ -10,7 +10,7 @@
 #include <l4/sys/types.h>
 #include <l4/vbus/vbus_types.h>
 
-__BEGIN_DECLS
+L4_BEGIN_DECLS
 
 int L4_CV
 l4vbus_mcspi_read(l4_cap_idx_t vbus, l4vbus_device_handle_t handle,
@@ -20,4 +20,4 @@ int L4_CV
 l4vbus_mcspi_write(l4_cap_idx_t vbus, l4vbus_device_handle_t handle,
                    unsigned channel, l4_umword_t value);
 
-__END_DECLS
+L4_END_DECLS
