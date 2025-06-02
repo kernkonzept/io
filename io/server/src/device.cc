@@ -331,3 +331,22 @@ Generic_device::property(std::string const &name)
   return _properties[name];
 }
 
+void dump(Device *d)
+{
+  Device::iterator i = Device::iterator(0, d, 100);
+  for (; i != d->end(); ++i)
+    {
+      int indent = i->depth() * 2;
+      if (dlevel(DBG_INFO))
+        i->dump(indent);
+      if (dlevel(DBG_DEBUG))
+        {
+          printf("%*.s  Resources: ==== start ====\n", indent, " ");
+          for (Resource_list::const_iterator r = i->resources()->begin();
+               r != i->resources()->end(); ++r)
+            if (*r)
+              (*r)->dump(indent + 2);
+          printf("%*.s  Resources: ===== end =====\n", indent, " ");
+        }
+    }
+}

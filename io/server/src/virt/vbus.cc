@@ -901,6 +901,9 @@ System_bus::inhibitor_signal(l4_umword_t id)
 void
 System_bus::finalize()
 {
+  request_child_resources();
+  allocate_pending_child_resources();
+
   for (auto d = begin(L4VBUS_MAX_DEPTH); d != end(); ++d)
     if (d->handle() < 0)
       {

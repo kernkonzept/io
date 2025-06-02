@@ -24,6 +24,7 @@
 #include "__acpi.h"
 #include "virt/vbus.h"
 #include "virt/vbus_factory.h"
+#include "virt/vbus_factory_srv.h"
 #include "phys_space.h"
 #include "cfg.h"
 
@@ -40,10 +41,6 @@
 #include <lua.h>
 #include <lauxlib.h>
 #include <lualib.h>
-
-#include "vbus_factory.h"
-
-static IO_factory factory;
 
 namespace {
 
@@ -126,26 +123,6 @@ system_icu()
   return &_icu;
 }
 
-static void dump(Device *d)
-{
-  Device::iterator i = Device::iterator(0, d, 100);
-  for (; i != d->end(); ++i)
-    {
-      int indent = i->depth() * 2;
-      if (dlevel(DBG_INFO))
-        i->dump(indent);
-      if (dlevel(DBG_DEBUG))
-        {
-          printf("%*.s  Resources: ==== start ====\n", indent, " ");
-          for (Resource_list::const_iterator r = i->resources()->begin();
-               r != i->resources()->end(); ++r)
-            if (*r)
-              (*r)->dump(indent + 2);
-          printf("%*.s  Resources: ===== end =====\n", indent, " ");
-        }
-    }
-}
-
 static void check_conflicts(Hw::Device *d)
 {
   for (auto i = Hw::Device::iterator(0, d, 100); i != d->end(); ++i)
@@ -174,12 +151,36 @@ int add_vbus(Vi::Device *dev)
       return -1;
     }
 
-  b->request_child_resources();
-  b->allocate_pending_child_resources();
-  b->finalize();
+  auto *f = IO_factory::get();
 
-  if (!factory.add_vbus(b))
-    return -1;
+  // Register vbus to a cap with the same name if present
+  L4::Cap<L4::Rcv_endpoint> cap =
+    L4Re::Env::env()->get_cap<L4::Rcv_endpoint>(b->name());
+  if (cap.is_valid())
+    {
+      cap = registry->register_obj(b, cap);
+      if (!cap)
+        {
+          d_printf(DBG_ERR, "Service registration failed for vbus '%s' : %s\n",
+                   b->name(), l4sys_errtostr(cap.cap()));
+          return -1;
+        }
+      else
+        d_printf(DBG_INFO, "Registered end point for vbus '%s'\n",
+                 b->name());
+    }
+  else
+    {
+      // warn about missing end points if factory is not active
+      if (!f->active())
+        d_printf(DBG_WARN, "Service registration failed for vbus '%s', "
+                 "IO did not get a cap with the corresponding name.\n",
+                 b->name());
+    }
+
+
+  b->finalize();
+  f->add_vbus(b);
 
   if (dlevel(DBG_DEBUG2))
     dump(b);

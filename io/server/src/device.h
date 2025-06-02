@@ -577,3 +577,5 @@ public:
   Resource *res() { return _res; }
 };
 
+/// Helper function used to dump a Device instance
+void dump(Device *d);

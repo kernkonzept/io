@@ -31,18 +31,22 @@ public:
   /// Initialize and register factory
   IO_factory();
 
+  /// Get a pointer to the IO server factory
+  static IO_factory *get();
+
+  /// Is the factory active?
+  bool active()
+  { return _active; }
+
   /**
    * Add Vbus to factory
    *
    * Add a VI::System_bus structure created by an IO config script to
-   * the factory to allow the creation of a Vbus endpoint for it.
+   * the list of system buses managed known to the factory.
    *
    * \param vbus  Pointer to a Vi::System_bus structure
-   *
-   * \retval True  Vbus was successfully registered
-   * \retval False  Vbus registration failed, e.g. due to missing space
    */
-  bool add_vbus(Vi::System_bus *vbus);
+  void add_vbus(Vi::System_bus *vbus);
 
   /**
    * Handle the create operation of the factory protocol

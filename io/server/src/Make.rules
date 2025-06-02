@@ -33,7 +33,7 @@ SRC_CC-$(CONFIG_L4IO_PCI_SRIOV) += virt/pci/vpci_sriov.cc \
                                    pci/sriov.cc
 
 SRC_CC := main.cc res.cc phys_space.cc resource.cc hw_device.cc \
-          resource_provider.cc vbus_factory.cc \
+          resource_provider.cc \
           hw_root_bus.cc device.cc hw_irqs.cc \
           hw_register_block.cc \
           dma_domain.cc \
@@ -48,6 +48,7 @@ SRC_CC := main.cc res.cc phys_space.cc resource.cc hw_device.cc \
           virt/vbus.cc \
           virt/vproxy_dev.cc \
           virt/vbus_factory.cc \
+          virt/vbus_factory_srv.cc \
           virt/gpio/vgpio.cc \
           inhibitor_mux.cc \
           platform_control.cc \

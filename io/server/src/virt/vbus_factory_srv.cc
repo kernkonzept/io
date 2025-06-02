@@ -21,7 +21,7 @@
 #include <l4/re/util/debug>
 #include <l4/re/error_helper>
 
-#include "vbus_factory.h"
+#include "vbus_factory_srv.h"
 
 IO_factory::IO_factory() : _del_cap_irq{this}
 {
@@ -83,35 +83,9 @@ Vi::System_bus *IO_factory::lookup_vbus(char const *opt_str, unsigned len)
   return nullptr;
 }
 
-bool IO_factory::add_vbus(Vi::System_bus *vbus)
+void IO_factory::add_vbus(Vi::System_bus *vbus)
 {
-  // Register vbus to a cap with the same name if present
-  L4::Cap<L4::Rcv_endpoint> cap =
-    L4Re::Env::env()->get_cap<L4::Rcv_endpoint>(vbus->name());
-  if (cap.is_valid())
-    {
-      cap = registry->register_obj(vbus, cap);
-      if (!cap)
-        {
-          d_printf(DBG_ERR, "Service registration failed for vbus '%s' : %s\n",
-                   vbus->name(), l4sys_errtostr(cap.cap()));
-          return false;
-        }
-      else
-        d_printf(DBG_INFO, "Registered end point for vbus '%s'\n",
-                 vbus->name());
-    }
-  else
-    {
-      // warn about missing end points if factory is not active
-      if (!_active)
-        d_printf(DBG_WARN, "Service registration failed for vbus '%s', "
-                 "IO did not get a cap with the corresponding name.\n",
-                 vbus->name());
-    }
-
   _busses.push_back(vbus);
-  return true;
 }
 
 long IO_factory::op_create(L4::Factory::Rights, L4::Ipc::Cap<void> &res,
@@ -151,4 +125,10 @@ long IO_factory::op_create(L4::Factory::Rights, L4::Ipc::Cap<void> &res,
 
   res = vbus->obj_cap();
   return L4_EOK;
+}
+
+static IO_factory factory;
+IO_factory *IO_factory::get()
+{
+  return &factory;
 }
