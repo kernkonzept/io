@@ -519,7 +519,7 @@ run(int argc, char * const *argv)
     d_printf(DBG_WARN, "warning: could not register control interface at"
                        " cap 'platform_ctl'\n");
 
-  fprintf(stderr, "Ready. Waiting for request.\n");
+  fprintf(stderr, "Ready. Waiting for requests.\n");
   server_loop();
 
   return 0;
