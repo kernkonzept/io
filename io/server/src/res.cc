@@ -265,7 +265,7 @@ l4_addr_t res_map_iomem(l4_uint64_t phys, l4_uint64_t size, bool cached)
   int all_ok = 0;
 
   // The loop goes one page beyond the requested mapping length.
-  for (unsigned i = (r.phys - iomem->phys) >> Page_shift;
+  for (l4_addr_t i = (r.phys - iomem->phys) >> Page_shift;
        i <= ((r.size + r.phys - iomem->phys) >> Page_shift);
        ++i)
     {
