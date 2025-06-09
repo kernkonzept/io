@@ -323,16 +323,16 @@ public:
     return r;
   }
 
-  void set_managed_kern_dma_space(L4::Cap<L4::Task> s) override
+  int set_managed_kern_dma_space(L4::Cap<L4::Task> s) override
   {
     Dma_domain::set_managed_kern_dma_space(s);
 
     L4::Cap<L4::Iommu> iommu = L4Re::Env::env()->get_cap<L4::Iommu>("iommu");
 
-    _src->enumerate_dma_src_ids([this, iommu](l4_uint64_t src) -> int
-                                  {
-                                    return this->iommu_bind(iommu, src);
-                                  });
+    return _src->enumerate_dma_src_ids([this, iommu](l4_uint64_t src) -> int
+                                       {
+                                         return this->iommu_bind(iommu, src);
+                                       });
   }
 
   int create_managed_kern_dma_space() override
@@ -342,8 +342,10 @@ public:
     auto dma = L4Re::chkcap(L4Re::Util::make_unique_cap<L4::Task>());
     L4Re::chksys(L4Re::Env::env()->factory()->create(dma.get(), L4_PROTO_DMA_SPACE));
 
-    set_managed_kern_dma_space(dma.release());
-    return 0;
+    int r = set_managed_kern_dma_space(dma.release());
+    if (r < 0)
+      d_printf(DBG_ERR, "Error: Failed to create kernel-side DMA space: %d\n", r);
+    return r;
   }
 
   int set_dma_task(bool set, L4::Cap<L4::Task> dma_task) override

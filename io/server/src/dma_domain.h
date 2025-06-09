@@ -22,10 +22,11 @@ public:
   L4::Cap<L4::Task> kern_dma_space() const
   { return _kern_dma_space; }
 
-  virtual void set_managed_kern_dma_space(L4::Cap<L4::Task> s)
+  virtual int set_managed_kern_dma_space(L4::Cap<L4::Task> s)
   {
     _kern_dma_space = s;
     _managed_kern_dma_space = true;
+    return 0;
   }
 
   virtual int create_managed_kern_dma_space() = 0;

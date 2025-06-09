@@ -115,9 +115,25 @@ Dma_domain_set::create_managed_kern_dma_space()
 
   for (auto d: _domains)
     if (!d->kern_dma_space())
-      d->set_managed_kern_dma_space(kds);
+      {
+        int r = d->set_managed_kern_dma_space(kds);
+        if (r < 0)
+          {
+            d_printf(DBG_ERR,
+                     "Error: Domain_set: "
+                     "Failed to create kernel-side DMA space for domain: %d\n", r);
+            return r;
+          }
+      }
 
-  set_managed_kern_dma_space(kds);
+  int r = set_managed_kern_dma_space(kds);
+  if (r < 0)
+    {
+      d_printf(DBG_ERR,
+               "Error: Domain_set: "
+               "Failed to create kernel-side DMA space: %d\n", r);
+      return r;
+    }
 
   return 0;
 }
