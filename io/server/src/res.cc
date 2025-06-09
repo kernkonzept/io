@@ -213,7 +213,7 @@ l4_addr_t res_map_iomem(l4_uint64_t phys, l4_uint64_t size, bool cached)
 	      return 0;
 	    }
 
-	  unsigned bytes
+	  l4_size_t bytes
 	    = cxx::Bitmap_base::bit_buffer_bytes(iomem->size >> Page_shift);
           void *pages_bit_buffer = malloc(bytes);
           if (!pages_bit_buffer)
@@ -290,7 +290,7 @@ l4_addr_t res_map_iomem(l4_uint64_t phys, l4_uint64_t size, bool cached)
 
 	  if (res >= 0)
 	    {
-	      for (unsigned x = min >> Page_shift; x < i; ++x)
+	      for (l4_addr_t x = min >> Page_shift; x < i; ++x)
 	        {
 		  iomem->pages.set_bit(x);
 		  iomem->cached.bit(x, cached);
