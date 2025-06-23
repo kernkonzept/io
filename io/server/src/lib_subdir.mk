@@ -20,14 +20,14 @@ $(TARGET): $(SUBDIR_OBJS) $(GENERAL_D_LOC)
 # include
 $(SUBDIR_OBJS): $(OBJ_DIR)/%/OBJ-$(SYSTEM)/$(TARGET): % $(PKGDIR)/server/src/Make.rules $(GENERAL_D_LOC)
 	$(VERBOSE)$(MAKE) $(MAKECMDGOALS) OBJ_BASE=$(OBJ_BASE) \
-                          -C $(SRC_DIR)/$* $(MKFLAGS)
+                          -C $(SRC_DIR)/$*
 endif
 
 all::
 
 clean-subdir-%:
 	$(VERBOSE)$(MAKE) clean OBJ_BASE=$(OBJ_BASE) \
-                          -C $(SRC_DIR)/$* $(MKFLAGS)
+                          -C $(SRC_DIR)/$*
 
 clean:: $(addprefix clean-subdir-,$(SUBDIRS))
 

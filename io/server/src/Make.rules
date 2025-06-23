@@ -87,7 +87,7 @@ all::
 
 $(SUBDIR_OBJS): $(OBJ_DIR)/%/OBJ-$(SYSTEM)/builtin.thin.a: %
 	$(VERBOSE)$(MAKE) $(MAKECMDGOALS) OBJ_BASE=$(OBJ_BASE)\
-	                  -C $(SRC_DIR)/$* $(MKFLAGS)
+	                  -C $(SRC_DIR)/$*
 
 $(TARGET): $(SUBDIR_OBJS)
 
@@ -95,7 +95,7 @@ EXTRA_LIBS += --whole-archive $(SUBDIR_OBJS) --no-whole-archive
 
 clean-subdir-%:
 	$(VERBOSE)$(MAKE) clean OBJ_BASE=$(OBJ_BASE) \
-	                  -C $(SRC_DIR)/$* $(MKFLAGS)
+	                  -C $(SRC_DIR)/$*
 
 clean:: $(addprefix clean-subdir-,$(SUBDIRS))
 
