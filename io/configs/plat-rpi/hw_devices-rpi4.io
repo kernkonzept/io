@@ -52,7 +52,7 @@ Io.hw_add_devices(function()
   end);
 
   SPI = Hw.Device(function()
-    compatible = {"brcm,brcm2835-spi"};
+    compatible = {"brcm,bcm2835-spi"};
     Property.hid = "BCM2835_spi";
     Resource.regs = Res.mmio(0xFE204000, 0xFE204000 + 0x200 - 1);
     Resource.irq0 = Res.irq(32 + 118, Io.Resource.Irq_type_level_high);
