@@ -79,41 +79,41 @@ Io.hw_add_devices(function()
   end) -- caam_secvio
       -- /soc@0/caam-sm@100000 (2)
       caam_sm_100000 = Io.Hw.Device(function()
-         compatible    = { "fsl,imx6q-caam-sm" };
-         Resource.reg0 = reg_mmio(0x00100000, 0x00008000);
+        compatible    = { "fsl,imx6q-caam-sm" };
+        Resource.reg0 = reg_mmio(0x00100000, 0x00008000);
       end) -- caam-sm@100000
          -- /soc@0/bus@30000000/gpio@30200000 (3)
-         gpio_30200000 = Io.Hw.Device(function()
-            compatible    = { "fsl,imx8mp-gpio", "fsl,imx35-gpio" };
-            Resource.reg0 = reg_mmio(0x30200000, 0x00010000);
-            Resource.irq0 = reg_irq(0x0, 0x40, 0x4);
-            Resource.irq1 = reg_irq(0x0, 0x41, 0x4);
+         gpio0 = Io.Hw.Gpio_imx_chip(function()
+           compatible    = { "fsl,imx8mp-gpio", "fsl,imx35-gpio" };
+           Resource.regs = reg_mmio(0x30200000, 0x00001000);
+           Resource.irq0 = reg_irq(0x0, 0x40, 0x4);
+           Resource.irq1 = reg_irq(0x0, 0x41, 0x4);
          end) -- gpio@30200000
          -- /soc@0/bus@30000000/gpio@30210000 (3)
-         gpio_30210000 = Io.Hw.Device(function()
+         gpio1 = Io.Hw.Gpio_imx_chip(function()
             compatible    = { "fsl,imx8mp-gpio", "fsl,imx35-gpio" };
-            Resource.reg0 = reg_mmio(0x30210000, 0x00010000);
+            Resource.regs = reg_mmio(0x30210000, 0x00001000);
             Resource.irq0 = reg_irq(0x0, 0x42, 0x4);
             Resource.irq1 = reg_irq(0x0, 0x43, 0x4);
          end) -- gpio@30210000
          -- /soc@0/bus@30000000/gpio@30220000 (3)
-         gpio_30220000 = Io.Hw.Device(function()
+         gpio2 = Io.Hw.Gpio_imx_chip(function()
             compatible    = { "fsl,imx8mp-gpio", "fsl,imx35-gpio" };
-            Resource.reg0 = reg_mmio(0x30220000, 0x00010000);
+            Resource.regs = reg_mmio(0x30220000, 0x00001000);
             Resource.irq0 = reg_irq(0x0, 0x44, 0x4);
             Resource.irq1 = reg_irq(0x0, 0x45, 0x4);
          end) -- gpio@30220000
          -- /soc@0/bus@30000000/gpio@30230000 (3)
-         gpio_30230000 = Io.Hw.Device(function()
+         gpio3 = Io.Hw.Gpio_imx_chip(function()
             compatible    = { "fsl,imx8mp-gpio", "fsl,imx35-gpio" };
-            Resource.reg0 = reg_mmio(0x30230000, 0x00010000);
+            Resource.regs = reg_mmio(0x30230000, 0x00001000);
             Resource.irq0 = reg_irq(0x0, 0x46, 0x4);
             Resource.irq1 = reg_irq(0x0, 0x47, 0x4);
          end) -- gpio@30230000
          -- /soc@0/bus@30000000/gpio@30240000 (3)
-         gpio_30240000 = Io.Hw.Device(function()
+         gpio4 = Io.Hw.Gpio_imx_chip(function()
             compatible    = { "fsl,imx8mp-gpio", "fsl,imx35-gpio" };
-            Resource.reg0 = reg_mmio(0x30240000, 0x00010000);
+            Resource.regs = reg_mmio(0x30240000, 0x00001000);
             Resource.irq0 = reg_irq(0x0, 0x48, 0x4);
             Resource.irq1 = reg_irq(0x0, 0x49, 0x4);
          end) -- gpio@30240000
