@@ -272,10 +272,12 @@ bool Vtd_iommu::probe()
   for (auto it = dmar_table->begin(); it != dmar_table->end(); ++it)
     {
       if (auto *drhd = it->cast<Dmar_drhd>())
-        parse_drhd_entry(*drhd, count);
+        {
+          parse_drhd_entry(*drhd, count);
 
-      // next IOMMU
-      ++count;
+          // next IOMMU
+          ++count;
+        }
     }
 
   return count > 0;
