@@ -97,7 +97,10 @@ Root_bridge::setup(Hw::Device *host)
   for (Resource_list::const_iterator i = host->resources()->begin();
        i != host->resources()->end(); ++i)
     if ((*i)->type() == Resource::Bus_res)
-      num = subordinate = (*i)->start();
+      {
+        num = (*i)->start();
+        subordinate = (*i)->end();
+      }
 
   Bridge_base::discover_bus(host, this);
 }
