@@ -63,8 +63,8 @@ Generic_bridge::check_bus_config()
   l4_uint8_t so = (b >> 16) & 0xff;
 
   // set internal attributes
-  pri = pb;
-  num = sb;
+  primary = pb;
+  secondary = sb;
   subordinate = so;
 
   if (pb == cfg.addr().bus() && sb > cfg.addr().bus()
@@ -75,12 +75,12 @@ Generic_bridge::check_bus_config()
   if (new_so == 0)
     assert (false);
 
-  pri = cfg.addr().bus();
-  num = new_so;
+  primary = cfg.addr().bus();
+  secondary = new_so;
   subordinate = new_so;
   b &= 0xff000000;
-  b |= static_cast<l4_uint32_t>(pri);
-  b |= static_cast<l4_uint32_t>(num) << 8;
+  b |= static_cast<l4_uint32_t>(primary);
+  b |= static_cast<l4_uint32_t>(secondary) << 8;
   b |= static_cast<l4_uint32_t>(subordinate) << 16;
 
   // Write Config::Primary, Config::Secondary and Config::Subordinate.
@@ -341,7 +341,7 @@ public:
      * bus number. See PCI Express to PCI/PCI-X Bridge Specification Revision
      * 1.0, section 2.3.
      */
-    return Dma_requester_id::alias(segment_nr(), num, 0);
+    return Dma_requester_id::alias(segment_nr(), secondary, 0);
   }
 };
 
@@ -524,7 +524,7 @@ Dev *
 Bridge_base::discover_func(Hw::Device *host_bus, Config_space *cfg,
                            int device, int function)
 {
-  Config config(Cfg_addr(num, device, function, 0), cfg);
+  Config config(Cfg_addr(secondary, device, function, 0), cfg);
 
   l4_uint32_t vendor = config.read<l4_uint32_t>(Config::Vendor);
   if ((vendor & 0xffff) == 0xffff)
@@ -607,7 +607,7 @@ Bridge_base::dump(int) const
 #if 0
   printf("PCI bus type: %d: ", bus_type);
   "bridge %04x:%02x:%02x.%x\n",
-         b->num, 0, b->parent() ? (int)static_cast<Hw::Pci::Bus*>(b->parent())->num : 0,
+         b->secondary, 0, b->parent() ? (int)static_cast<Hw::Pci::Bus*>(b->parent())->secondary : 0,
          b->adr() >> 16, b->adr() & 0xffff);
 #endif
 #if 0

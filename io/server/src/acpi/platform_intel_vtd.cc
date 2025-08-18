@@ -154,7 +154,7 @@ Vtd_iommu::find_pci_bdf(l4_uint16_t segment, l4_uint8_t bus,
         }
 
       if (auto *bridge = dynamic_cast<Hw::Pci::Bridge_base *>(pdev))
-        bus = bridge->num;
+        bus = bridge->secondary;
       else
         // bus dev fn identifies a device.
         d_printf(DBG_DEBUG, "Found PCI Endpoint: %04x:%02x:%x.%x\n", segment,

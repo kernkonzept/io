@@ -159,7 +159,7 @@ struct Acpi_pci_root_drv : Acpi_device_driver
     else
       {
         rb->set_host(device);
-        rb->num = bbn[0];
+        rb->secondary = bbn[0];
       }
 
     device->add_feature(rb);

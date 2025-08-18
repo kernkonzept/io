@@ -158,7 +158,7 @@ Dwc_pcie::setup_rc()
 inline L4drivers::Register_block<32>
 Dwc_pcie::cfg_regs(Cfg_addr addr)
 {
-  if (addr.bus() == num)
+  if (addr.bus() == secondary)
     return _regs;
 
   uint32_t target = ((addr.bus() << 8) | addr.devfn()) << 16;
@@ -251,10 +251,10 @@ Dwc_pcie::device_valid(Cfg_addr addr)
 
   // there is only the PCI-to-PCI bridge on 'our' bus and there are no other
   // devices
-  if ((addr.bus() == num) && (addr.dev() > 0))
+  if ((addr.bus() == secondary) && (addr.dev() > 0))
     return false;
 
-  if ((addr.bus() > num) && (addr.dev() > 0))
+  if ((addr.bus() > secondary) && (addr.dev() > 0))
     return false;
 
   return true;

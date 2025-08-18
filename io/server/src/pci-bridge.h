@@ -15,13 +15,13 @@ namespace Hw { namespace Pci {
 class Bridge_base : public Bridge_if
 {
 public:
-  unsigned char num = 0;
+  unsigned char secondary = 0;
   unsigned char subordinate = 0;
 
   Bridge_base() = default;
 
-  explicit Bridge_base(unsigned char num)
-  : num(num), subordinate(num)
+  explicit Bridge_base(unsigned char secondary)
+  : secondary(secondary), subordinate(secondary)
   {}
 
   bool check_bus_number(unsigned bus_num) override
@@ -109,7 +109,7 @@ public:
 class Generic_bridge : public Bridge_base, public Dev
 {
 public:
-  unsigned char pri;
+  unsigned char primary;
   using Dev::cfg_write;
   using Dev::cfg_read;
 
@@ -122,7 +122,7 @@ public:
    * \param[in] cfg      Config cache object for this generic bridge.
    */
   Generic_bridge(Hw::Device *host, Bridge_if *bridge, Config_cache const &cfg)
-  : Dev(host, bridge, cfg), pri(0)
+  : Dev(host, bridge, cfg), primary(0)
   {}
 
   unsigned alloc_bus_number() override

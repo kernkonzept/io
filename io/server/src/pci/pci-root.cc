@@ -98,7 +98,7 @@ Root_bridge::setup(Hw::Device *host)
        i != host->resources()->end(); ++i)
     if ((*i)->type() == Resource::Bus_res)
       {
-        num = (*i)->start();
+        secondary = (*i)->start();
         subordinate = (*i)->end();
       }
 
@@ -119,7 +119,7 @@ register_root_bridge(Root_bridge *b)
 {
   for (auto x: __pci_root_bridge)
     if (x->segment() == b->segment()
-        && x->num == b->num)
+        && x->secondary == b->secondary)
       return -L4_EEXIST;
 
   __pci_root_bridge.push_back(b);
@@ -130,7 +130,7 @@ Root_bridge *find_root_bridge(unsigned segment, int bus)
 {
   for (auto b: __pci_root_bridge)
     if (b->segment() == segment
-        && b->num == bus)
+        && b->secondary == bus)
       return b;
 
   return 0;

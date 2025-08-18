@@ -690,7 +690,7 @@ create_additional_mmio_bridge(int pci_segment, int bus_num, Hw::Device *)
 
   // Just copy the existing one, it shall have the right config
   auto *br = new Hw::Pci::Mmio_root_bridge(*r);
-  br->num = bus_num;
+  br->secondary = bus_num;
   br->subordinate = bus_num;
   return br;
 }
