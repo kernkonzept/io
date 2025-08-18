@@ -265,20 +265,7 @@ Vi::Sw_icu::Sw_irq_pin::l4_type() const
 int
 Vi::Sw_icu::Sw_irq_pin::set_mode(l4_umword_t mode)
 {
-  if (!(_state & S_allow_set_mode))
-    {
-      unsigned t = l4_type();
-
-      mode = (mode & L4_IRQ_F_MASK) | 1;
-
-      if (t != L4_IRQ_F_NONE
-          && t != mode)
-        d_printf(DBG_WARN, "WARNING: Changing type of IRQ %d from %x to %lx prohibited\n",
-                 _irqn, t, mode);
-      return 0;
-    }
-
-  return _master->set_mode(mode);
+  return _master->set_mode(mode & L4_IRQ_F_MASK);
 }
 
 bool
@@ -346,7 +333,7 @@ Vi::Sw_icu::Sw_irq_pin::_unbind(bool deleted)
     _master->unbind(deleted);
 
   _irq.reset();
-  _state &= S_user_mask;
+  _state &= S_irq_type_mask;
   return err;
 }
 

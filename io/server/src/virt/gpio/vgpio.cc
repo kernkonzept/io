@@ -402,7 +402,7 @@ Gpio::to_irq(L4::Ipc::Iostream &ios)
 
       if (Vi::System_bus *sb = dynamic_cast<Vi::System_bus *>(get_root()))
         {
-          int virq = sb->sw_icu()->alloc_irq(Vi::Sw_icu::S_allow_set_mode, irq);
+          int virq = sb->sw_icu()->alloc_irq(Resource::Irq_type_none, irq);
 	  if (virq < 0)
 	    return virq;
 

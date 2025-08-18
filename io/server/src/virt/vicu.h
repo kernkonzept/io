@@ -113,18 +113,9 @@ private:
       S_irq_type_mask  = Resource::Irq_type_mask,
     };
 
-    enum
-    {
-      S_allow_set_mode = 4,
-      S_user_mask = S_irq_type_mask | S_allow_set_mode
-    };
-
     Sw_irq_pin(Io_irq_pin *master, unsigned irqn, unsigned flags)
-    : _state(flags & S_user_mask), _irqn(irqn), _master(master)
+    : _state(flags & S_irq_type_mask), _irqn(irqn), _master(master)
     {
-      if ((flags & Resource::Irq_type_mask) == Resource::Irq_type_none)
-        _state |= S_allow_set_mode;
-
       master->add_sw_irq();
     }
 
@@ -167,13 +158,6 @@ private:
   Irq_set _irqs;
   unsigned _num_msis = 0;
   Irq_set _msis;
-
-public:
-
-  enum
-  {
-    S_allow_set_mode = Sw_irq_pin::S_allow_set_mode,
-  };
 
 private:
   /// The vBUS ICU interface of the virtual ICU, provided as device feature.
