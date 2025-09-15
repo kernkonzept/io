@@ -7,7 +7,6 @@
  */
 #pragma once
 
-#include <sys/cdefs.h>
 #include <l4/sys/compiler.h>
 
 L4_BEGIN_DECLS
