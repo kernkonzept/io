@@ -8,6 +8,7 @@
 
 #include "debug.h"
 #include "irqs.h"
+#include "strings.h"
 #include "gpio"
 #include "hw_device.h"
 #include "hw_irqs.h"

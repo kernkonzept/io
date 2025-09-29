@@ -7,6 +7,4 @@ SRC_CC-$(CONFIG_L4IO_GPIO_OMAP)    += omap.cc
 SRC_CC-$(CONFIG_L4IO_GPIO_QCOM)    += qcom.cc
 SRC_CC-$(CONFIG_L4IO_GPIO_IMX)     += imx.cc
 
-DEFINES_imx.cc += -D_DEFAULT_SOURCE
-
 include $(PKGDIR)/server/src/lib_subdir.mk
