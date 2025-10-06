@@ -309,7 +309,7 @@ Sr_iov_feature::setup(Hw::Device *)
   // avoid waiting for a whole second here, which would be required otherwise to
   // ensure that readiness (see section "9.3.3.3.1 VF Enable" of the "PCI
   // Express Base Specification Revision 5.0").
-  usleep(100);
+  l4_ipc_sleep_ms(100);
 
   // We can only initialize the VF devices now, after the PF set VF enable,
   // since only then the VF devices are realized by hardware.
