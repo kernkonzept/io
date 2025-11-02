@@ -28,6 +28,8 @@
 #include "cfg.h"
 
 #include <cstdio>
+#include <string.h>
+#include <sstream>
 #include <typeinfo>
 #include <algorithm>
 #include <string>
@@ -98,11 +100,25 @@ public:
   void set_transparent_msi(bool v) { _do_transparent_msi = v; }
 
   int verbose() const override { return _verbose_lvl; }
+
+#ifdef CONFIG_L4IO_PCI_SRIOV
+  std::vector<Whitelisted_sriov_device> const* sriov_whitelist() const override
+  { return &_sriov_whitelist; }
+
+  void push_back_sriov_whitelist(Whitelisted_sriov_device wd)
+    {
+      _sriov_whitelist.push_back(wd);
+    }
+#endif
+
   void inc_verbosity() { ++_verbose_lvl; }
 
 private:
   bool _do_transparent_msi;
   int _verbose_lvl;
+#ifdef CONFIG_L4IO_PCI_SRIOV
+  std::vector<Whitelisted_sriov_device> _sriov_whitelist;
+#endif
 };
 
 static Io_config_x _my_cfg __attribute__((init_priority(30000)));
@@ -226,7 +242,21 @@ read_config(char const *cfg_file, lua_State *lua)
   return -1;
 }
 
+#ifdef CONFIG_L4IO_PCI_SRIOV
+static void
+parse_enable_sriov_arg(std::string item, Io_config_x *cfg)
+{
+  std::string vendor_string, device_string;
+  std::stringstream ss(item);
 
+  getline(ss, vendor_string, ':');
+  getline(ss, device_string, ':');
+
+  l4_uint16_t vendor = strtol(vendor_string.c_str(), NULL, 16);
+  l4_uint16_t device = strtol(device_string.c_str(), NULL, 16);
+  cfg->push_back_sriov_whitelist(Whitelisted_sriov_device(vendor, device));
+}
+#endif
 
 static int
 arg_init(int argc, char * const *argv, Io_config_x *cfg)
@@ -240,6 +270,7 @@ arg_init(int argc, char * const *argv, Io_config_x *cfg)
         OPT_TRANSPARENT_MSI   = 1,
         OPT_TRACE             = 2,
         OPT_ACPI_DEBUG        = 3,
+        OPT_ENABLE_SRIOV      = 4,
       };
 
       struct option opts[] =
@@ -248,6 +279,9 @@ arg_init(int argc, char * const *argv, Io_config_x *cfg)
         { "transparent-msi",   0, 0, OPT_TRANSPARENT_MSI },
         { "trace",             1, 0, OPT_TRACE },
         { "acpi-debug-level",  1, 0, OPT_ACPI_DEBUG },
+#ifdef CONFIG_L4IO_PCI_SRIOV
+        { "enable-sriov",      1, 0, OPT_ENABLE_SRIOV },
+#endif
         { 0, 0, 0, 0 },
       };
 
@@ -278,6 +312,13 @@ arg_init(int argc, char * const *argv, Io_config_x *cfg)
             printf("Set acpi debug level to 0x%08x\n", acpi_debug_level);
             break;
           }
+#ifdef CONFIG_L4IO_PCI_SRIOV
+        case OPT_ENABLE_SRIOV:
+          {
+            parse_enable_sriov_arg(std::string(optarg), cfg);
+            break;
+          }
+#endif
         }
     }
   return optind;
@@ -426,6 +467,14 @@ run(int argc, char * const *argv)
   set_debug_level(Io_config::cfg->verbose());
 
   d_printf(DBG_INFO, "Verboseness level: %d\n", Io_config::cfg->verbose());
+
+#ifdef CONFIG_L4IO_PCI_SRIOV
+  d_printf(DBG_INFO, "SR-IOV whitelist:\n");
+  for (const Whitelisted_sriov_device& wd : *Io_config::cfg->sriov_whitelist())
+    {
+      d_printf(DBG_INFO, "  %04x:%04x\n", wd.vendor_id, wd.device_id);
+    }
+#endif
 
   res_init();
 
