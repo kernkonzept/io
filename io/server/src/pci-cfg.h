@@ -415,11 +415,22 @@ class Extended_cap : public Config
 public:
   enum Types
   {
-    Aer = 0x01, ///< Advanced Error Reporting
-    Dsn = 0x03, ///< Device Serial Number
-    Pbe = 0x04, ///< Power Budgeting
-    Acs = 0x0d, ///< Access Control Services
-    Ari = 0x0e, ///< Alternative Routing-ID
+    Aer     = 0x01, ///< Advanced Error Reporting
+    Vc      = 0x02, ///< Virtual Channel
+    Dsn     = 0x03, ///< Device Serial Number
+    Pbe     = 0x04, ///< Power Budgeting
+    Mfvc    = 0x08, ///< Multi-Function Virtual Channel
+    Rcrb    = 0x0a, ///< Root Complex Register Block Header
+    Vsec    = 0x0b, ///< Vendor-Specific
+    Acs     = 0x0d, ///< Access Control Services
+    Ari     = 0x0e, ///< Alternative Routing-ID
+    Ats     = 0x0f, ///< Address Translation Services
+    Sr_iov  = 0x10, ///< Single Root I/O Virtualization
+    Pri     = 0x13, ///< Page Request Interface
+    Dpa     = 0x16, ///< Dynamic Power Allocation
+    Tph     = 0x17, ///< TPH Requester
+    L1ss    = 0x1e, ///< L1 PM Substates
+    Pl_16gt = 0x26, ///< Physical Layer 16.0 GT/s
   };
 
   Extended_cap() = default;
