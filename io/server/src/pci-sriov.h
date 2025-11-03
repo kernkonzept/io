@@ -26,7 +26,7 @@ namespace Hw { namespace Pci {
 class Sr_iov_feature : public Dev_feature
 {
 public:
-  // For now hardcode the maximum number  ofvirtual functions (VFs). In the
+  // For now, hardcode the maximum number of virtual functions (VFs). In the
   // future configuring the number of VFs might be made dynamic, however that
   // would require preparatory work to make vbus more dynamic.
   static constexpr unsigned Max_vfs = CONFIG_L4IO_PCI_SRIOV_MAX_VFS;
