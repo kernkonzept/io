@@ -474,7 +474,23 @@ Dev::discover_pcie_caps()
 #ifdef CONFIG_L4IO_PCI_SRIOV
   // Before handling SR-IOV, first the ARI cap must have been handled, as SR-IOV
   // depends on ARI forwarding being configured.
-  handle_ext_cap(Sr_iov_cap::Id, Dev::handle_sriov_cap);
+  auto whitelist = Io_config::cfg->sriov_whitelist();
+  // Check whether device is whitelisted
+  auto sriov_dev = Whitelisted_sriov_device(cfg.vendor(), cfg.device());
+  bool contains = std::any_of(whitelist->begin(), whitelist->end(),
+    [sriov_dev](Whitelisted_sriov_device wd) { return sriov_dev == wd; });
+  if (contains)
+    {
+      d_printf(DBG_INFO,
+        "Handling SR-IOV cap for %04x:%04x\n",
+        cfg.vendor(), cfg.device());
+      handle_ext_cap(Sr_iov_cap::Id, Dev::handle_sriov_cap);
+    }
+  else
+    {
+      d_printf(DBG_DEBUG, "Ignoring SR-IOV cap for %04x:%04x\n",
+        cfg.vendor(), cfg.device());
+    }
 #endif
   handle_ext_cap(Acs_cap::Id, Dev::handle_acs_cap);
 }
