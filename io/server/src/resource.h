@@ -83,16 +83,13 @@ public:
   typedef l4_uint64_t Addr;
   typedef l4_uint64_t Size;
 
-  enum Type
-  {
-    Invalid_res = L4VBUS_RESOURCE_INVALID,
-    Irq_res     = L4VBUS_RESOURCE_IRQ,
-    Mmio_res    = L4VBUS_RESOURCE_MEM,
-    Io_res      = L4VBUS_RESOURCE_PORT,
-    Bus_res     = L4VBUS_RESOURCE_BUS,
-    Gpio_res    = L4VBUS_RESOURCE_GPIO,
-    Dma_domain_res = L4VBUS_RESOURCE_DMA_DOMAIN
-  };
+  static constexpr unsigned Invalid_res    = L4VBUS_RESOURCE_INVALID;
+  static constexpr unsigned Irq_res        = L4VBUS_RESOURCE_IRQ;
+  static constexpr unsigned Mmio_res       = L4VBUS_RESOURCE_MEM;
+  static constexpr unsigned Io_res         = L4VBUS_RESOURCE_PORT;
+  static constexpr unsigned Bus_res        = L4VBUS_RESOURCE_BUS;
+  static constexpr unsigned Gpio_res       = L4VBUS_RESOURCE_GPIO;
+  static constexpr unsigned Dma_domain_res = L4VBUS_RESOURCE_DMA_DOMAIN;
 
   enum Flags : unsigned long
   {
@@ -117,20 +114,22 @@ public:
     F_vbus_flags_shift    = 20,
 
     Mem_type_base         = 1 << F_vbus_flags_shift,
-    Mem_type_r            = L4VBUS_RESOURCE_F_MEM_R * Mem_type_base,
-    Mem_type_w            = L4VBUS_RESOURCE_F_MEM_W * Mem_type_base,
+    Mem_type_r            = unsigned{L4VBUS_RESOURCE_F_MEM_R} * Mem_type_base,
+    Mem_type_w            = unsigned{L4VBUS_RESOURCE_F_MEM_W} * Mem_type_base,
     Mem_type_rw           = Mem_type_r | Mem_type_w,
-    Mem_type_prefetchable = L4VBUS_RESOURCE_F_MEM_PREFETCHABLE * Mem_type_base,
-    Mem_type_cacheable    = L4VBUS_RESOURCE_F_MEM_CACHEABLE    * Mem_type_base,
+    Mem_type_prefetchable = unsigned{L4VBUS_RESOURCE_F_MEM_PREFETCHABLE}
+                                                              * Mem_type_base,
+    Mem_type_cacheable    = unsigned{L4VBUS_RESOURCE_F_MEM_CACHEABLE}
+                                                              * Mem_type_base,
 
     Irq_type_base         = 1 << F_vbus_flags_shift,
-    Irq_type_mask         = L4_IRQ_F_MASK       * Irq_type_base,
-    Irq_type_none         = L4_IRQ_F_NONE       * Irq_type_base,
-    Irq_type_level_high   = L4_IRQ_F_LEVEL_HIGH * Irq_type_base,
-    Irq_type_level_low    = L4_IRQ_F_LEVEL_LOW  * Irq_type_base,
-    Irq_type_raising_edge = L4_IRQ_F_POS_EDGE   * Irq_type_base,
-    Irq_type_falling_edge = L4_IRQ_F_NEG_EDGE   * Irq_type_base,
-    Irq_type_both_edges   = L4_IRQ_F_BOTH_EDGE  * Irq_type_base,
+    Irq_type_mask         = unsigned{L4_IRQ_F_MASK}       * Irq_type_base,
+    Irq_type_none         = unsigned{L4_IRQ_F_NONE}       * Irq_type_base,
+    Irq_type_level_high   = unsigned{L4_IRQ_F_LEVEL_HIGH} * Irq_type_base,
+    Irq_type_level_low    = unsigned{L4_IRQ_F_LEVEL_LOW}  * Irq_type_base,
+    Irq_type_raising_edge = unsigned{L4_IRQ_F_POS_EDGE}   * Irq_type_base,
+    Irq_type_falling_edge = unsigned{L4_IRQ_F_NEG_EDGE}   * Irq_type_base,
+    Irq_type_both_edges   = unsigned{L4_IRQ_F_BOTH_EDGE}  * Irq_type_base,
   };
   static_assert(F_prefetchable == Mem_type_prefetchable);
   static_assert(F_cached_mem == Mem_type_cacheable);
@@ -148,10 +147,10 @@ public:
   { return r && r->is_irq_provider(); }
 
   bool irq_is_level_triggered() const
-  { return (_f & Irq_type_mask) & (L4_IRQ_F_LEVEL * Irq_type_base); }
+  { return (_f & Irq_type_mask) & (unsigned{L4_IRQ_F_LEVEL} * Irq_type_base); }
 
   bool irq_is_low_polarity() const
-  { return (_f & Irq_type_mask) & (L4_IRQ_F_NEG   * Irq_type_base); }
+  { return (_f & Irq_type_mask) & (unsigned{L4_IRQ_F_NEG}   * Irq_type_base); }
 
   explicit Resource(unsigned long flags = 0)
   : _f(flags) {}
@@ -361,7 +360,7 @@ public:
   L4Re::Rm::Unique_region<l4_addr_t> _r;
 
   Mmio_data_space(Size size, unsigned long alloc_flags = 0)
-  : Resource(Mmio_res | Mem_type_rw, 0, size - 1)
+  : Resource(Mmio_res | unsigned{Mem_type_rw}, 0, size - 1)
   {
     alloc_ram(size, alloc_flags);
   }
