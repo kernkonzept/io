@@ -597,9 +597,9 @@ Rcar3_pcie_bridge::init()
       catch (L4::Runtime_error &e)
         {
           if (e.extra_str() && e.extra_str()[0] != '\0')
-            dprintf(DBG_ERR, "%s: %s: %s\n", name(), e.extra_str(), e.str());
+            d_printf(DBG_ERR, "%s: %s: %s\n", name(), e.extra_str(), e.str());
           else
-            dprintf(DBG_ERR, "%s: %s\n", name(), e.str());
+            d_printf(DBG_ERR, "%s: %s\n", name(), e.str());
           return;
         }
     }
