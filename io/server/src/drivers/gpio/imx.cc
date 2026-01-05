@@ -8,7 +8,6 @@
 
 #include "debug.h"
 #include "irqs.h"
-#include "strings.h"
 #include "gpio"
 #include "hw_device.h"
 #include "hw_irqs.h"
@@ -16,6 +15,7 @@
 #include "../scu_imx8qm.h"
 
 #include <cstdio>
+#include <strings.h>
 
 #include <l4/util/util.h>
 #include <l4/drivers/hw_mmio_register_block>
