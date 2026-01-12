@@ -7,7 +7,8 @@
  */
 #pragma once
 
-#include <acpi.h>
+#include "acpi_lib.h"
+
 #include <cstdint>
 
 /**

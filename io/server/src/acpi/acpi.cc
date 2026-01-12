@@ -23,13 +23,14 @@
 #include <map>
 #include <l4/re/error_helper>
 #include <l4/sys/iommu>
+#include <l4/sys/compiler.h>
 
-extern "C" {
-#include "acpi.h"
+L4_BEGIN_DECLS
+#include "acpi_lib.h"
 #include "accommon.h"
 #include "acresrc.h"
 #include "acnamesp.h"
-}
+L4_END_DECLS
 
 #include <errno.h>
 #include <l4/cxx/list>

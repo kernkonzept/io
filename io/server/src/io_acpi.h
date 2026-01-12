@@ -6,15 +6,17 @@
  */
 #pragma once
 
+#include <l4/sys/compiler.h>
+
 #include "hw_device.h"
 #include "irqs.h"
 #include <pci-root.h>
 #include <functional>
 
-extern "C" {
-#include "acpi.h"
+L4_BEGIN_DECLS
+#include "acpi/acpi_lib.h"
 #include "accommon.h"
-}
+L4_END_DECLS
 
 template<typename T>
 class Acpi_ptr

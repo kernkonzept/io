@@ -11,11 +11,7 @@
 #include <cstdint>
 
 #include "debug.h"
-
-L4_BEGIN_DECLS
-#include "acpi.h"
-#include "acpiosxf.h"
-L4_END_DECLS
+#include "acpi_lib.h"
 
 #include <pci-root.h>
 #include "res.h"

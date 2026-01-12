@@ -6,16 +6,9 @@
  */
 #include "debug.h"
 #include "irq_server.h"
+#include "acpi_lib.h"
 
 #include <stdio.h>
-#include <l4/sys/compiler.h>
-
-L4_BEGIN_DECLS
-#include "acpi.h"
-#include "acpiosxf.h"
-#include "actypes.h"
-L4_END_DECLS
-
 #include <l4/sys/cxx/ipc_epiface>
 #include <l4/re/env>
 #include "../io_acpi.h"
