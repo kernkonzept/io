@@ -2,7 +2,7 @@
  * Copyright (C) 2010 Technische Universität Dresden (Germany)
  * Author(s): Adam Lackorzynski <adam@os.inf.tu-dresden.de>,
  *            Alexander Warg <warg@os.inf.tu-dresden.de>
- * Copyright (C) 2019, 2024 Kernkonzept GmbH.
+ * Copyright (C) 2019, 2024-2025 Kernkonzept GmbH.
  *
  * License: see LICENSE.spdx (in this directory or the directories above)
  */

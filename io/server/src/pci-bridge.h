@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010-2020, 2023-2024 Kernkonzept GmbH.
+ * Copyright (C) 2010-2020, 2023-2025 Kernkonzept GmbH.
  * Author(s): Adam Lackorzynski <adam@os.inf.tu-dresden.de>,
  *            Alexander Warg <warg@os.inf.tu-dresden.de>
  *
