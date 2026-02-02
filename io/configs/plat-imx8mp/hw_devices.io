@@ -281,11 +281,24 @@ Io.hw_add_devices(function()
               Resource.irq0 = reg_irq(0x0, 0x1f, 0x4);
             end) -- spi@30820000
             -- /soc@0/bus@30800000/spba-bus@30800000/spi@30830000 (4)
-            spi_30830000 = Io.Hw.Device(function()
+            spi_30830000 = Io.Hw.Spi_imx8mp_ctrl(function()
               compatible    = { "fsl,imx8mp-ecspi", "fsl,imx6ul-ecspi" };
               Resource.reg0 = reg_mmio(0x30830000, 0x00010000);
               Resource.irq0 = reg_irq(0x0, 0x20, 0x4);
-            end) -- spi@30830000
+              Resource.cspin = Io.Gpio_resource(gpio4, 0xd,  0xd);
+              Property.iomuxc = pinctrl_30330000;
+              -- The `pads` property takes six values per pad:
+              --    three fields offsets of the IOMUXC MMIO registers and
+              --    three values to write to these offsets.
+              -- The order is:
+              --    field offsets: Mux, Config, Input
+              --    values to set: Mux, Input, Config
+              -- The difference in value order is in sync with the linux DT.
+              Property.pads = { 0x1f8, 0x458, 0x56c, 0x00, 0x01, 0x1c0,
+                                0x1f4, 0x454, 0x570, 0x00, 0x01, 0x1c0,
+                                0x1f0, 0x450, 0x568, 0x00, 0x01, 0x1c0,
+                                0x1fc, 0x45c, 0x00,  0x05, 0x00, 0x1c0 };
+              end) -- spi@30830000
             -- /soc@0/bus@30800000/spba-bus@30800000/spi@30840000 (4)
             spi_30840000 = Io.Hw.Device(function()
               compatible    = { "fsl,imx8mp-ecspi", "fsl,imx6ul-ecspi" };
