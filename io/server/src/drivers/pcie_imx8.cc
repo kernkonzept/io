@@ -412,7 +412,8 @@ Pcie_imx8_bridge::init()
   if (!Dwc_pcie::host_init())
     return;
 
-  setup_rc();
+  if (!setup_rc())
+    return;
 
   // Now establish the PCIe link. Start with Gen1 operation mode.
 

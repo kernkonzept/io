@@ -87,7 +87,7 @@ Dwc_pcie::set_iatu_region(unsigned index, l4_uint64_t base_addr,
 #endif
 }
 
-void
+bool
 Dwc_pcie::setup_rc()
 {
   // enable writing to read-only registers
@@ -151,6 +151,8 @@ Dwc_pcie::setup_rc()
 
   // disable writing to read-only registers
   _regs[Port_logic::Misc_control_1].clear(1U << 0);
+
+  return true;
 }
 
 inline L4drivers::Register_block<32>

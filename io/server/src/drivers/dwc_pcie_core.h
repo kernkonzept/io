@@ -270,9 +270,12 @@ public:
   virtual bool controller_host_init() { return true; }
 
   /**
-   * Setup the PCIe core as root complex (RC)
+   * Setup the PCIe core as root complex (RC).
+   *
+   * \retval true   Setup succeeded.
+   * \retval false  Setup failed.
    */
-  void setup_rc();
+  bool setup_rc();
 
 protected:
   L4drivers::Register_block<32> _regs; ///< The PCIe IP core registers
