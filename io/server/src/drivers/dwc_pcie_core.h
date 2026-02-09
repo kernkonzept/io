@@ -56,13 +56,20 @@ public:
   enum Port_logic
   {
     Port_logic          = 0x700,
-    Link_ctrl           = Port_logic +  0x10,
+    Afr                 = Port_logic +  0x0c, // Ack Frequency Register
+    Link_ctrl           = Port_logic +  0x10, // Port Link Control Register
     Debug0              = Port_logic +  0x28,
     Debug1              = Port_logic +  0x2c,
-    Gen2                = Port_logic + 0x10c, // PCIE_LINK_WIDTH_SPEED_CONTROL
+    Gen2                = Port_logic + 0x10c, // Port Logic Register (Gen2)
+    Phy                 = Port_logic + 0x110, // PHY Status Register
     Msi_ctrl_lower_addr = Port_logic + 0x120,
     Msi_ctrl_upper_addr = Port_logic + 0x124,
+    Gen3_related_off    = Port_logic + 0x190,
+    Gen3_eq_control_off = Port_logic + 0x1a8, // tegra194
     Misc_control_1      = Port_logic + 0x1bc,
+    Amba_err_rsp_dflt   = Port_logic + 0x1d0, // tegra194
+    Pcie_version_number = Port_logic + 0x1f8,
+    Pcie_version_type   = Port_logic + 0x1fc,
     Iatu_viewport       = Port_logic + 0x200,
     Iatu_ctrl_1         = Port_logic + 0x204,
     Iatu_ctrl_2         = Port_logic + 0x208,
@@ -73,11 +80,26 @@ public:
     Iatu_upper_target   = Port_logic + 0x21c
   };
 
+  // iATU Unroll mode (core version >= 4.80).
+  enum Atu
+  {
+    Unr_ctrl_1       = 0x00,
+    Unr_ctrl_2       = 0x04,
+    Unr_lower_base   = 0x08,
+    Unr_upper_base   = 0x0c,
+    Unr_lower_limit  = 0x10,
+    Unr_lower_target = 0x14,
+    Unr_upper_target = 0x18,
+    Unr_upper_limit  = 0x20,
+  };
+
   /**
    * Bit for the Link_ctrl register
    */
   enum Pl_link_ctrl
   {
+    Dll_link_enable   = 1 << 5,
+    Fast_link         = 1 << 7,
     Mode_enable_shift = 16,
     Mode_enable_mask  = 0x3f << Mode_enable_shift,
   };

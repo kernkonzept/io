@@ -91,7 +91,7 @@ void
 Dwc_pcie::setup_rc()
 {
   // enable writing to read-only registers
-  _regs[Misc_control_1].set(1U << 0);
+  _regs[Port_logic::Misc_control_1].set(1U << 0);
 
   // set number of lanes
   unsigned lme;
@@ -104,14 +104,15 @@ Dwc_pcie::setup_rc()
     default: lme = Link_1_lanes;  break;
     }
 
-  _regs[Port_logic::Link_ctrl].modify(Mode_enable_mask,
-                                      lme << Mode_enable_shift);
+  _regs[Port_logic::Link_ctrl]
+    .modify(Pl_link_ctrl::Mode_enable_mask, lme << Pl_link_ctrl::Mode_enable_shift);
 
-  _regs[Gen2].modify(Lane_enable_mask, _num_lanes << Lane_enable_shift);
+  _regs[Port_logic::Gen2]
+    .modify(Pl_gen2::Lane_enable_mask, _num_lanes << Pl_gen2::Lane_enable_shift);
 
   // disable MSI for now
-  _regs[Msi_ctrl_lower_addr] = 0;
-  _regs[Msi_ctrl_upper_addr] = 0;
+  _regs[Port_logic::Msi_ctrl_lower_addr] = 0;
+  _regs[Port_logic::Msi_ctrl_upper_addr] = 0;
 
   // setup BARs
   _regs[Hw::Pci::Config::Bar_0] = 0x00000004;
@@ -136,7 +137,7 @@ Dwc_pcie::setup_rc()
   re->set_id("MMIO");
   add_resource_rq(re);
 
-  if (_regs[Iatu_ctrl_2] != Region_enable)
+  if (_regs[Port_logic::Iatu_ctrl_2] != Region_enable)
     d_printf(DBG_INFO, "info: %s: iATU not enabled\n", name());
 
   _regs[Hw::Pci::Config::Bar_0] = 0x00000000;
@@ -146,10 +147,10 @@ Dwc_pcie::setup_rc()
 
   // enable directed speed change to automatically transition to Gen2 or Gen3
   // speeds after link training
-  _regs[Gen2].set(1 << Speed_change_shift);
+  _regs[Port_logic::Gen2].set(1 << Speed_change_shift);
 
   // disable writing to read-only registers
-  _regs[Misc_control_1].clear(1U << 0);
+  _regs[Port_logic::Misc_control_1].clear(1U << 0);
 }
 
 inline L4drivers::Register_block<32>
