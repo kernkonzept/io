@@ -48,7 +48,7 @@ Dwc_pcie::host_init()
       return false;
     }
 
-  return true;
+  return controller_host_init();
 }
 
 void

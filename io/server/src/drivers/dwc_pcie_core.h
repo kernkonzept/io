@@ -238,6 +238,16 @@ public:
   }
 
   /**
+   * Controller-specific initialization function.
+   *
+   * Can be overridden by device-specific implementation.
+   *
+   * \retval true   Initialization succeeded.
+   * \retval false  Initialization failed.
+   */
+  virtual bool controller_host_init() { return true; }
+
+  /**
    * Setup the PCIe core as root complex (RC)
    */
   void setup_rc();
