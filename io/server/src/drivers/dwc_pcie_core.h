@@ -43,12 +43,10 @@ public:
   /**
    * Map and initialize all required resources.
    *
-   * \retval  L4_EOK     Success.
-   * \retval -L4_EINVAL  One of the mandatory resources could not be
-   *                     initialized.
-   * \retval -L4_ENOMEM  One of the resources could not be mapped.
+   * \retval true   Success.
+   * \retval false  Failure during initialization.
    */
-  int host_init();
+  bool host_init();
 
   /**
    * Definition of the port logic register offsets.

@@ -408,7 +408,7 @@ Pcie_imx8_bridge::Pcie_imx8_bridge(int segment, unsigned bus_nr)
 void
 Pcie_imx8_bridge::init()
 {
-  if (Dwc_pcie::host_init())
+  if (!Dwc_pcie::host_init())
     return;
 
   if (_gpio3.dev() == nullptr)

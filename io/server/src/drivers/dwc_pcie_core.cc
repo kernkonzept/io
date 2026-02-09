@@ -16,7 +16,7 @@
 #include <l4/re/error_helper>
 #include <inttypes.h>
 
-int
+bool
 Dwc_pcie::host_init()
 {
   if (   assert_property(&_cfg_base, "cfg_base", ~0)
@@ -25,20 +25,20 @@ Dwc_pcie::host_init()
       || assert_property(&_regs_size, "regs_size", ~0)
       || assert_property(&_mem_base, "mem_base", ~0)
       || assert_property(&_mem_size, "mem_size", ~0))
-    return -L4_EINVAL;
+    return false;
 
   if (_num_lanes > 16)
     {
       d_printf(DBG_ERR, "error: %s: invalid number of PCIe lanes: %lld\n",
                name(), _num_lanes.val());
-      return -L4_EINVAL;
+      return false;
     }
 
   l4_addr_t va = res_map_iomem(_regs_base, _regs_size);
   if (!va)
     {
       d_printf(DBG_ERR, "error: %s: could not map IP core memory.\n", name());
-      return -L4_ENOMEM;
+      return false;
     }
   _regs = new L4drivers::Mmio_register_block<32>(va);
 
@@ -47,11 +47,11 @@ Dwc_pcie::host_init()
     {
       d_printf(DBG_ERR, "error: %s: could not map config space memory.\n",
                name());
-      return -L4_ENOMEM;
+      return false;
     }
   _cfg = new L4drivers::Mmio_register_block<32>(va);
 
-  return L4_EOK;
+  return true;
 }
 
 void
