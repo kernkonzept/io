@@ -23,9 +23,7 @@ class Dwc_pcie :
 public:
   template<typename ...ARGS>
   Dwc_pcie(ARGS && ...args)
-  : Hw::Pci::Root_bridge(cxx::forward<ARGS>(args)...),
-    _regs_base(~0), _regs_size(~0), _cfg_base(~0), _cfg_size(~0),
-    _mem_base(~0), _mem_size(~0), _cpu_fixup(~0), _num_lanes(1)
+  : Hw::Pci::Root_bridge(cxx::forward<ARGS>(args)...)
   {
     // the set of mandatory properties
     register_property("cfg_base", &_cfg_base);
@@ -248,14 +246,14 @@ protected:
   L4drivers::Register_block<32> _regs; ///< The PCIe IP core registers
   L4drivers::Register_block<32> _cfg;  ///< The PCI config space region
 
-  Int_property _regs_base;  ///< Base address of the PCIe core registers
-  Int_property _regs_size;  ///< Size of the PCIe core register space
-  Int_property _cfg_base;   ///< Base address of the PCI config space region
-  Int_property _cfg_size;   ///< Size of the PCI config space region
-  Int_property _mem_base;   ///< Base address of the memory region
-  Int_property _mem_size;   ///< Size of the memory region
-  Int_property _cpu_fixup;  ///< CPU fixup for accessing config space (optional)
-  Int_property _num_lanes;  ///< Number of PCIe lanes
+  Int_property _regs_base{~0}; ///< Base address of the PCIe core registers
+  Int_property _regs_size{~0}; ///< Size of the PCIe core register space
+  Int_property _cfg_base{~0};  ///< Base address of the PCI config space region
+  Int_property _cfg_size{~0};  ///< Size of the PCI config space region
+  Int_property _mem_base{~0};  ///< Base address of the memory region
+  Int_property _mem_size{~0};  ///< Size of the memory region
+  Int_property _cpu_fixup{~0}; ///< CPU fixup for accessing config space (optional)
+  Int_property _num_lanes{1};  ///< Number of PCIe lanes
 
 private:
   /**
