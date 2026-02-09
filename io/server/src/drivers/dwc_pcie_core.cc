@@ -279,6 +279,18 @@ Dwc_pcie::setup_rc()
   // setup command register: Io, Memory, Master, Serr
   _regs[Hw::Pci::Config::Command].modify(0x0000ffff, 0x107);
 
+  // Disable all outbound windows.
+  for (unsigned i = 0; i < _num_ob_windows; ++i)
+    {
+      if (_iatu_unroll_enabled)
+        _atu[Atu::Unr_ctrl_2 + (i << 9)] = ~(1U << 31);
+      else
+        {
+          _regs[Port_logic::Iatu_viewport] = Iatu_vp::Outbound | i;
+          _regs[Port_logic::Iatu_ctrl_2] = ~(1U << 31);
+        }
+    }
+
   if (_bus_base != ~0 && _bus_base != _mem_base)
     {
       error("PCI bridge windows with different bus address not supported.");
