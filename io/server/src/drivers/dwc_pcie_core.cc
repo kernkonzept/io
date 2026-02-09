@@ -29,27 +29,25 @@ Dwc_pcie::host_init()
 
   if (_num_lanes > 16)
     {
-      d_printf(DBG_ERR, "error: %s: invalid number of PCIe lanes: %lld\n",
-               name(), _num_lanes.val());
+      error("invalid number of PCIe lanes: %lld.", _num_lanes.val());
       return false;
     }
 
-  l4_addr_t va = res_map_iomem(_regs_base, _regs_size);
-  if (!va)
+  if (l4_addr_t va = res_map_iomem(_regs_base, _regs_size))
+    _regs = new L4drivers::Mmio_register_block<32>(va);
+  else
     {
-      d_printf(DBG_ERR, "error: %s: could not map IP core memory.\n", name());
+      error("could not map IP core memory.");
       return false;
     }
-  _regs = new L4drivers::Mmio_register_block<32>(va);
 
-  va = res_map_iomem(_cfg_base, _cfg_size);
-  if (!va)
+  if (l4_addr_t va = res_map_iomem(_cfg_base, _cfg_size))
+    _cfg = new L4drivers::Mmio_register_block<32>(va);
+  else
     {
-      d_printf(DBG_ERR, "error: %s: could not map config space memory.\n",
-               name());
+      error("could not map config space memory.");
       return false;
     }
-  _cfg = new L4drivers::Mmio_register_block<32>(va);
 
   return true;
 }
@@ -83,7 +81,7 @@ Dwc_pcie::set_iatu_region(unsigned index, l4_uint64_t base_addr,
       l4_usleep(10000);
     }
 
-  d_printf(DBG_ERR, "error: %s: ATU not enabled @index %u\n", name(), index);
+  error("ATU not enabled @index %u", index);
 
 #ifdef ARCH_MIPS
   asm volatile ("sync" : : : "memory");
