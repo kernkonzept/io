@@ -18,7 +18,8 @@
 #include "resource.h"
 #include "debug.h"
 
-#include <cstdio> 
+#include <cstdarg>
+#include <cstdio>
 #include <cstring>
 #include <string>
 #include <map>
@@ -400,6 +401,26 @@ public:
       }
 
     return 0;
+  }
+
+  /**
+   * Convenience function for printing an error message with DBG_ERR verbose
+   * level together with the device name.
+   *
+   * \param fmt  The format specifiers (sans newline) and the parameters for the
+   *             error message.
+   */
+  void __attribute__((format(printf, 2, 3))) error(char const *fmt, ...) const
+  {
+    if (dlevel(DBG_ERR))
+      {
+        printf("ERROR: %s: ", name());
+        va_list a;
+        va_start(a, fmt);
+        vprintf(fmt, a);
+        va_end(a);
+        putchar('\n');
+      }
   }
 };
 
