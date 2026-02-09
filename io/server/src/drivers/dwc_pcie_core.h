@@ -34,7 +34,7 @@ public:
     register_property("mem_size", &_mem_size);
     register_property("cpu_fixup", &_cpu_fixup);
 
-    // PCI version >= 0x48A || _iatu_unroll_enabled == true
+    // _pci_version >= 0x480a || _iatu_unroll_enabled == true
     register_property("atu_base", &_atu_base);
     register_property("atu_size", &_atu_size);
 
@@ -87,7 +87,7 @@ public:
     Iatu_upper_target   = Port_logic + 0x21c
   };
 
-  // iATU Unroll mode (core version >= 4.80).
+  // iATU Unroll mode
   enum Atu
   {
     Unr_ctrl_1       = 0x00,
@@ -207,7 +207,7 @@ public:
    * to be written into the Iatu_viewport register before accessing the other
    * iATU registers.
    */
-  void set_iatu_region(unsigned index, l4_uint64_t base_addr, l4_uint32_t size,
+  void set_iatu_region(unsigned index, l4_uint64_t base_addr, l4_uint64_t size,
                        l4_uint64_t target_addr, unsigned tlp_type,
                        unsigned dir = Outbound);
 
@@ -303,6 +303,7 @@ protected:
 
   L4drivers::Register_block<32> _regs; ///< The PCIe IP core registers
   L4drivers::Register_block<32> _cfg;  ///< The PCI config space region
+  L4drivers::Register_block<32> _atu;  ///< iATU registers (_pci_version >= 0x480a)
 
   Int_property _regs_base{~0}; ///< Base address of the PCIe core registers
   Int_property _regs_size{~0}; ///< Size of the PCIe core register space
@@ -315,7 +316,7 @@ protected:
   Int_property _max_link_speed{0}; ///< Maximum link speed
                                    ///< (0=default, 1=2.5GT/s, 2=5GZT/s, 3=8GT/s)
 
-  // PCI version >= 0x48A || _iatu_unroll_enabled == true
+  // _pci_version >= 0x480a || _iatu_unroll_enabled == true
   Int_property _atu_base{~0};
   Int_property _atu_size{~0};
 
@@ -323,7 +324,7 @@ protected:
   Int_property _nft_gen2{0};
 
   bool _iatu_unroll_enabled = false;
-  l4_uint32_t _pci_version = 0;
+  l4_uint32_t _pci_version = 0; ///< version from Port_logic::Pcie_version_number
   unsigned _num_ib_windows = 0;
   unsigned _num_ob_windows = 0;
   l4_uint8_t _offs_cap_pcie;  ///< PCI config space offset of PCIe capability

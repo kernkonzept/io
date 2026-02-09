@@ -52,36 +52,144 @@ Dwc_pcie::host_init()
     return false;
 
   _offs_cap_pcie = get_pci_cap_offs(Hw::Pci::Cap::Pcie);
+
+  // CSR=0 on DWC PCIe older than 4.70a
+  _pci_version = _regs[Port_logic::Pcie_version_number].read();
+  l4_uint32_t version_type = _regs[Port_logic::Pcie_version_type].read();
+
+  if (_pci_version >= 0x480a)
+    _iatu_unroll_enabled = true;
+  else if (_pci_version == 0 && _regs[Port_logic::Iatu_viewport] == 0xffff'ffff)
+    _iatu_unroll_enabled = true;
+
+  if (_iatu_unroll_enabled)
+    {
+      if (   assert_property(&_atu_base, "atu_base", ~0)
+          || assert_property(&_atu_size, "atu_size", ~0))
+        {
+          error("iATU unroll enabled but no atu_base/size provided.");
+          return false;
+        }
+
+      if (l4_addr_t va = res_map_iomem(_atu_base, _atu_size))
+        _atu = new L4drivers::Mmio_register_block(va);
+      else
+        {
+          error("could not map 'atu' memory.");
+          return false;
+        }
+    }
+
+  if (_pci_version)
+    d_printf(DBG_INFO, "DWC PCIe version '%c%c%c%c-%c%c%c%c', unroll %sabled.\n",
+             (_pci_version >> 24) & 0xff, (_pci_version >> 16) & 0xff,
+             (_pci_version >>  8) & 0xff, (_pci_version >>  0) & 0xff,
+             (version_type >> 24) & 0xff, (version_type >> 16) & 0xff,
+             (version_type >>  8) & 0xff, (version_type >>  8) & 0xff,
+             _iatu_unroll_enabled ? "en" : "dis");
+  else
+    d_printf(DBG_INFO, "DWC PCIe unknown version, unroll %sabled.\n",
+             _iatu_unroll_enabled ? "en" : "dis");
+
+  unsigned max_region = cxx::min<unsigned>(_atu_size / 512, 256);
+  unsigned i;
+  for (i = 0; i < max_region; ++i)
+    {
+      unsigned offs = Atu::Unr_lower_target + (i << 9);
+      _atu[offs] = 0x1111'0000;
+      if (_atu[offs] != 0x1111'0000)
+        break;
+    }
+  _num_ob_windows = i;
+
+  for (i = 0; i < max_region; ++i)
+    {
+      unsigned offs = Atu::Unr_lower_target + (i << 9) + (1 << 8);
+      _atu[offs] = 0x1111'0000;
+      if (_atu[offs] != 0x1111'0000)
+        break;
+    }
+  _num_ib_windows = i;
+
   return true;
 }
 
 void
 Dwc_pcie::set_iatu_region(unsigned index, l4_uint64_t base_addr,
-                          l4_uint32_t size, l4_uint64_t target_addr,
+                          l4_uint64_t size, l4_uint64_t target_addr,
                           unsigned tlp_type, unsigned dir)
 {
-  // the default configuration of the PCIe core only has two viewports
-  if (index > 1)
-    return;
-
   if (_cpu_fixup != ~0)
-    base_addr = base_addr + _cpu_fixup - _mem_base;
+    base_addr += _cpu_fixup - _mem_base;
 
-  _regs[Iatu_viewport] = index | (dir & Dir_mask);
-  _regs[Iatu_lower_base] = base_addr & 0xffffffff;
-  _regs[Iatu_upper_base] = base_addr >> 32;
-  _regs[Iatu_limit] = (base_addr + size - 1) & 0xffffffff; // i.MX8: bits 12..31 ignored
-  _regs[Iatu_lower_target] = target_addr & 0xffffffff;
-  _regs[Iatu_upper_target] = target_addr >> 32;
-  _regs[Iatu_ctrl_1] = tlp_type & Type_mask;
-  _regs[Iatu_ctrl_2] = Region_enable;
+  l4_uint64_t limit_addr = base_addr + size - 1;
+  l4_uint32_t func_no = 0; // RC mode: 0, EP mode: != 0.
 
-  for (unsigned i = 0; i < 10; ++i)
+  // Since DWC PCIe Core version 4.80, iATU supports an "iATU Unroll Mode".
+  // "Legacy Mode" is still supported if configured to do so, but the standard
+  // is "Unroll Mode".
+  // Legacy mode apparently select by setting Iatu_viewport != 0xffff'ffff.
+  if (_iatu_unroll_enabled)
     {
-      if ((_regs[Iatu_ctrl_2] & Region_enable) == Region_enable)
+      unsigned offs = (index << 9) + (!!dir << 8);
+
+      _atu[offs + Atu::Unr_lower_base] = base_addr & 0xffff'ffff;
+      _atu[offs + Atu::Unr_upper_base] = base_addr >> 32;
+      _atu[offs + Atu::Unr_lower_limit] = limit_addr & 0xffff'ffff;
+      _atu[offs + Atu::Unr_upper_limit] = limit_addr >> 32;
+      _atu[offs + Atu::Unr_lower_target] = target_addr & 0xffff'ffff;
+      _atu[offs + Atu::Unr_upper_target] = target_addr >> 32;
+      l4_uint32_t ctrl1 = (tlp_type & Type_mask) | (func_no << 20);
+      if (limit_addr >> 32 > base_addr >> 32)
+        ctrl1 |= (1 << 13); // 0: max limit 4 GiB
+      if (_pci_version == 0x490a || _pci_version == 0x3530302A)
+        ctrl1 |= (1 << 8); // PCIE_ATU_TD
+      _atu[offs + Atu::Unr_ctrl_1] = ctrl1;
+      _atu[offs + Atu::Unr_ctrl_2] = Region_enable;
+
+      if (index != 1) // avoid extensive logging during cfg_reads()
+        d_printf(DBG_DEBUG,
+                 "Dwc_pcie::set_iatu_region: %08llx-%08llx => %08llx-%08llx\n",
+                 base_addr, limit_addr, target_addr, target_addr + size - 1);
+
+      for (unsigned i = 0; i < 10; ++i)
+        {
+          if ((_atu[offs + Atu::Unr_ctrl_2] & Region_enable) == Region_enable)
+            return;
+
+          l4_usleep(10'000);
+        }
+    }
+  else
+    {
+      // The default configuration of the PCIe core only has two viewports.
+      // XXX Tegra234 has 8 outbound regions!
+      if (index > 1)
         return;
 
-      l4_usleep(10000);
+      _regs[Port_logic::Iatu_viewport] = index | (dir & Dir_mask);
+      _regs[Port_logic::Iatu_lower_base] = base_addr & 0xffff'ffff;
+      _regs[Port_logic::Iatu_upper_base] = base_addr >> 32;
+      // i.MX8: bits 12..31 ignored!
+      _regs[Port_logic::Iatu_limit] = limit_addr & 0xffff'ffff;
+      _regs[Port_logic::Iatu_lower_target] = target_addr & 0xffff'ffff;
+      // only for PCIe version >= 0x460a!
+      _regs[Port_logic::Iatu_upper_target] = target_addr >> 32;
+      l4_uint32_t ctrl1 = (tlp_type & Type_mask) | (func_no << 20);
+      // if (_pci_version >= 0x460a && upper_32(limit) > upper_32(cpu_addr))
+      //   ctrl1 |= PCIE_ATU_INCREASE_REGION_SIZE;
+      // if (_pci_version == 0x490a || _pci_version == 0x3530302A)
+      //   ctrl1 |= dw_pcie_enable_ecrc();
+      _regs[Port_logic::Iatu_ctrl_1] = ctrl1;
+      _regs[Port_logic::Iatu_ctrl_2] = Region_enable;
+
+      for (unsigned i = 0; i < 10; ++i)
+        {
+          if ((_regs[Port_logic::Iatu_ctrl_2] & Region_enable) == Region_enable)
+            return;
+
+          l4_usleep(10'000);
+        }
     }
 
   error("ATU not enabled @index %u", index);
@@ -181,8 +289,11 @@ Dwc_pcie::setup_rc()
   re->set_id("MMIO");
   add_resource_rq(re);
 
-  if (_regs[Port_logic::Iatu_ctrl_2] != Region_enable)
-    d_printf(DBG_INFO, "info: %s: iATU not enabled\n", name());
+  if (!_iatu_unroll_enabled)
+    {
+      if (_regs[Port_logic::Iatu_ctrl_2] != Region_enable)
+        d_printf(DBG_INFO, "info: %s: iATU not enabled\n", name());
+    }
 
   _regs[Hw::Pci::Config::Bar_0] = 0x00000000;
 
