@@ -245,6 +245,9 @@ Dwc_pcie::setup_rc()
   if (_nft_gen2)
     _regs[Port_logic::Gen2].modify(0xff << 0, _nft_gen2 << 0);
 
+  _regs[Port_logic::Link_ctrl].modify(Pl_link_ctrl::Fast_link,
+                                      Pl_link_ctrl::Dll_link_enable);
+
   // set number of lanes
   unsigned lme;
   switch (_num_lanes)
