@@ -34,8 +34,15 @@ public:
     register_property("mem_size", &_mem_size);
     register_property("cpu_fixup", &_cpu_fixup);
 
-    // the set of optional properties, if not set defaults will be applied
+    // PCI version >= 0x48A || _iatu_unroll_enabled == true
+    register_property("atu_base", &_atu_base);
+    register_property("atu_size", &_atu_size);
+
+    // set of optional properties, if not set, defaults will be applied
     register_property("lanes", &_num_lanes);
+    register_property("max_link_speed", &_max_link_speed);
+    register_property("nft_gen1", &_nft_gen1);
+    register_property("nft_gen2", &_nft_gen2);
   }
 
   /**
@@ -305,6 +312,21 @@ protected:
   Int_property _mem_size{~0};  ///< Size of the memory region
   Int_property _cpu_fixup{~0}; ///< CPU fixup for accessing config space (optional)
   Int_property _num_lanes{1};  ///< Number of PCIe lanes
+  Int_property _max_link_speed{0}; ///< Maximum link speed
+                                   ///< (0=default, 1=2.5GT/s, 2=5GZT/s, 3=8GT/s)
+
+  // PCI version >= 0x48A || _iatu_unroll_enabled == true
+  Int_property _atu_base{~0};
+  Int_property _atu_size{~0};
+
+  Int_property _nft_gen1{0};
+  Int_property _nft_gen2{0};
+
+  bool _iatu_unroll_enabled = false;
+  l4_uint32_t _pci_version = 0;
+  unsigned _num_ib_windows = 0;
+  unsigned _num_ob_windows = 0;
+  l4_uint8_t _offs_cap_pcie;  ///< PCI config space offset of PCIe capability
 
 private:
   /**

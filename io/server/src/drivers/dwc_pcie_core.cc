@@ -48,7 +48,11 @@ Dwc_pcie::host_init()
       return false;
     }
 
-  return controller_host_init();
+  if (!controller_host_init())
+    return false;
+
+  _offs_cap_pcie = get_pci_cap_offs(Hw::Pci::Cap::Pcie);
+  return true;
 }
 
 void
@@ -92,6 +96,46 @@ Dwc_pcie::setup_rc()
 {
   // enable writing to read-only registers
   _regs[Port_logic::Misc_control_1].set(1U << 0);
+
+  if (_max_link_speed > 4)
+    {
+      error("property 'max_link_speed' out of range [0..4].");
+      return false;
+    }
+
+  if (_max_link_speed > 0)
+    {
+      // PCIe capability: Link Capabilities Register
+      l4_uint32_t cap = _regs[_offs_cap_pcie + 0xc];
+      // PCIe capability: Link Control 2 Register
+      l4_uint32_t ctrl2 = _regs[_offs_cap_pcie + 0x30] & ~0xf;
+      l4_uint32_t lnk_speed;
+      switch (_max_link_speed)
+        {
+        case 1: lnk_speed = 1; break; // 2.5GT/s
+        case 2: lnk_speed = 2; break; // 5GT/s
+        case 3: lnk_speed = 3; break; // 8GT/s
+        case 4: lnk_speed = 4; break; // 16GT/s
+        case 5: lnk_speed = 5; break; // 32GT/s
+        case 6: lnk_speed = 6; break; // 64GT/s
+        default:
+          lnk_speed = (cap & 0xf);
+          ctrl2 &= 0x20;
+          break; // hardware capability
+        }
+      // PCIe capability: Link Capabilities Register
+      _regs[_offs_cap_pcie + 0xc].modify(0xf, lnk_speed);
+      // PCIe capability: Link Control 2 Register
+      _regs[_offs_cap_pcie + 0x30] = ctrl2 | lnk_speed;
+    }
+
+  // Configure Gen1 number of Fast Training Sequence ordered sets (N_FTS)
+  if (_nft_gen1)
+    _regs[Port_logic::Afr].modify(0xff'ff00, _nft_gen1 << 8 | _nft_gen1 << 16);
+
+  // Configure Gen2+ number of Fast Training Sequence ordered sets (N_FTS)
+  if (_nft_gen2)
+    _regs[Port_logic::Gen2].modify(0xff << 0, _nft_gen2 << 0);
 
   // set number of lanes
   unsigned lme;
