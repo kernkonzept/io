@@ -5,6 +5,7 @@
  *
  * License: see LICENSE.spdx (in this directory or the directories above)
  */
+#include <l4/re/error_helper>
 #include <l4/util/util.h>
 
 #include "dwc_pcie_core.h"
@@ -12,8 +13,6 @@
 #include "resource_provider.h"
 
 #include <errno.h>
-#include <l4/drivers/hw_mmio_register_block>
-#include <l4/re/error_helper>
 #include <inttypes.h>
 
 bool
