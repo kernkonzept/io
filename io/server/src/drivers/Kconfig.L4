@@ -9,3 +9,12 @@ config L4IO_IOMUXC_IMX8MP
 	default y
 	help
 		Add support for i.MX8 IOMUXC controller found on the NXP i.MX8MP.
+
+config L4IO_PCI_TEGRA_PCIE
+	bool "NVIDIA Tegra194 PCIe controller Driver"
+	default y
+	depends on L4IO_PCI
+	depends on HAVE_BIDPC_LIBTEGRA_BPMP
+	depends on HAVE_BIDPC_LIBTEGRA_PWM
+	help
+		Add support for NVIDIA Tegra194 PCIe controller.
