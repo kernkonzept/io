@@ -27,7 +27,7 @@ update:
 	   | bzcat > pci.ids
 
 update-ci: update
-	git commit -m "Update PCI-IDs" .
+	git commit -m "Update PCI-IDs" -s .
 
 
 clean::
