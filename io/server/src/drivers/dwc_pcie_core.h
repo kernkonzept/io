@@ -32,6 +32,7 @@ public:
     register_property("regs_size", &_regs_size);
     register_property("mem_base", &_mem_base);
     register_property("mem_size", &_mem_size);
+    register_property("bus_base", &_bus_base);
     register_property("cpu_fixup", &_cpu_fixup);
 
     // _pci_version >= 0x480a || _iatu_unroll_enabled == true
@@ -311,6 +312,7 @@ protected:
   Int_property _cfg_size{~0};  ///< Size of the PCI config space region
   Int_property _mem_base{~0};  ///< Base address of the memory region
   Int_property _mem_size{~0};  ///< Size of the memory region
+  Int_property _bus_base{~0};  ///< Bus address of the memory region
   Int_property _cpu_fixup{~0}; ///< CPU fixup for accessing config space (optional)
   Int_property _num_lanes{1};  ///< Number of PCIe lanes
   Int_property _max_link_speed{0}; ///< Maximum link speed
