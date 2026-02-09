@@ -278,6 +278,22 @@ public:
   bool setup_rc();
 
 protected:
+  /**
+   * Lookup PCI capability offset in PCI bridge root complex block.
+   *
+   * \param cap_id  PCI capability ID to look up.
+   * \return Offset in PCI bridge config space.
+   */
+  l4_uint8_t get_pci_cap_offs(l4_uint8_t cap_id) const;
+
+  /**
+   * Lookup PCIe extended capability offset in PCI bridge root complex block.
+   *
+   * \param cap_id  PCIe extended capability ID to look up.
+   * \return Offset in PCI bridge config space.
+   */
+  l4_uint16_t get_pci_ext_cap_offs(l4_uint8_t cap_id) const;
+
   L4drivers::Register_block<32> _regs; ///< The PCIe IP core registers
   L4drivers::Register_block<32> _cfg;  ///< The PCI config space region
 

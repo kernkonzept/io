@@ -259,3 +259,35 @@ Dwc_pcie::device_valid(Cfg_addr addr)
 
   return true;
 }
+
+l4_uint8_t
+Dwc_pcie::get_pci_cap_offs(l4_uint8_t cap_id) const
+{
+  l4_uint8_t offs = _regs.r<8>(Hw::Pci::Config::Capability_ptr);
+  while (offs)
+    {
+      l4_uint16_t reg = _regs.r<16>(offs);
+      if ((reg & 0xff) == cap_id)
+        return offs;
+      offs = (reg & 0xff00) >> 8;
+    }
+
+  return 0;
+}
+
+l4_uint16_t
+Dwc_pcie::get_pci_ext_cap_offs(l4_uint8_t cap_id) const
+{
+  l4_uint16_t offs = 256;
+  for (unsigned ttl = (0x1000U - 256U) / 8; ttl-- > 0 && offs >= 256;)
+    {
+      l4_uint32_t hdr = _regs.r<32>(offs);
+      if (hdr == 0)
+        return 0;
+      if ((hdr & 0xffff) == cap_id)
+        return offs;
+      offs = (hdr >> 20) & 0xffc;
+    }
+
+  return 0;
+}
