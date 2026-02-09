@@ -266,11 +266,11 @@ Dwc_pcie::setup_rc()
   _regs[Port_logic::Msi_ctrl_lower_addr] = 0;
   _regs[Port_logic::Msi_ctrl_upper_addr] = 0;
 
-  // setup BARs
+  // setup RC BARs
   _regs[Hw::Pci::Config::Bar_0] = 0x00000004;
   _regs[Hw::Pci::Config::Bar_0+4] = 0x00000000;
 
-  // setup interrupt pins
+  // setup interrupt pins to INTA#.
   _regs[Hw::Pci::Config::Irq_line].modify(0x0000ff00, 0x100);
 
   // setup bus numbers (primary = 0, secondary = 1, subordinate = 1)
@@ -303,7 +303,7 @@ Dwc_pcie::setup_rc()
   _regs[Hw::Pci::Config::Bar_0] = 0x00000000;
 
   // set correct PCI class for RC
-  _regs[Hw::Pci::Config::Class_rev].modify(0xffff0000, 0x0604 << 16);
+  _regs[Hw::Pci::Config::Class_rev].modify(0xffff << 16, 0x0604 << 16);
 
   // enable directed speed change to automatically transition to Gen2 or Gen3
   // speeds after link training
