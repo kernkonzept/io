@@ -325,6 +325,7 @@ public:
 
   explicit Pcie_imx8_bridge(int segment = 0, unsigned bus_nr = 0);
   void init() override;
+  bool controller_host_init() override;
 
   bool link_up() override
   { return _regs[Port_logic::Debug1] & (1 << 4); }
@@ -411,10 +412,40 @@ Pcie_imx8_bridge::init()
   if (!Dwc_pcie::host_init())
     return;
 
+  setup_rc();
+
+  // Now establish the PCIe link. Start with Gen1 operation mode.
+
+  _regs[Lcr].modify(Pcie_cap_max_link_speed_mask, Pcie_cap_max_link_speed_gen1);
+
+  // enable ltssm: APP_LTSSM_ENABLE=1
+  _hsio_csr_pciea[Pciex1_ctrl2].set(Pciex1_ctrl2_app_ltssm_enable);
+
+  wait_link_up();
+
+  // DEFAULT_GEN2_N_FTS=3 (number of fast training sequences during link
+  // training)
+  _regs[Gen2].modify(0, 3U << 0);
+
+  wait_link_up();
+  d_printf(DBG_WARN, "%s: Link %s\n", name(), link_up() ? "up" : "DOWN");
+
+  typedef Hw::Pci::Irq_router_res<Pci_irq_router_rs> Irq_res;
+  Irq_res *ir = new Irq_res();
+  ir->set_id("IRQR");
+  add_resource_rq(ir);
+
+  discover_bus(this, this);
+  Hw::Device::init();
+}
+
+bool
+Pcie_imx8_bridge::controller_host_init()
+{
   if (_gpio3.dev() == nullptr)
     {
-      d_printf(DBG_ERR, "%s: error: 'gpio3' not set.\n", name());
-      throw "Pcie_imx8_bridge init error";
+      error("'gpio3' not set.");
+      return false;
     }
 
   l4_addr_t va = res_map_iomem(_regs_base + Hsio_lpcg_pciea, 0x10000);
@@ -453,31 +484,7 @@ Pcie_imx8_bridge::init()
 
   wait_for_pll_lock();
 
-  setup_rc();
-
-  // Now establish the PCIe link. Start with Gen1 operation mode.
-
-  _regs[Lcr].modify(Pcie_cap_max_link_speed_mask, Pcie_cap_max_link_speed_gen1);
-
-  // enable ltssm: APP_LTSSM_ENABLE=1
-  _hsio_csr_pciea[Pciex1_ctrl2].set(Pciex1_ctrl2_app_ltssm_enable);
-
-  wait_link_up();
-
-  // DEFAULT_GEN2_N_FTS=3 (number of fast training sequences during link
-  // training)
-  _regs[Gen2].modify(0, 3U << 0);
-
-  wait_link_up();
-  d_printf(DBG_WARN, "%s: Link %s\n", name(), link_up() ? "up" : "DOWN");
-
-  typedef Hw::Pci::Irq_router_res<Pci_irq_router_rs> Irq_res;
-  Irq_res *ir = new Irq_res();
-  ir->set_id("IRQR");
-  add_resource_rq(ir);
-
-  discover_bus(this, this);
-  Hw::Device::init();
+  return true;
 }
 
 void
