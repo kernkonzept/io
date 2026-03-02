@@ -398,7 +398,11 @@ void Gpio_imx_chip::init()
   l4_addr_t phys_base = regs->start();
   l4_addr_t size = regs->size();
 
-  if (size < 0x20 || size > 0x4000)
+  // the actual size of the IP block is just 32 bytes (0x20) but depending on
+  // the platform device trees they may specify a size of up to 64 kbytes
+  // (0x10000), so we waste a little bit of resources to map much more MMIO
+  // memory than needed
+  if (size < 0x20 || size > 0x10000)
     {
       d_printf(DBG_ERR, "error: %s: invalid mmio size (%lx).\n", name(), size);
       throw "gpio-imx init error";
