@@ -93,4 +93,10 @@ Io.hw_add_devices(function()
     Resource.irq1 = Res.irq(32 + 0x94, Io.Resource.Irq_type_level_high);
   end)
 
+  watchdog_7e100000 = Io.Hw.Device(function()
+    compatible    = { "brcm,bcm2835-pm", "brcm,bcm2835-pm-wdt" };
+    Property.hid  = "BCM2835_watchdog";
+    Resource.reg0 = Res.mmio(0xfe100000, 0xfe100000 + 0x00000114 - 1);
+  end)
+
 end)
