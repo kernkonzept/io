@@ -202,6 +202,114 @@
  * If IO encounters a supported PCH, it will enable those facilities in order
  * to enforce device isolation.
  *
+ * Capabilities
+ * ------------
+ *
+ * The following capabilities are recognized by the IO server:
+ *
+ * - **`dma_mgr`**
+ *
+ *  DMA space manager
+ *
+ *  *Mandatory capability.*
+ *
+ *  This capability is required for maintaining DMA domains. This capability
+ *  needs to be passed even on systems without an IOMMU.
+ *
+ *  Example configuration:
+ *  \code{.lua}
+ *  L4.default_loader:start(
+ *  {
+ *    caps =
+ *    {
+ *      dma_mgr = L4.Env.dma_mgr,
+ *    }
+ *  }, "rom/io rom/io.cfg")
+ * \endcode
+ *
+ * - **`sigma0`**
+ *
+ *  Sigma0
+ *
+ *  *Mandatory capability.*
+ *
+ *  This capability is required for requesting resources from Sigma0.
+ *
+ *  Example configuration:
+ *  \code{.lua}
+ *  L4.default_loader:start(
+ *  {
+ *    caps =
+ *    {
+ *      sigma0 = L4.cast(L4.Proto.Factory, L4.Env.sigma0):create(L4.Proto.Sigma0),
+ *    }
+ *  }, "rom/io rom/io.cfg")
+ *  \endcode
+ *
+ * - **`icu`**
+ *
+ *  ICU capability
+ *
+ *  *Mandatory capability for ACPI systems and required to set up and handle
+ *  device interrupts.*
+ *
+ *  This capability is used to set up and handle device interrupts. The
+ *  Platform_control interface of this capability is used by the IO server to
+ *  process power management events, for example suspend / shutdown / reboot of
+ *  the system.
+ *
+ *  Example configuration:
+ *  \code{.lua}
+ *  L4.default_loader:start(
+ *  {
+ *    caps =
+ *    {
+ *      icu = L4.Env.icu,
+ *    }
+ *  }, "rom/io rom/io.cfg")
+ *  \endcode
+ *
+ * - **`platform_ctl`**
+ *
+ *  *Optional capability.*
+ *
+ *  Server capability of a platform control channel. Clients can use this
+ *  channel to prompt the IO server to process power management events, for
+ *  example suspend / shutdown / reboot of the system.
+ *
+ *  Example configuration:
+ *  \code{.lua}
+ *  local platform_ctl = L4.defaut_loader:new_channel()
+ *
+ *  L4.default_loader:start(
+ *  {
+ *    caps =
+ *    {
+ *      platform_ctl = platform_ctl:svr(),
+ *    }
+ *  }, "rom/io rom/io.cfg")
+ *  \endcode
+ *
+ * - **`iommu`**
+ *
+ *  IOMMU capability
+ *
+ *  *Optional capability.*
+ *
+ *  This capability is required for maintaining IOMMUs. If this capability is
+ *  not passed, all DMA-capable devices are part of the physical CPU domain.
+ *
+ *  Example configuration:
+ *  \code{.lua}
+ *  L4.default_loader:start(
+ *  {
+ *    caps =
+ *    {
+ *      iommu = L4.Env.iommu,
+ *    }
+ *  }, "rom/io rom/io.cfg")
+ *  \endcode
+ *
  * Command Line Options
  * -----------------------
  * The Io Server supports the following optional parameters:
