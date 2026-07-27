@@ -88,8 +88,6 @@ public:
   void add_child_fixed(Device *d, Pci_dev *vp, unsigned dn, unsigned fn);
 
   Pci_bridge *find_bridge(unsigned bus);
-  void setup_bus();
-  void finalize_setup() override;
 
 };
 

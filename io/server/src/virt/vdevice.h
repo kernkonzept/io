@@ -109,9 +109,6 @@ public:
   virtual int add_filter(cxx::String const &, unsigned long long, unsigned long long)
   { return -ENODEV; }
 
-  virtual void finalize_setup()
-  {}
-
   Device *parent() const override { return _dt.parent(); }
   Device *children() const override { return _dt.children(); }
   Device *next() const override { return _dt.next(); }
