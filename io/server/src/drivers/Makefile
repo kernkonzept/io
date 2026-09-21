@@ -11,6 +11,7 @@ SRC_CC-$(CONFIG_L4IO_PCI)   += pcie_rcar3.cc cpg_rcar3.cc
 SRC_CC-$(CONFIG_L4IO_PCI)   += dwc_pcie_core.cc
 SRC_CC-$(CONFIG_L4IO_PCI_TEGRA_PCIE) += pcie_tegra194.cc
 SRC_CC-$(CONFIG_L4IO_PCI_IMX8QM) += pcie_imx8qm.cc
+SRC_CC-$(CONFIG_L4IO_PCI_IMX8MP) += pcie_imx8mp.cc
 
 SRC_CC-$(CONFIG_L4IO_SCU_IMX8QM) += scu_imx8qm.cc
 SRC_CC-$(CONFIG_L4IO_IOMUXC_IMX8MP) += iomuxc.cc i2c-ctrl.cc spi-ctrl.cc \

@@ -26,3 +26,11 @@ config L4IO_PCI_IMX8QM
 	depends on L4IO_SCU_IMX8QM
 	help
 		Add support for the PCIe controller found on the NXP i.MX8QM.
+
+config L4IO_PCI_IMX8MP
+	bool "NXP i.MX8M Plus PCIe controller Driver"
+	default y
+	depends on L4IO_PCI
+	depends on L4IO_GPIO_IMX
+	help
+		Add support for the PCIe controller found on the NXP i.MX8M Plus.
