@@ -18,3 +18,11 @@ config L4IO_PCI_TEGRA_PCIE
 	depends on HAVE_BIDPC_LIBTEGRA_PWM
 	help
 		Add support for NVIDIA Tegra194 PCIe controller.
+
+config L4IO_PCI_IMX8QM
+	bool "NXP i.MX8QM PCIe controller Driver"
+	default y
+	depends on L4IO_PCI
+	depends on L4IO_SCU_IMX8QM
+	help
+		Add support for the PCIe controller found on the NXP i.MX8QM.

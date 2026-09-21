@@ -7,7 +7,7 @@
 
 /**
  * \file
- * Driver for the PCIe controller on i.MX8 MQ boards.
+ * Driver for the PCIe controller on i.MX8QM boards.
  *
  * The Linux device tree for such devices looks like this:
  * \code{.dts}
