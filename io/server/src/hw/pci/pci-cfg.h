@@ -21,6 +21,20 @@ enum Cfg_width
   Cfg_byte  = 0,
 };
 
+enum Cfg_size
+{
+  Cfg_space_size_pci = 256,
+  Cfg_space_size_pcie = 4096,
+};
+
+enum Cap_list_ttl
+{
+  /// Upper limit for the number of entries of a PCI capability list. */
+  Cap_list_ttl = (Cfg_space_size_pci - 64) / 4,
+  /// Upper limit for the number of entries of a PCIe extended capability list.
+  Ext_cap_list_ttl = (Cfg_space_size_pcie - Cfg_space_size_pci) / 4,
+};
+
 inline Cfg_width cfg_w_to_o(int width)
 {
   switch (width)

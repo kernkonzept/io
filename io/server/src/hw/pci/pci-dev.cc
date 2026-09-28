@@ -27,8 +27,16 @@ Hw::Pci::Config_cache::_discover_pci_caps(Hw::Pci::Config const &c)
     return;
 
   l4_uint8_t cap_ptr = c.read<l4_uint8_t>(cap_list) & ~0x3;
-  while (cap_ptr)
+  for (unsigned ttl = Cap_list_ttl; cap_ptr; --ttl)
     {
+      if (!ttl)
+        {
+          d_printf(DBG_WARN, "warning: %02x:%02x.%x: too many PCI capabilities,"
+                             " list is probably circular\n",
+                   c.addr().bus(), c.addr().dev(), c.addr().fn());
+          return;
+        }
+
       l4_uint16_t cl = c.read<l4_uint16_t>(cap_ptr);
       l4_uint8_t id  = cl & 0xff;
 
@@ -431,7 +439,8 @@ Hw::Pci::Dev::find_pci_cap(unsigned char id)
   if (o == 0)
     return Hw::Pci::Cap();
 
-  for (Hw::Pci::Cap c = config(o); c.is_valid(); c = c.next())
+  unsigned ttl = Cap_list_ttl;
+  for (Hw::Pci::Cap c = config(o); c.is_valid() && ttl; c = c.next(), --ttl)
     if (c.id() == id)
       return c;
 
@@ -445,8 +454,11 @@ Hw::Pci::Dev::find_ext_cap(unsigned id)
     return Hw::Pci::Extended_cap();
 
   l4_uint16_t offset = 0x100;
-  for (;;)
+  for (unsigned ttl = Ext_cap_list_ttl;; --ttl)
     {
+      if (!ttl)
+        return Hw::Pci::Extended_cap();
+
       Hw::Pci::Extended_cap cap = config(offset);
 
       if (!cap.is_valid())
@@ -455,9 +467,11 @@ Hw::Pci::Dev::find_ext_cap(unsigned id)
       if (cap.id() == id)
         return cap;
 
-      offset = cap.next();
-      if (!offset)
+      l4_uint16_t next = cap.next();
+      if (next < Cfg_space_size_pci)
         return Hw::Pci::Extended_cap();
+
+      offset = next;
     }
 }
 
@@ -600,7 +614,8 @@ Hw::Pci::Dev::discover_pci_caps()
 
   l4_uint32_t cap_ptr = c.read<l4_uint8_t>(Hw::Pci::Config::Capability_ptr);
   cap_ptr &= ~0x3;
-  for (; cap_ptr; cap_ptr = c.read<l4_uint8_t>(cap_ptr + 1) & ~0x3)
+  unsigned ttl = Cap_list_ttl;
+  for (; cap_ptr && ttl; cap_ptr = c.read<l4_uint8_t>(cap_ptr + 1) & ~0x3, --ttl)
     {
       l4_uint32_t id = c.read<l4_uint8_t>(cap_ptr);
       if (0)

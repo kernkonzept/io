@@ -25,8 +25,15 @@ Vi::Pci_proxy_dev::scan_pci_caps()
 {
   l4_uint8_t pci_cap = _hwf->config().read<l4_uint8_t>(Hw::Pci::Config::Capability_ptr);
   bool is_pci_express = false;
-  while (pci_cap)
+  for (unsigned ttl = Hw::Pci::Cap_list_ttl; pci_cap; --ttl)
     {
+      if (!ttl)
+        {
+          d_printf(DBG_WARN, "warning: %s: too many PCI capabilities, "
+                             "list is probably circular\n", host()->name());
+          break;
+        }
+
       l4_uint16_t cap = _hwf->config().read<l4_uint16_t>(pci_cap);
       switch (cap & 0xff)
         {
@@ -83,8 +90,15 @@ void
 Vi::Pci_proxy_dev::scan_pcie_caps()
 {
   l4_uint16_t offset = 0x100;
-  while (offset)
+  for (unsigned ttl = Hw::Pci::Ext_cap_list_ttl; offset; --ttl)
     {
+      if (!ttl)
+        {
+          d_printf(DBG_WARN, "warning: %s: too many PCIe extended capabilities,"
+                             " list is probably circular\n", host()->name());
+          break;
+        }
+
       Hw::Pci::Extended_cap cap = _hwf->config(offset);
 
       // the device doesn't have extended capabilities
