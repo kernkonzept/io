@@ -72,14 +72,12 @@ void IO_factory::handle_irq()
     }
 }
 
-Vi::System_bus *IO_factory::lookup_vbus(char const *opt_str, unsigned len)
+Vi::System_bus *IO_factory::lookup_vbus(cxx::String const &opt)
 {
   for (auto *vbus : _busses)
-    {
-      auto *name = vbus->name();
-      if (!strncmp(name, opt_str, len))
-        return vbus;
-    }
+    if (cxx::String(vbus->name()) == opt)
+      return vbus;
+
   return nullptr;
 }
 
@@ -98,15 +96,15 @@ long IO_factory::op_create(L4::Factory::Rights, L4::Ipc::Cap<void> &res,
   if (!opt.is_of<char const *>())
     return -L4_EINVAL;
 
-  char const *pref = "vbus=";
-  const size_t pref_len = strlen(pref);
-  unsigned len = opt.length();
-  char const *opt_str = opt.data();
-  if (len <= pref_len || strncmp(pref, opt_str, pref_len))
+  if (opt.length() < 1)
+    return -L4_ENODEV;
+
+  cxx::String opt_str(opt.value<char const *>(), opt.length() - 1);
+  char const *opt_arg = opt_str.starts_with("vbus=");
+  if (!opt_arg)
     return -L4_EINVAL;
 
-  auto *vbus = lookup_vbus(opt_str + pref_len, len - pref_len);
-
+  auto *vbus = lookup_vbus(opt_str.substr(opt_arg - opt_str.start()));
   if (!vbus)
     return -L4_ENODEV;
 

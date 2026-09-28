@@ -86,7 +86,7 @@ private:
   void handle_irq();
 
   // Lookup Vbus
-  Vi::System_bus *lookup_vbus(char const *opt_str, unsigned len);
+  Vi::System_bus *lookup_vbus(cxx::String const &opt);
 
   Del_cap_irq _del_cap_irq;
   std::vector<Vi::System_bus *> _busses;
