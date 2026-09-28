@@ -30,6 +30,8 @@ public:
   // future configuring the number of VFs might be made dynamic, however that
   // would require preparatory work to make vbus more dynamic.
   static constexpr unsigned Max_vfs = CONFIG_L4IO_PCI_SRIOV_MAX_VFS;
+  /// Number of VF BARs in the SR-IOV capability.
+  static constexpr unsigned Num_vbars = 6;
 
   explicit Sr_iov_feature(Dev *dev, l4_uint16_t cap_ofs);
 
@@ -66,7 +68,7 @@ private:
 private:
   Dev *_dev;
   l4_uint16_t _cap_ofs;
-  std::shared_ptr<Resource_provider> _vbar[6];
+  std::shared_ptr<Resource_provider> _vbar[Num_vbars];
 
   Sr_iov_cap::Total_vfs _total_vfs;
   Sr_iov_cap::Num_vfs _num_vfs;

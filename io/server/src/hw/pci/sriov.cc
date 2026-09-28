@@ -183,12 +183,21 @@ Hw::Pci::Sr_iov_feature::discover_num_vfs()
 void
 Hw::Pci::Sr_iov_feature::discover_vbars()
 {
-  for (unsigned vbar_idx = 0; vbar_idx < 6; ++vbar_idx)
+  for (unsigned vbar_idx = 0; vbar_idx < Num_vbars; ++vbar_idx)
     {
       Hw::Pci::Cfg_bar vbar_cfg =
         cap() + Hw::Pci::Sr_iov_cap::Vf_bar0::Ofs + vbar_idx * 4;
       if (!vbar_cfg.parse())
         {
+          _vbar[vbar_idx] = nullptr;
+          continue;
+        }
+
+      if (vbar_cfg.is_64bit() && vbar_idx + 1 >= Num_vbars)
+        {
+          d_printf(DBG_WARN,
+                   "SR-IOV: 64bit VF BAR%u in last VF BAR slot, ignored\n",
+                   vbar_idx);
           _vbar[vbar_idx] = nullptr;
           continue;
         }
