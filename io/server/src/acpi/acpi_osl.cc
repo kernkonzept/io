@@ -224,6 +224,9 @@ AcpiOsReadPciConfiguration (
         UINT32                  Width)
 {
   //printf("%s: ...\n", __func__);
+  if (Width != 8 && Width != 16 && Width != 32)
+    return AE_BAD_PARAMETER;
+
   Hw::Pci::Root_bridge *rb = Hw::Pci::root_bridge(PciId->Segment).get();
   if (!rb)
     {
@@ -284,6 +287,9 @@ AcpiOsWritePciConfiguration (
         UINT32                  Width)
 {
   //printf("%s: ...\n", __func__);
+  if (Width != 8 && Width != 16 && Width != 32)
+    return AE_BAD_PARAMETER;
+
   Hw::Pci::Root_bridge *rb = Hw::Pci::root_bridge(PciId->Segment).get();
   if (!rb)
     {
