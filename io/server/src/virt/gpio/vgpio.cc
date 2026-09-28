@@ -162,6 +162,8 @@ public:
   {
     if (tag != "pins")
       return -L4_ENODEV;
+    if (val >= _pins.size())
+      return -L4_ERANGE;
     _pins[val] = true;
     return 0;
   }
