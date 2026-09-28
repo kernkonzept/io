@@ -33,6 +33,12 @@ inline Cfg_width cfg_w_to_o(int width)
 }
 
 /**
+ * Check whether `width` is a valid config space access width in bits.
+ */
+constexpr inline bool cfg_width_valid(unsigned width)
+{ return width == 8 || width == 16 || width == 32; }
+
+/**
  * Convert a Cfg_width parameter to the corresponding bit mask:
  * Cfg_byte => 0xff, Cfg_short => 0xffff, Cfg_long => 0xffffffff.
  *

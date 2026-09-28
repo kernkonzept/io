@@ -113,6 +113,9 @@ Vi::Pci_vroot::cfg_read(L4::Ipc::Iostream &ios)
   l4_uint32_t width;
 
   ios >> bus >> devfn >> reg >> width;
+  if (!Hw::Pci::cfg_width_valid(width))
+    return -L4_EINVAL;
+
   value = ~0U >> (32 - width);
 
   if (0)
@@ -198,6 +201,9 @@ Vi::Pci_vroot::cfg_write(L4::Ipc::Iostream &ios)
   l4_uint32_t width;
 
   ios >> bus >> devfn >> reg >> value >> width;
+  if (!Hw::Pci::cfg_width_valid(width))
+    return -L4_EINVAL;
+
   if (0)
     printf("cfg write: %02x:%02x.%1x: reg=%x w=%x v=%08x\n",
            bus, devfn >> 16, devfn & 0xffff, reg, width, value);
