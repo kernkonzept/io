@@ -712,34 +712,54 @@ setup_pci_root_mmconfig()
   if (!tblhdr)
     return false;
 
+  if (tblhdr->Length < sizeof(ACPI_TABLE_MCFG))
+    {
+      d_printf(DBG_ERR, "error: MCFG table too short: %u\n", tblhdr->Length);
+      return false;
+    }
+
   ACPI_TABLE_MCFG *mcfg = (ACPI_TABLE_MCFG *)tblhdr;
 
   size_t sz = tblhdr->Length - sizeof(ACPI_TABLE_MCFG);
   ACPI_MCFG_ALLOCATION *t = (ACPI_MCFG_ALLOCATION *)(mcfg + 1);
   ACPI_MCFG_ALLOCATION *e = t;
+  unsigned registered = 0;
   while (1)
     {
       if (sz < sizeof(ACPI_MCFG_ALLOCATION))
         break;
 
       d_printf(DBG_INFO, "PCI-MMCONFIG: %llx PciSegment=%d Bus=%d-%d\n",
-               (unsigned long long)e->Address,
+               static_cast<unsigned long long>(e->Address),
                e->PciSegment, e->StartBusNumber, e->EndBusNumber);
 
-      // Register for all given buses?
-      unsigned num_busses = e->EndBusNumber - e->StartBusNumber + 1;
-      Hw::Pci::register_root_bridge(
-          std::make_shared<Hw::Pci::Mmio_root_bridge>(e->PciSegment,
-                                                      e->StartBusNumber,
-                                                      nullptr, e->Address,
-                                                      num_busses,
-                                                      pci_platform_adapter));
+      if (e->EndBusNumber < e->StartBusNumber)
+        d_printf(DBG_ERR, "error: MCFG entry with an empty bus range, ignored\n");
+      else
+        {
+          try
+            {
+              // Register for all given buses?
+              unsigned num_busses = e->EndBusNumber - e->StartBusNumber + 1;
+              Hw::Pci::register_root_bridge(
+                  std::make_shared<Hw::Pci::Mmio_root_bridge>(
+                                  e->PciSegment, e->StartBusNumber, nullptr,
+                                  e->Address, num_busses, pci_platform_adapter));
+              ++registered;
+            }
+          catch (...)
+            {
+              d_printf(DBG_ERR, "error: could not map the config space of the"
+                                " MCFG entry at %llx, ignored\n",
+                       static_cast<unsigned long long>(e->Address));
+            }
+        }
 
       e++;
       sz -= sizeof(ACPI_MCFG_ALLOCATION);
     }
 
-  return e != t;
+  return registered > 0;
 }
 
 static void setup_pci_root()
