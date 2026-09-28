@@ -1,6 +1,9 @@
-#include "inhibitor_mux.h"
-#include <l4/sys/err.h>
 #include <cstring>
+
+#include <l4/sys/err.h>
+#include <l4/cxx/minmax>
+
+#include "inhibitor_mux.h"
 
 Inhibitor_provider::Inhibitor_provider(Inhibitor_mux *mux)
 : _mux(mux)
@@ -23,7 +26,7 @@ Inhibitor_provider::~Inhibitor_provider()
 }
 
 void
-Inhibitor_provider::inhibitor_acquire(l4_umword_t id, char const *reason)
+Inhibitor_provider::inhibitor_acquire(l4_umword_t id, std::string_view reason)
 {
   if (id >= L4VBUS_INHIBITOR_MAX)
     throw -L4_ENODEV;
@@ -31,9 +34,9 @@ Inhibitor_provider::inhibitor_acquire(l4_umword_t id, char const *reason)
   if (_inhibitor_acquired[id])
     return; // already acquired, just ignore
 
-  unsigned long len = sizeof (_inhibitor_reason[id]);
-  strncpy(_inhibitor_reason[id], reason, len);
-  _inhibitor_reason[id][len - 1] = 0;
+  int len = cxx::min<int>(sizeof(_inhibitor_reason[id]) - 1, reason.length());
+  memcpy(_inhibitor_reason[id], reason.data(), len);
+  _inhibitor_reason[id][len] = 0;
   _inhibitor_acquired[id] = true;
   _mux->inhibitor_acquire(id);
 }

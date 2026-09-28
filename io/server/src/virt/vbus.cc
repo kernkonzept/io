@@ -565,7 +565,9 @@ System_bus::op_map_info(L4Re::Dataspace::Rights,
 long
 System_bus::op_acquire(L4Re::Inhibitor::Rights, l4_umword_t id, L4::Ipc::String<> reason)
 {
-  inhibitor_acquire(id, reason.data);
+  // The RPC framework guarantees that reason.length >= 1 holds and that the
+  // string is 0-terminated.
+  inhibitor_acquire(id, std::string_view(reason.data, reason.length - 1));
   return L4_EOK;
 }
 

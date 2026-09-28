@@ -7,6 +7,8 @@
  */
 #pragma once
 
+#include <string_view>
+
 #include <l4/cxx/hlist>
 #include <l4/vbus/vbus_inhibitor.h>
 #include <l4/sys/types.h>
@@ -37,7 +39,7 @@ protected:
   bool inhibitor_acquired(l4_umword_t id) const
   { return _inhibitor_acquired[id]; }
 
-  void inhibitor_acquire(l4_umword_t id, char const *reason);
+  void inhibitor_acquire(l4_umword_t id, std::string_view reason);
   void inhibitor_release(l4_umword_t id);
 
   virtual ~Inhibitor_provider() = 0;
