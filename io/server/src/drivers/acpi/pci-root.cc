@@ -151,6 +151,15 @@ struct Acpi_pci_root_drv : Hw::Acpi_device_driver
         // we found a second root bridge
         // create a new root bridge instance
         rb = acpi_create_pci_root_bridge(seg, bbn[0], device);
+        if (!rb)
+          {
+            d_printf(DBG_ERR,
+                     "error: %s: could not create an additional PCI root"
+                     " bridge for segment %d bus %d\n",
+                     device->name(), static_cast<int>(seg), bbn[0]);
+            return adev;
+          }
+
         Hw::Pci::register_root_bridge(rb);
       }
     else
