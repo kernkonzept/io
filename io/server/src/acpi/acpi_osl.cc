@@ -47,7 +47,12 @@ AcpiOsReadPort (
              (unsigned long)address, width);
 
   if (address == 0x80)
-    return AE_OK;
+    {
+      // Port 0x80 is the POST code port, used for I/O delays.
+      // Don't touch the code but just return a defined value.
+      *value = 0;
+      return AE_OK;
+    }
 
   switch (width)
     {
@@ -438,9 +443,13 @@ AcpiOsExecute(
        void                            *context)
 {
   (void)type;
+  // schedule() returns a positive error code from pthread_create()
   int r = acpi_work_queue.schedule(cxx::make_unique<Async_work>(function, context));
-  if (r < 0)
-    return AE_ERROR;
+  if (r != 0)
+    {
+      d_printf(DBG_ERR, "error: could not schedule ACPI work item: %d\n", r);
+      return AE_ERROR;
+    }
   return AE_OK;
 }
 
