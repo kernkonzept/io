@@ -694,19 +694,23 @@ System_bus::rpc_get_dev_by_hid(Device *dev, L4::Ipc::Iostream &ios) const
   auto c = rpc_get_dev_next_iterator(dev, ios, -L4_ENOENT);
 
   unsigned long sz;
-  char const *hid = 0;
+  char const *hid = "";
 
   ios >> L4::Ipc::buf_in(hid, sz);
 
-  if (0)
-    printf("look for '%s' in %p\n", hid, this);
+  if constexpr (0)
+    printf("look for '%.*s' in %p\n", static_cast<int>(sz), hid, this);
 
   if (!hid || sz <= 1)
     return -L4_EINVAL;
 
+  size_t len = strnlen(hid, sz);
+  if (len == 0)
+    return -L4_EINVAL;
+
   for (; c != end(); ++c)
     if (char const *h = c->hid())
-      if (strcmp(h, hid) == 0)
+      if (strlen(h) == len && strncmp(h, hid, len) == 0)
         return rpc_device_get(*c, ios);
 
   return -L4_ENOENT;
