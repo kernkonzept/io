@@ -15,7 +15,7 @@ namespace Hw {
    *
    * \deprecated Use Hw::Iommu_dma_device.
    */
-  class Arm_dma_device : public Device, public Dma_src_feature
+  class Arm_dma_device : public Device
   {
   public:
     Arm_dma_device(l4_umword_t uid, l4_uint32_t adr) : Device(uid, adr)
@@ -27,24 +27,31 @@ namespace Hw {
     Arm_dma_device() : Device()
     { setup_device(); }
 
-    int enumerate_dma_src_ids(Dma_src_feature::Dma_src_id_cb cb) const override
-    {
-      /*
-       * src_id encoding:
-       *   63-48: reserved
-       *   47-32: smmu_idx
-       *   31- 0: stream_id
-       */
-      l4_uint64_t smmu_idx = _iommu.val();
-      l4_uint64_t src_id = (smmu_idx << 32) | _sid.val();
-
-      return cb(src_id);
-    }
-
-    int enumerate_dma_reservations(Dma_domain_if::Resv_cb) const override
-    { return 0; }
-
   private:
+    struct Arm_dma_src_feature : public Dma_src_feature
+    {
+      explicit Arm_dma_src_feature(Arm_dma_device *hw_dev) : hw_dev(hw_dev) {}
+
+      int enumerate_dma_src_ids(Dma_src_id_cb cb) const override
+      {
+        /*
+         * src_id encoding:
+         *   63-48: reserved
+         *   47-32: smmu_idx
+         *   31- 0: stream_id
+         */
+        l4_uint64_t smmu_idx = hw_dev->_iommu.val();
+        l4_uint64_t src_id = (smmu_idx << 32) | hw_dev->_sid.val();
+
+        return cb(src_id);
+      }
+
+      int enumerate_dma_reservations(Dma_domain_if::Resv_cb) const override
+      { return 0; }
+
+      Arm_dma_device *hw_dev;
+    };
+
     void setup_device()
     {
       register_property("iommu", &_iommu);
@@ -52,10 +59,11 @@ namespace Hw {
 
       property("flags")->set(-1, DF_dma_supported);
 
-      add_feature(static_cast<Dma_src_feature *>(this));
+      add_feature(&_dma_src_feature);
     }
 
     Int_property _iommu;
     Int_property _sid;
+    Arm_dma_src_feature _dma_src_feature{this};
   };
 }

@@ -115,7 +115,7 @@ private:
  * In case the iommu node in your Devicetree has two cells, combine the two
  * 32-bit cells into one 64-bit Device ID.
  */
-class Iommu_dma_device : public Hw::Device, public Dma_src_feature
+class Iommu_dma_device : public Hw::Device
 {
 public:
   Iommu_dma_device()
@@ -123,20 +123,28 @@ public:
     register_property("iommus", &_iommus);
     property("flags")->set(-1, DF_dma_supported);
 
-    add_feature(static_cast<Dma_src_feature *>(this));
-  }
-
-  int enumerate_dma_src_ids(Dma_src_feature::Dma_src_id_cb cb) const override
-  {
-    return _iommus.enumerate_dma_src_ids(cb);
-  }
-
-  int enumerate_dma_reservations(Dma_domain_if::Resv_cb) const override
-  {
-    return 0;
+    add_feature(&_dma_src_feature);
   }
 
 private:
+  struct Iommu_dma_src_feature : public Dma_src_feature
+  {
+    explicit Iommu_dma_src_feature(Iommu_dma_device *hw_dev) : hw_dev(hw_dev) {}
+
+    int enumerate_dma_src_ids(Dma_src_id_cb cb) const override
+    {
+      return hw_dev->_iommus.enumerate_dma_src_ids(cb);
+    }
+
+    int enumerate_dma_reservations(Dma_domain_if::Resv_cb) const override
+    {
+      return 0;
+    }
+
+    Iommu_dma_device *hw_dev;
+  };
+
   Iommus_property _iommus;
+  Iommu_dma_src_feature _dma_src_feature{this};
 };
 } // namespace Hw
