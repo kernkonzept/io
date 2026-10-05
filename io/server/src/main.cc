@@ -436,7 +436,8 @@ run(int argc, char * const *argv)
     }
   else
     {
-      system_bus()->set_dma_domain_factory(new Iommu_dma_domain_factory());
+      system_bus()->set_dma_domain_factory(
+        std::make_unique<Iommu_dma_domain_factory>());
       Iommu_dma_domain::init();
     }
 

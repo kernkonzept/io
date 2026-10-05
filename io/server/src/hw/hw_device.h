@@ -237,7 +237,7 @@ public:
             break;
           }
 
-        if (auto *f = c->_dma_domain_factory)
+        if (auto *f = c->_dma_domain_factory.get())
           {
             d = f->create(dev);
             break;
@@ -253,8 +253,8 @@ public:
     return d.get();
   }
 
-  void set_dma_domain_factory(Dma_domain_factory *dma)
-  { _dma_domain_factory = dma; }
+  void set_dma_domain_factory(std::unique_ptr<Dma_domain_factory> dma)
+  { _dma_domain_factory = std::move(dma); }
 
   Dma_domain *dma_domain()
   { return _dma_domain.get(); }
@@ -299,7 +299,7 @@ private:
 
   /// DMA domain that **must** be used for all children of this device.
   std::shared_ptr<Dma_domain> _downstream_dma_domain;
-  Dma_domain_factory *_dma_domain_factory = 0;
+  std::unique_ptr<Dma_domain_factory> _dma_domain_factory;
 };
 
 
