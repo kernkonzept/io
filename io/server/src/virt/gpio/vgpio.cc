@@ -130,18 +130,16 @@ public:
 
 };
 
-class Gpio : public Vi::Device, public Vi::Dev_feature, public Hw::Device_client
+class Gpio : public Vi::Device, public Hw::Device_client
 {
 private:
   typedef std::vector<int> Irqs;
 
 public:
-  int dispatch(l4_umword_t, l4_uint32_t func, L4::Ipc::Iostream &ios) override;
-
   explicit Gpio(Hw::Device *d)
   : _hwd(dynamic_cast<Hw::Gpio_chip*>(d))
   {
-    add_feature(this);
+    add_feature(&_gpio_feature);
     d->add_client(this);
 
     _pins.resize(_hwd->nr_pins());
@@ -182,13 +180,6 @@ public:
   }
 
   char const *hid() const override { return "GPIO"; }
-  void set_host(Vi::Device *d) override { _host = d; }
-  Vi::Device *host() const override { return _host; }
-  l4_uint32_t interface_type() const override
-  { return 1 << L4VBUS_INTERFACE_GPIO; }
-
-  bool match_hw_feature(const Hw::Dev_feature*) const override
-  { return false; }
 
   void dump(int indent) const override
   {
@@ -211,7 +202,30 @@ public:
   unsigned nr_pins() const { return _pins.size(); }
 
 private:
-  Vi::Device *_host;
+  /// The vBUS GPIO interface of the device, provided as device feature.
+  class Gpio_feature : public Vi::Dev_feature
+  {
+  public:
+    explicit Gpio_feature(Gpio *gpio) : _gpio(gpio) {}
+
+    int dispatch(l4_umword_t, l4_uint32_t func,
+                 L4::Ipc::Iostream &ios) override;
+
+    l4_uint32_t interface_type() const override
+    { return 1 << L4VBUS_INTERFACE_GPIO; }
+
+    bool match_hw_feature(const Hw::Dev_feature*) const override
+    { return false; }
+
+    // The feature always belongs to its GPIO device.
+    void set_host(Vi::Device *) override {}
+    Vi::Device *host() const override { return _gpio; }
+
+  private:
+    Gpio *_gpio;
+  };
+
+  Gpio_feature _gpio_feature{this};
   Hw::Gpio_chip *_hwd;
 
   Bitmap _pins;
@@ -397,7 +411,8 @@ Gpio::to_irq(L4::Ipc::Iostream &ios)
 }
 
 int
-Gpio::dispatch(l4_umword_t, l4_uint32_t func, L4::Ipc::Iostream &ios)
+Gpio::Gpio_feature::dispatch(l4_umword_t, l4_uint32_t func,
+                             L4::Ipc::Iostream &ios)
 {
   if (l4vbus_subinterface(func) != L4VBUS_INTERFACE_GPIO)
     return -L4_ENOSYS;
@@ -406,17 +421,17 @@ Gpio::dispatch(l4_umword_t, l4_uint32_t func, L4::Ipc::Iostream &ios)
     {
       switch (func)
 	{
-	case L4VBUS_GPIO_OP_SETUP: return setup(ios);
-	case L4VBUS_GPIO_OP_CONFIG_PAD: return config_pad(ios);
-	case L4VBUS_GPIO_OP_CONFIG_GET: return config_get(ios);
-	case L4VBUS_GPIO_OP_GET: return get(ios);
-	case L4VBUS_GPIO_OP_SET: return set(ios);
-	case L4VBUS_GPIO_OP_MULTI_SETUP: return multi_setup(ios);
-	case L4VBUS_GPIO_OP_MULTI_CONFIG_PAD: return multi_config_pad(ios);
-	case L4VBUS_GPIO_OP_MULTI_GET: return multi_get(ios);
-	case L4VBUS_GPIO_OP_MULTI_SET: return multi_set(ios);
-	case L4VBUS_GPIO_OP_TO_IRQ: return to_irq(ios);
-	case L4VBUS_GPIO_OP_CONFIG_PULL: return config_pull(ios);
+	case L4VBUS_GPIO_OP_SETUP: return _gpio->setup(ios);
+	case L4VBUS_GPIO_OP_CONFIG_PAD: return _gpio->config_pad(ios);
+	case L4VBUS_GPIO_OP_CONFIG_GET: return _gpio->config_get(ios);
+	case L4VBUS_GPIO_OP_GET: return _gpio->get(ios);
+	case L4VBUS_GPIO_OP_SET: return _gpio->set(ios);
+	case L4VBUS_GPIO_OP_MULTI_SETUP: return _gpio->multi_setup(ios);
+	case L4VBUS_GPIO_OP_MULTI_CONFIG_PAD: return _gpio->multi_config_pad(ios);
+	case L4VBUS_GPIO_OP_MULTI_GET: return _gpio->multi_get(ios);
+	case L4VBUS_GPIO_OP_MULTI_SET: return _gpio->multi_set(ios);
+	case L4VBUS_GPIO_OP_TO_IRQ: return _gpio->to_irq(ios);
+	case L4VBUS_GPIO_OP_CONFIG_PULL: return _gpio->config_pull(ios);
 	default: return -L4_ENOSYS;
 	}
     }
