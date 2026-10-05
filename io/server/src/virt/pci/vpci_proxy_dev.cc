@@ -38,7 +38,7 @@ Vi::Pci_proxy_dev::scan_pci_caps()
         case Hw::Pci::Cap::Msi_x:
         case Hw::Pci::Cap::Vndr:
         default:
-          add_pci_cap(new Vi::Pci_proxy_cap(_hwf, pci_cap));
+          add_pci_cap(std::make_unique<Vi::Pci_proxy_cap>(_hwf, pci_cap));
           break;
         }
 
@@ -75,7 +75,7 @@ Vi::Pci_proxy_dev::_skip_pcie_cap(Hw::Pci::Extended_cap const &cap, unsigned sz)
 {
   // create "fake" capability with a reserved ID, according to
   // PCI-SIG IDs >0x2c are reserved
-  add_pcie_cap(new Pcie_dummy_cap(cap.reg(), sz));
+  add_pcie_cap(std::make_unique<Pcie_dummy_cap>(cap.reg(), sz));
   return cap.next();
 }
 
@@ -99,8 +99,8 @@ Vi::Pci_proxy_dev::scan_pcie_caps()
 
         case Hw::Pci::Sr_iov_cap::Id:
 #ifdef CONFIG_L4IO_PCI_SRIOV
-          add_pcie_cap(new Vi::Sr_iov_proxy_cap(_hwf, cap.header(), offset,
-                                                offset));
+          add_pcie_cap(std::make_unique<Vi::Sr_iov_proxy_cap>(
+                         _hwf, cap.header(), offset, offset));
           offset = cap.next();
 #else
           offset = _skip_pcie_cap(cap, Hw::Pci::Sr_iov_cap::Size);
@@ -118,7 +118,8 @@ Vi::Pci_proxy_dev::scan_pcie_caps()
           }
         }
 
-      add_pcie_cap(new Vi::Pcie_proxy_cap(_hwf, cap.header(), offset, offset));
+      add_pcie_cap(std::make_unique<Vi::Pcie_proxy_cap>(_hwf, cap.header(),
+                                                        offset, offset));
       offset = cap.next();
     }
 
@@ -191,7 +192,7 @@ Vi::Pci_proxy_dev::find_pci_cap(unsigned offset) const
   if (!_pci_caps || offset < 0x3c)
     return 0;
 
-  for (Vi::Pci_capability *c = _pci_caps; c; c = c->next())
+  for (Vi::Pci_capability *c = _pci_caps.get(); c; c = c->next())
     if (c->is_inside(offset))
       return c;
 
@@ -199,15 +200,20 @@ Vi::Pci_proxy_dev::find_pci_cap(unsigned offset) const
 }
 
 void
-Vi::Pci_proxy_dev::add_pci_cap(Vi::Pci_capability *c)
+Vi::Pci_proxy_dev::add_pci_cap(std::unique_ptr<Vi::Pci_capability> c)
 {
-  Vi::Pci_capability **i;
-  for (i = &_pci_caps; *i; i = &(*i)->next())
-    if ((*i)->offset() > c->offset())
-      break;
+  if (!_pci_caps || _pci_caps->offset() > c->offset())
+    {
+      c->set_next(std::move(_pci_caps));
+      _pci_caps = std::move(c);
+      return;
+    }
 
-  c->next() = *i;
-  *i = c;
+  Vi::Pci_capability *prev = _pci_caps.get();
+  while (prev->next() && prev->next()->offset() <= c->offset())
+    prev = prev->next();
+
+  prev->insert_after(std::move(c));
 }
 
 Vi::Pcie_capability *
@@ -216,7 +222,7 @@ Vi::Pci_proxy_dev::find_pcie_cap(unsigned offset) const
   if (!_pcie_caps || offset < 0x100)
     return 0;
 
-  for (Vi::Pcie_capability *c = _pcie_caps; c; c = c->next())
+  for (Vi::Pcie_capability *c = _pcie_caps.get(); c; c = c->next())
     if (c->is_inside(offset))
       return c;
 
@@ -224,15 +230,20 @@ Vi::Pci_proxy_dev::find_pcie_cap(unsigned offset) const
 }
 
 void
-Vi::Pci_proxy_dev::add_pcie_cap(Vi::Pcie_capability *c)
+Vi::Pci_proxy_dev::add_pcie_cap(std::unique_ptr<Vi::Pcie_capability> c)
 {
-  Vi::Pcie_capability **i;
-  for (i = &_pcie_caps; *i; i = &(*i)->next())
-    if ((*i)->offset() > c->offset())
-      break;
+  if (!_pcie_caps || _pcie_caps->offset() > c->offset())
+    {
+      c->set_next(std::move(_pcie_caps));
+      _pcie_caps = std::move(c);
+      return;
+    }
 
-  c->next() = *i;
-  *i = c;
+  Vi::Pcie_capability *prev = _pcie_caps.get();
+  while (prev->next() && prev->next()->offset() <= c->offset())
+    prev = prev->next();
+
+  prev->insert_after(std::move(c));
 }
 
 int

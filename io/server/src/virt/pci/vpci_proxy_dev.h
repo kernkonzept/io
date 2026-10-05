@@ -111,9 +111,9 @@ public:
   { return _host; }
 
   Pci_capability *find_pci_cap(unsigned offset) const;
-  void add_pci_cap(Pci_capability *);
+  void add_pci_cap(std::unique_ptr<Pci_capability> c);
   Pcie_capability *find_pcie_cap(unsigned offset) const;
-  void add_pcie_cap(Pcie_capability *);
+  void add_pcie_cap(std::unique_ptr<Pcie_capability> c);
 
   bool scan_pci_caps();
   void scan_pcie_caps();
@@ -121,8 +121,8 @@ public:
 private:
   Device *_host;
   Hw::Pci::If *_hwf;
-  Pci_capability *_pci_caps = 0;
-  Pcie_capability *_pcie_caps = 0;
+  std::unique_ptr<Pci_capability> _pci_caps;
+  std::unique_ptr<Pcie_capability> _pcie_caps;
 
   Pci::Bar_array<6> _vbars;
   l4_uint32_t _rom;

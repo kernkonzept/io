@@ -9,6 +9,8 @@
 
 #include <l4/vbus/vbus_interfaces.h>
 
+#include <memory>
+
 #include "virt/vdevice.h"
 #include <hw/pci/pci-if.h>
 
@@ -248,7 +250,7 @@ namespace Pci {
  */
 class Pci_capability
 {
-  Pci_capability *_next = 0;
+  std::unique_ptr<Pci_capability> _next;
   l4_uint8_t _offset; ///< Offset in the PCI config space (in bytes)
   l4_uint8_t _id;     ///< PCI capability ID (as of the PCI spec)
   l4_uint8_t _size;   ///< The size in bytes of this capability
@@ -258,6 +260,8 @@ public:
 
   explicit Pci_capability(l4_uint8_t offset)
   : _offset(offset), _size(4) {}
+
+  virtual ~Pci_capability() = default;
 
   /// Set the PCI capability ID.
   void set_id(l4_uint8_t id) { _id  = id; }
@@ -270,9 +274,16 @@ public:
   /// Get the size within the config space in bytes.
   int size() const { return _size; }
   /// Get the next PCI capability of the device.
-  Pci_capability *next() const { return _next; }
-  /// Get a reference to the next pointer.
-  Pci_capability *&next() { return _next; }
+  Pci_capability *next() const { return _next.get(); }
+  /// Set the next PCI capability of the device.
+  void set_next(std::unique_ptr<Pci_capability> next)
+  { _next = std::move(next); }
+  /// Insert a PCI capability directly after this one.
+  void insert_after(std::unique_ptr<Pci_capability> cap)
+  {
+    cap->_next = std::move(_next);
+    _next = std::move(cap);
+  }
 
   /// Check if the given config space offset is inside this PCI capability
   bool is_inside(unsigned offset) const
@@ -354,7 +365,7 @@ public:
  */
 class Pcie_capability
 {
-  Pcie_capability *_next = 0;
+  std::unique_ptr<Pcie_capability> _next;
   l4_uint16_t _offset; ///< Offset in the PCI config space (in bytes)
   l4_uint16_t _id;     ///< Extended PCI capability ID (as of the PCI spec)
   l4_uint8_t _version; ///< Version of PCI extended capability
@@ -366,6 +377,8 @@ public:
   /// Make an extended PCI capability at given offset.
   explicit Pcie_capability(l4_uint16_t offset)
   : _offset(offset), _size(4) {}
+
+  virtual ~Pcie_capability() = default;
 
   /// Set ID and version of this capability form the PCI config space value.
   void set_cap(l4_uint32_t cap)
@@ -384,9 +397,16 @@ public:
   /// Get the size of the capability in bytes.
   int size() const { return _size; }
   /// Get the next capability of the deivce
-  Pcie_capability *next() const { return _next; }
-  /// Get a reference to the next pointer
-  Pcie_capability *&next() { return _next; }
+  Pcie_capability *next() const { return _next.get(); }
+  /// Set the next capability of the device
+  void set_next(std::unique_ptr<Pcie_capability> next)
+  { _next = std::move(next); }
+  /// Insert a capability directly after this one
+  void insert_after(std::unique_ptr<Pcie_capability> cap)
+  {
+    cap->_next = std::move(_next);
+    _next = std::move(cap);
+  }
 
   /// Check if the given config space offset is inside this capability.
   bool is_inside(unsigned offset) const
