@@ -318,6 +318,10 @@ AcpiOsWritePciConfiguration (
 
 // multi-threading -------------------------------------------------
 
+#include <condition_variable>
+#include <mutex>
+#include <system_error>
+#include <thread>
 #include <pthread.h>
 #include <semaphore.h>
 #include <time.h>
@@ -367,37 +371,28 @@ public:
   /// flush the work queue (blocks until all work items are finished.
   void flush()
   {
-    if (!_num_running)
-      return;
-
-    pthread_mutex_lock(&_l);
-    while (_num_running)
-      pthread_cond_wait(&_c, &_l);
-    pthread_mutex_unlock(&_l);
+    std::unique_lock<std::mutex> lock(_l);
+    _c.wait(lock, [this] { return _num_running == 0; });
   }
 
   /// schedule the given work item
   int schedule(cxx::unique_ptr<Async_work> work)
   {
-    pthread_t t;
-    pthread_mutex_lock(&_l);
-    ++_num_running;
-    pthread_mutex_unlock(&_l);
+    {
+      std::lock_guard<std::mutex> lock(_l);
+      ++_num_running;
+    }
     work->_q = this;
-    int r = pthread_create(&t, NULL, _exec, work);
-    if (r != 0)
+    try
       {
-        bool signal = false;
-        pthread_mutex_lock(&_l);
-        signal = (--_num_running == 0);
-        pthread_mutex_unlock(&_l);
-        if (signal)
-          pthread_cond_broadcast(&_c);
-
-        return r;
+        std::thread(_exec, work.get()).detach();
+      }
+    catch (std::system_error const &e)
+      {
+        work_done();
+        return -e.code().value();
       }
     work.release();
-    pthread_detach(t);
     return 0;
   }
 
@@ -405,24 +400,23 @@ private:
   void work_done()
   {
     bool signal = false;
-    pthread_mutex_lock(&_l);
-    signal = (--_num_running == 0);
-    pthread_mutex_unlock(&_l);
+    {
+      std::lock_guard<std::mutex> lock(_l);
+      signal = (--_num_running == 0);
+    }
     if (signal)
-      pthread_cond_broadcast(&_c);
+      _c.notify_all();
   }
 
-  static void *_exec(void *work)
+  static void _exec(Async_work *w)
   {
-    Async_work *w = static_cast<Async_work *>(work);
     w->exec();
     w->_q->work_done();
     delete w;
-    return 0;
   }
 
-  pthread_mutex_t _l = PTHREAD_MUTEX_INITIALIZER;
-  pthread_cond_t _c = PTHREAD_COND_INITIALIZER;
+  std::mutex _l;
+  std::condition_variable _c;
   unsigned _num_running = 0;
 };
 
@@ -565,7 +559,7 @@ AcpiOsSignalSemaphore (
 ACPI_STATUS
 AcpiOsCreateLock (ACPI_SPINLOCK *out_handle)
 {
-  pthread_mutex_t *m = new pthread_mutex_t(PTHREAD_MUTEX_INITIALIZER);
+  std::mutex *m = new std::mutex();
   *out_handle = (ACPI_SPINLOCK)m;
   return AE_OK;
 }
@@ -573,14 +567,14 @@ AcpiOsCreateLock (ACPI_SPINLOCK *out_handle)
 void
 AcpiOsDeleteLock (ACPI_SPINLOCK handle)
 {
-  delete static_cast<pthread_mutex_t*>(handle);
+  delete static_cast<std::mutex *>(handle);
   return;
 }
 
 ACPI_CPU_FLAGS
 AcpiOsAcquireLock (ACPI_SPINLOCK handle)
 {
-  pthread_mutex_lock(static_cast<pthread_mutex_t*>(handle));
+  static_cast<std::mutex *>(handle)->lock();
   return AE_OK;
 }
 
@@ -589,7 +583,7 @@ AcpiOsReleaseLock (
         ACPI_SPINLOCK                   handle,
         ACPI_CPU_FLAGS)
 {
-  pthread_mutex_unlock(static_cast<pthread_mutex_t *>(handle));
+  static_cast<std::mutex *>(handle)->unlock();
   return;
 }
 

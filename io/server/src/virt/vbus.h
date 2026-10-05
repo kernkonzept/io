@@ -17,7 +17,7 @@
 #include <l4/re/util/event_svr>
 #include <l4/re/util/event_buffer>
 
-#include <pthread.h>
+#include <mutex>
 #include <limits.h>
 
 #include "vdevice.h"
@@ -33,11 +33,11 @@ struct Vbus_event_source : L4Re::Util::Event_svr<Vbus_event_source>
 {
   typedef L4Re::Util::Event_buffer::Event Event;
   L4Re::Util::Event_buffer buffer;
-  pthread_mutex_t lock = PTHREAD_MUTEX_INITIALIZER;
+  std::mutex lock;
 
   void reset_event_buffer()
   {
-    Pthread_mutex_guard g(&lock);
+    std::lock_guard<std::mutex> g(lock);
     buffer.reset();
   }
 
@@ -49,7 +49,7 @@ struct Vbus_event_source : L4Re::Util::Event_svr<Vbus_event_source>
   {
     bool res;
       {
-        Pthread_mutex_guard g(&lock);
+        std::lock_guard<std::mutex> g(lock);
         res = buffer.put(ev);
       }
 

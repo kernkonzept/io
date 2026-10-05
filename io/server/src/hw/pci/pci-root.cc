@@ -28,7 +28,7 @@ Hw::Pci::Port_root_bridge::cfg_read(Hw::Pci::Cfg_addr addr, l4_uint32_t *value,
       return 0;
     }
 
-  Pthread_mutex_guard g(&_cfg_lock);
+  std::lock_guard<std::mutex> g(_cfg_lock);
   l4util_out32((addr.to_compat_addr() | 0x80000000) & ~3UL, 0xcf8);
 
   switch (w)
@@ -47,7 +47,7 @@ Hw::Pci::Port_root_bridge::cfg_write(Hw::Pci::Cfg_addr addr, l4_uint32_t value,
   if (addr.reg() >= 0x100)
     return 0;
 
-  Pthread_mutex_guard g(&_cfg_lock);
+  std::lock_guard<std::mutex> g(_cfg_lock);
   l4util_out32((addr.to_compat_addr() | 0x80000000) & ~3UL, 0xcf8);
   switch (w)
     {

@@ -9,7 +9,7 @@
 
 #include "pci-bridge.h"
 
-#include <pthread.h>
+#include <mutex>
 
 namespace Hw { namespace Pci {
 
@@ -104,7 +104,7 @@ struct Port_root_bridge : public Root_bridge
   int cfg_write(Cfg_addr addr, l4_uint32_t value, Cfg_width) override;
 
 private:
-  pthread_mutex_t _cfg_lock = PTHREAD_MUTEX_INITIALIZER;
+  std::mutex _cfg_lock;
 };
 
 struct Mmio_root_bridge : public Root_bridge
