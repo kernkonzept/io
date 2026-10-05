@@ -8,6 +8,7 @@
 #include "irq_server.h"
 #include "acpi_lib.h"
 
+#include <memory>
 #include <stdio.h>
 #include <l4/sys/cxx/ipc_epiface>
 #include <l4/re/env>
@@ -52,7 +53,8 @@ AcpiOsInstallInterruptHandler (
       return AE_BAD_PARAMETER;
     }
 
-  Acpi_sci *sci = new Acpi_sci(service_routine, context, interrupt_number);
+  auto sci_owner = std::make_unique<Acpi_sci>(service_routine, context,
+                                              interrupt_number);
   auto irq = L4Re::Util::make_shared_cap<L4::Irq>();
   if (!irq)
     {
@@ -64,11 +66,15 @@ AcpiOsInstallInterruptHandler (
       d_printf(DBG_ERR, "error: could not create L4::Irq: %d\n", err);
       return AE_NO_MEMORY;
     }
-  if (!irq_queue()->register_obj(sci, irq.get()).is_valid())
+  if (!irq_queue()->register_obj(sci_owner.get(), irq.get()).is_valid())
     {
       d_printf(DBG_ERR, "error: could not register ACPI event server\n");
       return AE_NO_MEMORY;
     }
+
+  // The IRQ registry refers to the object from now on, so it must stay alive
+  // even if the remaining setup fails.
+  Acpi_sci *sci = sci_owner.release();
 
   if ((err = sci->bind(irq, L4_IRQ_F_NONE)) < 0)
     {
