@@ -1,9 +1,10 @@
 #include "hw_irqs.h"
 #include <map>
+#include <memory>
 
 namespace {
 
-typedef std::map<unsigned, Kernel_irq_pin *> Irq_map;
+typedef std::map<unsigned, std::unique_ptr<Kernel_irq_pin>> Irq_map;
 static Irq_map _real_irqs;
 
 }
@@ -12,14 +13,11 @@ static Irq_map _real_irqs;
 Io_irq_pin *
 Hw::Irqs::real_irq(unsigned n)
 {
-  Irq_map::const_iterator f = _real_irqs.find(n);
-  Kernel_irq_pin *r;
-  if (f == _real_irqs.end() || !(*f).second)
-    _real_irqs[n] = r = new Kernel_irq_pin(n);
-  else
-    r = (*f).second;
+  std::unique_ptr<Kernel_irq_pin> &r = _real_irqs[n];
+  if (!r)
+    r = std::make_unique<Kernel_irq_pin>(n);
 
-  return r;
+  return r.get();
 }
 
 
