@@ -17,7 +17,7 @@ namespace Vi {
 /**
  * \brief A virtual Host-to-PCI bridge.
  */
-class Pci_vroot : public Vi::Pci_bridge, public Vi::Dev_feature
+class Pci_vroot : public Vi::Pci_bridge
 {
 public:
 
@@ -26,33 +26,43 @@ public:
   char const *type_name() const override
   { return "virtual PCI root"; }
 
-  int dispatch(l4_umword_t, l4_uint32_t func, L4::Ipc::Iostream &ios) override;
-
   ~Pci_vroot() {}
 
   char const *hid() const override
   { return "PNP0A03"; }
 
-  void set_host(Vi::Device *d) override
-  { _host = d; }
-
-  Vi::Device *host() const override
-  { return _host; }
-
-  l4_uint32_t interface_type() const override
-  { return 1 << L4VBUS_INTERFACE_PCI; }
-
   Io_irq_pin::Msi_src *find_msi_src(Msi_src_info si) override;
 
 private:
-  Vi::Device *_host;
+  /// The vBUS PCI root interface of the bridge, provided as device feature.
+  class Pci_root_feature : public Vi::Dev_feature
+  {
+  public:
+    explicit Pci_root_feature(Pci_vroot *root) : _root(root) {}
+
+    int dispatch(l4_umword_t, l4_uint32_t func,
+                 L4::Ipc::Iostream &ios) override;
+
+    l4_uint32_t interface_type() const override
+    { return 1 << L4VBUS_INTERFACE_PCI; }
+
+    bool match_hw_feature(const Hw::Dev_feature*) const override
+    { return false; }
+
+    // The feature always belongs to its PCI root bridge.
+    void set_host(Vi::Device *) override {}
+    Vi::Device *host() const override { return _root; }
+
+  private:
+    Pci_vroot *_root;
+  };
+
+  Pci_root_feature _pci_root_feature{this};
 
 public:
   int cfg_read(L4::Ipc::Iostream &ios);
   int cfg_write(L4::Ipc::Iostream &ios);
   int irq_enable(L4::Ipc::Iostream &ios);
-  bool match_hw_feature(const Hw::Dev_feature*) const override
-  { return false; }
 };
 
 // -----------------------------------------------------------------------
@@ -77,7 +87,7 @@ public:
 
 Vi::Pci_vroot::Pci_vroot() : Vi::Pci_bridge()
 {
-  add_feature(this);
+  add_feature(&_pci_root_feature);
   _subordinate = 100;
 }
 
@@ -205,16 +215,17 @@ Vi::Pci_vroot::cfg_write(L4::Ipc::Iostream &ios)
 }
 
 int
-Vi::Pci_vroot::dispatch(l4_umword_t, l4_uint32_t func, L4::Ipc::Iostream &ios)
+Vi::Pci_vroot::Pci_root_feature::dispatch(l4_umword_t, l4_uint32_t func,
+                                          L4::Ipc::Iostream &ios)
 {
   if (l4vbus_subinterface(func) != L4VBUS_INTERFACE_PCI)
     return -L4_ENOSYS;
 
   switch (func)
     {
-    case L4vbus_pciroot_cfg_read: return cfg_read(ios);
-    case L4vbus_pciroot_cfg_write: return cfg_write(ios);
-    case L4vbus_pciroot_cfg_irq_enable: return irq_enable(ios);
+    case L4vbus_pciroot_cfg_read: return _root->cfg_read(ios);
+    case L4vbus_pciroot_cfg_write: return _root->cfg_write(ios);
+    case L4vbus_pciroot_cfg_irq_enable: return _root->irq_enable(ios);
     default: return -L4_ENOSYS;
     }
 }
