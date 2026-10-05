@@ -381,7 +381,7 @@ public:
     l4_uint32_t mask_irqs = 0, pin_bit = 1;
     for (unsigned pin = 0; status; ++pin, status >>= 1, pin_bit <<= 1)
       {
-        if (!(status & pin))
+        if (!(status & 1))
           continue;
 
         Gpio_irq_base *p = this->_pins[pin].get();
