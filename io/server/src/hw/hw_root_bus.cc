@@ -243,11 +243,11 @@ Hw::Root_bus::Root_bus(char const *name)
 
   // add root resource for IRQs
   auto r = std::make_shared<Root_resource>(Resource::Irq_res,
-                                           new Root_irq_rs());
+                                           std::make_shared<Root_irq_rs>());
   r->set_id("IRQR");
   add_resource(r);
 
-  Resource_space *rs_mmio = new Root_mmio_rs();
+  auto rs_mmio = std::make_shared<Root_mmio_rs>();
   // add root resource for non-prefetchable MMIO resources
   r = std::make_shared<Root_resource>(Resource::Mmio_res
                                       | Resource::Mem_type_rw, rs_mmio);
@@ -264,13 +264,14 @@ Hw::Root_bus::Root_bus(char const *name)
   add_resource(r);
 
   // add root resource for IO ports
-  r = std::make_shared<Root_resource>(Resource::Io_res, new Root_io_rs());
+  r = std::make_shared<Root_resource>(Resource::Io_res,
+                                      std::make_shared<Root_io_rs>());
   r->set_id("IO");
   add_resource(r);
 
   // add root DMA domain resource space
   r = std::make_shared<Root_resource>(Resource::Dma_domain_res,
-                                      new Root_dma_domain_rs());
+                                      std::make_shared<Root_dma_domain_rs>());
   r->set_id("DMAD");
   add_resource(r);
 }

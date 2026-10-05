@@ -90,7 +90,7 @@ public:
   {
     std::shared_ptr<Root_resource> create(System_bus *bus) const override
     {
-      return std::make_shared<Root_resource>(TYPE, new RS(bus));
+      return std::make_shared<Root_resource>(TYPE, std::make_shared<RS>(bus));
     }
   };
 

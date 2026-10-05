@@ -345,16 +345,16 @@ public:
 class Root_resource : public Resource
 {
 private:
-  Resource_space *_rs;
+  std::shared_ptr<Resource_space> _rs;
 
 public:
-  Root_resource(unsigned long flags, Resource_space *rs)
+  Root_resource(unsigned long flags, std::shared_ptr<Resource_space> const &rs)
   : Resource(flags), _rs(rs) {}
 
   char const *res_type_name() const override
   { return "root resource"; }
 
-  Resource_space *provided() const override { return _rs; }
+  Resource_space *provided() const override { return _rs.get(); }
   void dump(int) const override {}
 };
 

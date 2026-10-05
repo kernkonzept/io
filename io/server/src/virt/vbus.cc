@@ -220,9 +220,9 @@ Vi::System_bus::System_bus(Inhibitor_mux *mux)
   _devices_by_id.push_back(this);
   register_property("num_msis", &_num_msis);
   add_feature(this);
-  add_resource(std::make_shared<Root_resource>(Resource::Irq_res,
-                                               new Root_irq_rs(this)));
-  Resource_space *x = new Root_x_rs(this);
+  add_resource(std::make_shared<Root_resource>(
+    Resource::Irq_res, std::make_shared<Root_irq_rs>(this)));
+  auto x = std::make_shared<Root_x_rs>(this);
   add_resource(std::make_shared<Root_resource>(Resource::Mmio_res
                                                | Resource::Mem_type_rw, x));
   add_resource(std::make_shared<Root_resource>(Resource::Mmio_res
@@ -232,7 +232,7 @@ Vi::System_bus::System_bus(Inhibitor_mux *mux)
   add_resource(std::make_shared<Root_resource>(Resource::Clock_res, x));
   add_resource(std::make_shared<Root_resource>(
     Resource::Dma_domain_res,
-    new Root_dma_domain_rs(this, &_dma_domain_group)));
+    std::make_shared<Root_dma_domain_rs>(this, &_dma_domain_group)));
 
   for (auto const *i: Root_resource_factory::_factories)
     add_resource(i->create(this));
