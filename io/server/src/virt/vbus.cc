@@ -219,7 +219,7 @@ Vi::System_bus::System_bus(Inhibitor_mux *mux)
   _handle = 0; // the vBUS root device always has handle 0
   _devices_by_id.push_back(this);
   register_property("num_msis", &_num_msis);
-  add_feature(this);
+  add_feature(&_vbus_feature);
   add_resource(std::make_shared<Root_resource>(
     Resource::Irq_res, std::make_shared<Root_irq_rs>(this)));
   auto x = std::make_shared<Root_x_rs>(this);
@@ -808,14 +808,15 @@ Vi::System_bus::op_dispatch(l4_utcb_t *utcb, l4_msgtag_t tag,
 }
 
 int
-Vi::System_bus::dispatch(l4_umword_t, l4_uint32_t func, L4::Ipc::Iostream &ios)
+Vi::System_bus::Vbus_feature::dispatch(l4_umword_t, l4_uint32_t func,
+                                       L4::Ipc::Iostream &ios)
 {
   switch (func)
     {
     case L4vbus_vbus_request_resource:
-      return request_resource(ios);
+      return _bus->request_resource(ios);
     case L4vbus_vbus_assign_dma_domain:
-      return assign_dma_domain(ios);
+      return _bus->assign_dma_domain(ios);
     default:
       return -L4_ENOSYS;
     }

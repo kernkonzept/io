@@ -63,7 +63,6 @@ struct Vbus_event_source : L4Re::Util::Event_svr<Vbus_event_source>
 
 class System_bus :
   public Device,
-  public Dev_feature,
   public L4::Epiface_t<System_bus, L4vbus::Vbus>,
   public Inhibitor_provider,
   public Vbus_event_source
@@ -193,23 +192,6 @@ public:
   Server_iface *server_iface() const override
   { return L4::Epiface::server_iface(); }
 
-  // Vi::Device interface
-  l4_uint32_t interface_type() const override
-  { return 1 << L4VBUS_INTERFACE_BUS; }
-
-  using L4::Epiface::dispatch;
-  int dispatch(l4_umword_t, l4_uint32_t func, L4::Ipc::Iostream &ios) override;
-  bool match_hw_feature(Hw::Dev_feature const *) const override
-  { return false; }
-
-
-  // Dev_feature interface
-  void set_host(Device *d) override
-  { _host = d; }
-
-  Device *host() const override
-  { return _host; }
-
 
   int pm_suspend() override;
   int pm_resume() override;
@@ -232,6 +214,28 @@ public:
   void reset_dma_domains();
 
 private:
+  /// The vBUS interface of the system bus, provided as device feature.
+  class Vbus_feature : public Dev_feature
+  {
+  public:
+    explicit Vbus_feature(System_bus *bus) : _bus(bus) {}
+
+    l4_uint32_t interface_type() const override
+    { return 1 << L4VBUS_INTERFACE_BUS; }
+
+    int dispatch(l4_umword_t, l4_uint32_t func,
+                 L4::Ipc::Iostream &ios) override;
+    bool match_hw_feature(Hw::Dev_feature const *) const override
+    { return false; }
+
+    // The feature always belongs to its system bus.
+    void set_host(Device *) override {}
+    Device *host() const override { return _bus; }
+
+  private:
+    System_bus *_bus;
+  };
+
   int request_resource(L4::Ipc::Iostream &ios);
   int assign_dma_domain(L4::Ipc::Iostream &ios);
 
@@ -246,8 +250,8 @@ private:
 
   int dispatch_generic(L4vbus::Vbus::Rights obj, Device *dev, l4_uint32_t func, L4::Ipc::Iostream &ios);
 
+  Vbus_feature _vbus_feature{this};
   Resource_set _resources;
-  Device *_host;
   Sw_icu *_sw_icu;
   Int_property _num_msis;
   Dma_domain_group _dma_domain_group;
