@@ -62,7 +62,11 @@ Vi::Pci_virtual_dev::cfg_write(l4_uint32_t reg, l4_uint32_t v, Cfg_width order)
 
 Vi::Pci_dummy::Pci_dummy()
 {
-  add_feature(this);
+  add_feature(&_function);
+}
+
+Vi::Pci_dummy::Function::Function()
+{
   memset(_cfg_space, 0, sizeof(_cfg_space));
 
   _h = &_cfg_space[0];

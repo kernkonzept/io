@@ -62,26 +62,32 @@ Pci_virtual_dev::~Pci_virtual_dev() = default;
 /**
  * Virtual PCI dummy device
  */
-class Pci_dummy : public Pci_virtual_dev, public Device
+class Pci_dummy : public Device
 {
-private:
-  unsigned char _cfg_space[4*4];
-
 public:
-  int irq_enable(Irq_info *irq) override
-  {
-    irq->irq = -1;
-    return -1;
-  }
-
   Pci_dummy();
 
-  bool match_hw_feature(const Hw::Dev_feature*) const override { return false; }
-  void set_host(Device *d) override { _host = d; }
-  Device *host() const override { return _host; }
-
 private:
-  Device *_host;
+  /// The PCI function of the dummy device, provided as device feature.
+  class Function : public Pci_virtual_dev
+  {
+  public:
+    Function();
+
+    int irq_enable(Irq_info *irq) override
+    {
+      irq->irq = -1;
+      return -1;
+    }
+
+    bool match_hw_feature(const Hw::Dev_feature*) const override
+    { return false; }
+
+  private:
+    unsigned char _cfg_space[4*4];
+  };
+
+  Function _function;
 };
 
 }
