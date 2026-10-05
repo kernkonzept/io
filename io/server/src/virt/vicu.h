@@ -25,7 +25,6 @@ namespace Vi {
 
 class Sw_icu :
   public Device,
-  public Dev_feature,
   public L4::Epiface_t<Sw_icu, L4::Icu>
 {
 public:
@@ -34,12 +33,6 @@ public:
 
   char const *type_name() const override
   { return "virtual ICU"; }
-
-  l4_uint32_t interface_type() const override
-  { return 1 << L4VBUS_INTERFACE_ICU; }
-
-  using L4::Epiface::dispatch;
-  int dispatch(l4_umword_t, l4_uint32_t func, L4::Ipc::Iostream &ios) override;
 
   char const *hid() const override
   { return "L40009"; }
@@ -80,9 +73,6 @@ public:
 
   int op_set_mode(L4::Icu::Rights, l4_umword_t irqnum, l4_umword_t mode)
   { return set_mode(irqnum, mode); }
-
-  bool match_hw_feature(Hw::Dev_feature const *) const override
-  { return false; }
 
   bool add_irqs(Resource const *r);
   bool add_irq(unsigned n, unsigned flags, Io_irq_pin *be);
@@ -170,14 +160,30 @@ public:
     S_allow_set_mode = Sw_irq_pin::S_allow_set_mode,
   };
 
-  void set_host(Device *d) override
-  { _host = d; }
-
-  Device *host() const override
-  { return _host; }
-
 private:
-  Device *_host;
+  /// The vBUS ICU interface of the virtual ICU, provided as device feature.
+  class Vicu_feature : public Dev_feature
+  {
+  public:
+    explicit Vicu_feature(Sw_icu *icu) : _icu(icu) {}
+
+    l4_uint32_t interface_type() const override
+    { return 1 << L4VBUS_INTERFACE_ICU; }
+
+    int dispatch(l4_umword_t, l4_uint32_t func,
+                 L4::Ipc::Iostream &ios) override;
+    bool match_hw_feature(Hw::Dev_feature const *) const override
+    { return false; }
+
+    // The feature always belongs to its ICU.
+    void set_host(Device *) override {}
+    Device *host() const override { return _icu; }
+
+  private:
+    Sw_icu *_icu;
+  };
+
+  Vicu_feature _vicu_feature{this};
 };
 
 }

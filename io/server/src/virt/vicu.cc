@@ -27,7 +27,7 @@
 
 Vi::Sw_icu::Sw_icu()
 {
-  add_feature(this);
+  add_feature(&_vicu_feature);
   registry->register_obj(this);
 }
 
@@ -240,12 +240,13 @@ Vi::Sw_icu::alloc_irq(unsigned flags, Io_irq_pin *be)
 }
 
 int
-Vi::Sw_icu::dispatch(l4_umword_t, l4_uint32_t func, L4::Ipc::Iostream &ios)
+Vi::Sw_icu::Vicu_feature::dispatch(l4_umword_t, l4_uint32_t func,
+                                   L4::Ipc::Iostream &ios)
 {
   if (func != L4vbus_vicu_get_cap)
     return -L4_ENOSYS;
 
-  ios << obj_cap();
+  ios << _icu->obj_cap();
   return L4_EOK;
 }
 
