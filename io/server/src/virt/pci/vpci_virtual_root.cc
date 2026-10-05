@@ -57,8 +57,6 @@ private:
     Pci_vroot *_root;
   };
 
-  Pci_root_feature _pci_root_feature{this};
-
 public:
   int cfg_read(L4::Ipc::Iostream &ios);
   int cfg_write(L4::Ipc::Iostream &ios);
@@ -87,7 +85,7 @@ public:
 
 Vi::Pci_vroot::Pci_vroot() : Vi::Pci_bridge()
 {
-  add_feature(&_pci_root_feature);
+  add_feature(std::make_shared<Pci_root_feature>(this));
   _subordinate = 100;
 }
 

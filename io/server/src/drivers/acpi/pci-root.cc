@@ -103,7 +103,7 @@ struct Acpi_pci_root_drv : Hw::Acpi_device_driver
         return adev;
       }
 
-    Hw::Pci::Root_bridge *rb = Hw::Pci::root_bridge(seg);
+    std::shared_ptr<Hw::Pci::Root_bridge> rb = Hw::Pci::root_bridge(seg);
     if (!rb)
       {
         d_printf(DBG_ERR, "error: PCI root bridge for segment %d missing\n",

@@ -59,11 +59,10 @@ namespace Hw {
 
       property("flags")->set(-1, DF_dma_supported);
 
-      add_feature(&_dma_src_feature);
+      add_feature(std::make_shared<Arm_dma_src_feature>(this));
     }
 
     Int_property _iommu;
     Int_property _sid;
-    Arm_dma_src_feature _dma_src_feature{this};
   };
 }

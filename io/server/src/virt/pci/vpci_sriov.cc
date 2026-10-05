@@ -87,9 +87,11 @@ namespace Vi {
 class Sr_iov_proxy_dev : public Vi::Pci_proxy_dev
 {
 public:
-  explicit Sr_iov_proxy_dev(Hw::Pci::Sr_iov_vf *hwf) : Vi::Pci_proxy_dev(hwf)
+  explicit Sr_iov_proxy_dev(std::shared_ptr<Hw::Pci::Sr_iov_vf> const &hwf)
+  : Vi::Pci_proxy_dev(hwf)
   {
-    d_printf(DBG_INFO, "Create Vi::Sr_iov_proxy_dev[%p] for %p %s\n", this, hwf, typeid(*hwf).name());
+    d_printf(DBG_INFO, "Create Vi::Sr_iov_proxy_dev[%p] for %p %s\n", this,
+             hwf.get(), typeid(*hwf).name());
   }
 };
 

@@ -38,7 +38,7 @@ Vi::Pci_proxy_dev::scan_pci_caps()
         case Hw::Pci::Cap::Msi_x:
         case Hw::Pci::Cap::Vndr:
         default:
-          add_pci_cap(std::make_unique<Vi::Pci_proxy_cap>(_hwf, pci_cap));
+          add_pci_cap(std::make_unique<Vi::Pci_proxy_cap>(_hwf.get(), pci_cap));
           break;
         }
 
@@ -100,7 +100,7 @@ Vi::Pci_proxy_dev::scan_pcie_caps()
         case Hw::Pci::Sr_iov_cap::Id:
 #ifdef CONFIG_L4IO_PCI_SRIOV
           add_pcie_cap(std::make_unique<Vi::Sr_iov_proxy_cap>(
-                         _hwf, cap.header(), offset, offset));
+                         _hwf.get(), cap.header(), offset, offset));
           offset = cap.next();
 #else
           offset = _skip_pcie_cap(cap, Hw::Pci::Sr_iov_cap::Size);
@@ -118,7 +118,8 @@ Vi::Pci_proxy_dev::scan_pcie_caps()
           }
         }
 
-      add_pcie_cap(std::make_unique<Vi::Pcie_proxy_cap>(_hwf, cap.header(),
+      add_pcie_cap(std::make_unique<Vi::Pcie_proxy_cap>(_hwf.get(),
+                                                        cap.header(),
                                                         offset, offset));
       offset = cap.next();
     }
@@ -131,7 +132,7 @@ Vi::Pci_proxy_dev::scan_pcie_caps()
 #endif
 }
 
-Vi::Pci_proxy_dev::Pci_proxy_dev(Hw::Pci::If *hwf)
+Vi::Pci_proxy_dev::Pci_proxy_dev(std::shared_ptr<Hw::Pci::If> const &hwf)
 : _hwf(hwf), _rom(0)
 {
   assert (hwf);
@@ -171,7 +172,7 @@ Vi::Pci_proxy_dev::irq_enable(Irq_info *irq)
 void
 Vi::Pci_proxy_dev::write_rom(l4_uint32_t v)
 {
-  Hw::Pci::If *p = _hwf;
+  Hw::Pci::If *p = _hwf.get();
 
   if (0)
     printf("write ROM bar %x %p\n", v, p->rom());
@@ -249,7 +250,7 @@ Vi::Pci_proxy_dev::add_pcie_cap(std::unique_ptr<Vi::Pcie_capability> c)
 int
 Vi::Pci_proxy_dev::cfg_read(l4_uint32_t reg, l4_uint32_t *v, Cfg_width order)
 {
-  Hw::Pci::If *p = _hwf;
+  Hw::Pci::If *p = _hwf.get();
 
   l4_uint32_t buf;
 
@@ -347,7 +348,7 @@ Vi::Pci_proxy_dev::_do_rom_bar_write(l4_uint32_t mask, l4_uint32_t value)
 int
 Vi::Pci_proxy_dev::cfg_write(l4_uint32_t reg, l4_uint32_t v, Cfg_width order)
 {
-  Hw::Pci::If *p = _hwf;
+  Hw::Pci::If *p = _hwf.get();
 
   reg &= ~0U << order;
   l4_uint32_t const offset_32 = reg & 3;
@@ -388,7 +389,7 @@ Vi::Pci_proxy_dev::cfg_write(l4_uint32_t reg, l4_uint32_t v, Cfg_width order)
 void
 Vi::Pci_proxy_dev::dump() const
 {
-  Hw::Pci::If *p = _hwf;
+  Hw::Pci::If *p = _hwf.get();
 
   printf("       %04x:%02x:%02x.%x:\n",
          0, p->bus_nr(), _hwf->device_nr(), _hwf->function_nr());

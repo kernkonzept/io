@@ -219,7 +219,7 @@ AcpiOsReadPciConfiguration (
         UINT32                  Width)
 {
   //printf("%s: ...\n", __func__);
-  Hw::Pci::Root_bridge *rb = Hw::Pci::root_bridge(PciId->Segment);
+  Hw::Pci::Root_bridge *rb = Hw::Pci::root_bridge(PciId->Segment).get();
   if (!rb)
     {
 #if defined(ARCH_x86) || defined(ARCH_amd64)
@@ -279,7 +279,7 @@ AcpiOsWritePciConfiguration (
         UINT32                  Width)
 {
   //printf("%s: ...\n", __func__);
-  Hw::Pci::Root_bridge *rb = Hw::Pci::root_bridge(PciId->Segment);
+  Hw::Pci::Root_bridge *rb = Hw::Pci::root_bridge(PciId->Segment).get();
   if (!rb)
     {
 #if defined(ARCH_x86) || defined(ARCH_amd64)

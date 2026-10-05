@@ -9,6 +9,7 @@
 
 #include "pci-bridge.h"
 
+#include <memory>
 #include <mutex>
 
 namespace Hw { namespace Pci {
@@ -128,8 +129,8 @@ struct Mmio_root_bridge : public Root_bridge
   l4_addr_t _mmio;
 };
 
-Root_bridge *root_bridge(unsigned segment);
+std::shared_ptr<Root_bridge> root_bridge(unsigned segment);
 Root_bridge *find_root_bridge(unsigned segment, int bus);
-int register_root_bridge(Root_bridge *b);
+int register_root_bridge(std::shared_ptr<Root_bridge> const &b);
 
 } }

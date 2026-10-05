@@ -22,7 +22,7 @@ public:
   Pci_to_pci_bridge();
 
   /// The PCI function of the bridge on its primary bus.
-  Pci_dev *function() { return &_function; }
+  Pci_dev *function() { return _function.get(); }
 
   bool is_vpci_bridge() const { return true; }
 
@@ -72,7 +72,7 @@ private:
     unsigned char _cfg_space[16*4];
   };
 
-  Function _function{this};
+  std::shared_ptr<Function> _function = std::make_shared<Function>(this);
 };
 
 }

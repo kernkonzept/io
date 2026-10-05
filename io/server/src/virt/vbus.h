@@ -250,7 +250,6 @@ private:
 
   int dispatch_generic(L4vbus::Vbus::Rights obj, Device *dev, l4_uint32_t func, L4::Ipc::Iostream &ios);
 
-  Vbus_feature _vbus_feature{this};
   Resource_set _resources;
   Sw_icu *_sw_icu;
   Int_property _num_msis;

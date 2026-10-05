@@ -61,11 +61,11 @@ public:
   virtual char const *type_name() const
   { return "virtual device"; }
 
-  typedef std::vector<Dev_feature*> Feature_list;
+  typedef std::vector<std::shared_ptr<Dev_feature>> Feature_list;
 
   Feature_list const *features() const { return &_features; }
 
-  void add_feature(Dev_feature *f)
+  void add_feature(std::shared_ptr<Dev_feature> const &f)
   {
     f->set_host(this);
     _features.push_back(f);
@@ -76,7 +76,7 @@ public:
   {
     for (Feature_list::const_iterator i = _features.begin();
 	 i != _features.end(); ++i)
-      if (FT *r = dynamic_cast<FT*>(*i))
+      if (FT *r = dynamic_cast<FT*>(i->get()))
 	return r;
 
     return 0;

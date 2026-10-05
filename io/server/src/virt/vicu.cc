@@ -27,7 +27,7 @@
 
 Vi::Sw_icu::Sw_icu()
 {
-  add_feature(&_vicu_feature);
+  add_feature(std::make_shared<Vicu_feature>(this));
   registry->register_obj(this);
 }
 

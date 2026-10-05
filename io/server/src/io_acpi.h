@@ -137,5 +137,5 @@ void setup_iommus();
 
 unsigned acpi_get_debug_level();
 
-extern Hw::Pci::Root_bridge *
+extern std::shared_ptr<Hw::Pci::Root_bridge>
   (*acpi_create_pci_root_bridge)(int, int busnum, Hw::Device *device);

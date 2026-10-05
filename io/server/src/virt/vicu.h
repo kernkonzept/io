@@ -182,8 +182,6 @@ private:
   private:
     Sw_icu *_icu;
   };
-
-  Vicu_feature _vicu_feature{this};
 };
 
 }

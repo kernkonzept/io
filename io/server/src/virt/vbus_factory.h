@@ -21,23 +21,17 @@
 
 namespace Vi {
 
-template< typename VI, typename HW >
-class Generic_type_factory
-: public Type_matcher<Generic_type_factory<VI, HW>, VI*>
+class Feature_factory
+: public Type_matcher<Feature_factory, std::shared_ptr<Vi::Dev_feature>>
 {
-private:
-  typedef Generic_type_factory<VI, HW> Self;
-
 public:
-  virtual VI *do_match(HW *f) = 0;
+  virtual std::shared_ptr<Vi::Dev_feature>
+  do_match(std::shared_ptr<Hw::Dev_feature> const &f) = 0;
 
 protected:
-  explicit Generic_type_factory(std::type_info const *type)
-  : Type_matcher<Self, VI*>(type) {}
+  explicit Feature_factory(std::type_info const *type)
+  : Type_matcher<Feature_factory, std::shared_ptr<Vi::Dev_feature>>(type) {}
 };
-
-
-typedef Generic_type_factory<Dev_feature, Hw::Dev_feature> Feature_factory;
 
 class Resource_factory
 : public Type_matcher<Resource_factory, std::shared_ptr<Resource>>
@@ -81,30 +75,21 @@ private:
 };
 
 
-template< typename VI,  typename HW_BASE, typename HW, typename BASE >
-class Generic_factory_t : public BASE
+template< typename VI, typename HW >
+class Feature_factory_t : public Feature_factory
 {
 public:
+  Feature_factory_t() : Feature_factory(&typeid(HW)) {}
 
-  Generic_factory_t() : BASE(&typeid(HW)) {}
-
-  VI *do_match(HW_BASE *dev) override
+  std::shared_ptr<Vi::Dev_feature>
+  do_match(std::shared_ptr<Hw::Dev_feature> const &f) override
   {
-    VI *d = 0;
-    if (HW* h = dynamic_cast<HW*>(dev))
-      d = new VI(h);
-    return d;
+    if (auto h = std::dynamic_pointer_cast<HW>(f))
+      return std::make_shared<VI>(h);
+
+    return nullptr;
   }
-
-  VI *vcreate()
-  { return 0; }
-
 };
-
-template< typename VI, typename HW >
-class Feature_factory_t
-: public Generic_factory_t<VI, Hw::Dev_feature, HW, Feature_factory >
-{};
 
 template< typename VI, typename HW >
 class Resource_factory_t : public Resource_factory

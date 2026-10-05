@@ -86,7 +86,7 @@ Hw::Pci::Mmio_root_bridge::cfg_write(Hw::Pci::Cfg_addr addr, l4_uint32_t value,
   return 0;
 }
 
-static std::vector<Hw::Pci::Root_bridge *> __pci_root_bridge;
+static std::vector<std::shared_ptr<Hw::Pci::Root_bridge>> __pci_root_bridge;
 
 void
 Hw::Pci::Root_bridge::setup(Hw::Device *host)
@@ -102,20 +102,20 @@ Hw::Pci::Root_bridge::setup(Hw::Device *host)
   Hw::Pci::Bridge_base::discover_bus(host, this);
 }
 
-Hw::Pci::Root_bridge *
+std::shared_ptr<Hw::Pci::Root_bridge>
 Hw::Pci::root_bridge(unsigned segment)
 {
-  for (auto b: __pci_root_bridge)
+  for (auto const &b: __pci_root_bridge)
     if (b->segment() == segment)
       return b;
 
-  return 0;
+  return nullptr;
 }
 
 int
-Hw::Pci::register_root_bridge(Hw::Pci::Root_bridge *b)
+Hw::Pci::register_root_bridge(std::shared_ptr<Hw::Pci::Root_bridge> const &b)
 {
-  for (auto x: __pci_root_bridge)
+  for (auto const &x: __pci_root_bridge)
     if (x->segment() == b->segment()
         && x->secondary == b->secondary)
       return -L4_EEXIST;
@@ -127,10 +127,10 @@ Hw::Pci::register_root_bridge(Hw::Pci::Root_bridge *b)
 Hw::Pci::Root_bridge *
 Hw::Pci::find_root_bridge(unsigned segment, int bus)
 {
-  for (auto b: __pci_root_bridge)
+  for (auto const &b: __pci_root_bridge)
     if (b->segment() == segment
         && b->secondary == bus)
-      return b;
+      return b.get();
 
   return 0;
 }

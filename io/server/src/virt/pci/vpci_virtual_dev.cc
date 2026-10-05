@@ -62,7 +62,7 @@ Vi::Pci_virtual_dev::cfg_write(l4_uint32_t reg, l4_uint32_t v, Cfg_width order)
 
 Vi::Pci_dummy::Pci_dummy()
 {
-  add_feature(&_function);
+  add_feature(std::make_shared<Function>());
 }
 
 Vi::Pci_dummy::Function::Function()

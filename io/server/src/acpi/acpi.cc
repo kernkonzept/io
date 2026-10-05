@@ -663,41 +663,42 @@ Hw::Pci::Platform_adapter_if *pci_platform_adapter;
 }
 
 #if defined(ARCH_x86) || defined(ARCH_amd64)
-static Hw::Pci::Root_bridge *
+static std::shared_ptr<Hw::Pci::Root_bridge>
 create_port_bridge(int segment, int busnum, Hw::Device *dev)
 {
-  return new Hw::Pci::Port_root_bridge(segment, busnum, dev,
-                                       pci_platform_adapter);
+  return std::make_shared<Hw::Pci::Port_root_bridge>(segment, busnum, dev,
+                                                     pci_platform_adapter);
 }
 #endif
 
-static Hw::Pci::Root_bridge *
+static std::shared_ptr<Hw::Pci::Root_bridge>
 create_additional_mmio_bridge(int pci_segment, int bus_num, Hw::Device *)
 {
-  Hw::Pci::Root_bridge *rb = Hw::Pci::root_bridge(pci_segment);
+  Hw::Pci::Root_bridge *rb = Hw::Pci::root_bridge(pci_segment).get();
   if (!rb)
     {
       d_printf(DBG_ERR, "Error: Internal, no root-bridge (segment %d)\n",
                         pci_segment);
-      return 0;
+      return nullptr;
     }
 
   Hw::Pci::Mmio_root_bridge *r = dynamic_cast<Hw::Pci::Mmio_root_bridge *>(rb);
   if (!r)
     {
       d_printf(DBG_ERR, "Error: Internal, not a MMIO root bridge\n");
-      return 0;
+      return nullptr;
     }
 
   // Just copy the existing one, it shall have the right config
-  auto *br = new Hw::Pci::Mmio_root_bridge(*r);
+  auto br = std::make_shared<Hw::Pci::Mmio_root_bridge>(*r);
   br->secondary = bus_num;
   br->subordinate = bus_num;
   return br;
 }
 
-Hw::Pci::Root_bridge *(*acpi_create_pci_root_bridge)(int segment,
-    int busnum, Hw::Device *device) = create_additional_mmio_bridge;
+std::shared_ptr<Hw::Pci::Root_bridge>
+  (*acpi_create_pci_root_bridge)(int segment, int busnum, Hw::Device *device)
+  = create_additional_mmio_bridge;
 
 static bool
 setup_pci_root_mmconfig()
@@ -727,9 +728,11 @@ setup_pci_root_mmconfig()
       // Register for all given buses?
       unsigned num_busses = e->EndBusNumber - e->StartBusNumber + 1;
       Hw::Pci::register_root_bridge(
-          new Hw::Pci::Mmio_root_bridge(e->PciSegment, e->StartBusNumber,
-                                        0, e->Address, num_busses,
-                                        pci_platform_adapter));
+          std::make_shared<Hw::Pci::Mmio_root_bridge>(e->PciSegment,
+                                                      e->StartBusNumber,
+                                                      nullptr, e->Address,
+                                                      num_busses,
+                                                      pci_platform_adapter));
 
       e++;
       sz -= sizeof(ACPI_MCFG_ALLOCATION);
@@ -747,7 +750,8 @@ static void setup_pci_root()
   // fall-back to port-based bridge
   acpi_create_pci_root_bridge = create_port_bridge;
   Hw::Pci::register_root_bridge(
-      new Hw::Pci::Port_root_bridge(0, 0, 0, pci_platform_adapter));
+      std::make_shared<Hw::Pci::Port_root_bridge>(0, 0, nullptr,
+                                                  pci_platform_adapter));
 #endif
 }
 
@@ -1138,7 +1142,7 @@ Hw::Acpi_device_driver::probe(Hw::Device *device, ACPI_HANDLE acpi_hdl,
                               ACPI_DEVICE_INFO const *)
 {
   ACPI_NAMESPACE_NODE *node = AcpiNsValidateHandle(acpi_hdl);
-  Hw::Acpi_dev *adev = new Hw::Acpi_dev(acpi_hdl);
+  auto adev = std::make_shared<Hw::Acpi_dev>(acpi_hdl);
   UINT32 sta;
 
   if (ACPI_SUCCESS(AcpiUtExecute_STA(node, &sta))
@@ -1146,5 +1150,5 @@ Hw::Acpi_device_driver::probe(Hw::Device *device, ACPI_HANDLE acpi_hdl,
     adev->discover_crs(device);
 
   device->add_feature(adev);
-  return adev;
+  return adev.get();
 }

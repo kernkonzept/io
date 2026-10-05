@@ -77,7 +77,7 @@ public:
 class Pci_proxy_dev : public Pci_dev_feature
 {
 public:
-  Pci_proxy_dev(Hw::Pci::If *hwf);
+  Pci_proxy_dev(std::shared_ptr<Hw::Pci::If> const &hwf);
 
   int cfg_read(l4_uint32_t reg, l4_uint32_t *v, Cfg_width) override;
   int cfg_write(l4_uint32_t reg, l4_uint32_t v, Cfg_width) override;
@@ -89,7 +89,7 @@ public:
   int vbus_dispatch(l4_umword_t, l4_uint32_t, L4::Ipc::Iostream &)
   { return -L4_ENOSYS; }
 
-  Hw::Pci::If *hwf() const { return _hwf; }
+  Hw::Pci::If *hwf() const { return _hwf.get(); }
   Msi_src *msi_src() const override;
 
   void dump() const;
@@ -102,7 +102,7 @@ public:
   }
 
   bool match_hw_feature(const Hw::Dev_feature *f) const override
-  { return f == _hwf; }
+  { return f == _hwf.get(); }
 
   void set_host(Device *d) override
   { _host = d; }
@@ -120,7 +120,7 @@ public:
 
 private:
   Device *_host;
-  Hw::Pci::If *_hwf;
+  std::shared_ptr<Hw::Pci::If> _hwf;
   std::unique_ptr<Pci_capability> _pci_caps;
   std::unique_ptr<Pcie_capability> _pcie_caps;
 

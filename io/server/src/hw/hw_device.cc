@@ -215,10 +215,10 @@ Hw::Device::dump(int indent) const
 }
 
 void
-Hw::Device::add_feature(Hw::Dev_feature *f)
+Hw::Device::add_feature(std::shared_ptr<Hw::Dev_feature> const &f)
 {
   _features.push_back(f);
-  Hw::Feature_manager_base::match(this, f);
+  Hw::Feature_manager_base::match(this, f.get());
   if (!_clients.empty())
     f->enable_notifications(this);
 }

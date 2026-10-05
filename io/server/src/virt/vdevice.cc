@@ -64,7 +64,7 @@ Vi::Device::get_device_info() const
     *inf.name = 0;
   inf.type = 0;
 
-  for (auto i: _features)
+  for (auto const &i: _features)
     inf.type |= i->interface_type();
 
   inf.flags = 0;

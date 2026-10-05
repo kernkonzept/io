@@ -13,9 +13,9 @@ Vi::Proxy_dev::Proxy_dev(Hw::Device *d)
 {
   d->add_client(this);
   // suck features from real dev
-  for (auto i: *d->features())
+  for (auto const &i: *d->features())
     {
-      Vi::Dev_feature *vf = Vi::Feature_factory::match(i);
+      std::shared_ptr<Vi::Dev_feature> vf = Vi::Feature_factory::match(i);
       if (vf)
         add_feature(vf);
     }

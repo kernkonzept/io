@@ -63,7 +63,7 @@ struct Acpi_ec : Hw::Acpi_dev
     ACPI_TABLE_ECDT *ecdt = reinterpret_cast<ACPI_TABLE_ECDT *>(ecdt_hdr);
     d_printf(DBG_DEBUG, "ACPI: EC via ECDT found\n");
 
-    Acpi_ec *ec = new Acpi_ec(ACPI_ROOT_OBJECT);
+    auto ec = std::make_shared<Acpi_ec>(ACPI_ROOT_OBJECT);
     ec->_data = ecdt->Data.Address;
     ec->_control = ecdt->Control.Address;
     ec->_gpe = ecdt->Gpe;
@@ -168,7 +168,7 @@ private:
 
   bool _need_lock : 1;
 
-  static Acpi_ec *_ecdt_ec;
+  static std::shared_ptr<Acpi_ec> _ecdt_ec;
 
 
   void write_cmd(l4_uint8_t cmd)
@@ -322,7 +322,7 @@ private:
 };
 
 
-Acpi_ec *Acpi_ec::_ecdt_ec;
+std::shared_ptr<Acpi_ec> Acpi_ec::_ecdt_ec;
 
 
 struct Acpi_ec_drv : Hw::Acpi_device_driver
@@ -331,23 +331,22 @@ struct Acpi_ec_drv : Hw::Acpi_device_driver
                       ACPI_DEVICE_INFO const *) override
   {
     d_printf(DBG_DEBUG, "Found ACPI EC\n");
-    Acpi_ec *ec = 0;
+    std::shared_ptr<Acpi_ec> ec;
     if (   Acpi_ec::_ecdt_ec
         && (   Acpi_ec::_ecdt_ec->handle() == acpi_hdl
             || Acpi_ec::_ecdt_ec->handle() == ACPI_ROOT_OBJECT))
       {
         d_printf(DBG_DEBUG, "ACPI: Use EC from ECDT\n");
-        ec = Acpi_ec::_ecdt_ec;
-        Acpi_ec::_ecdt_ec = 0;
+        ec = std::move(Acpi_ec::_ecdt_ec);
       }
     else
-      ec = new Acpi_ec(acpi_hdl);
+      ec = std::make_shared<Acpi_ec>(acpi_hdl);
 
     ec->discover_crs(device);
     ec->setup_ec(device);
     device->add_feature(ec);
 
-    return ec;
+    return ec.get();
   };
 };
 

@@ -86,8 +86,6 @@ private:
   private:
     unsigned char _cfg_space[4*4];
   };
-
-  Function _function;
 };
 
 }

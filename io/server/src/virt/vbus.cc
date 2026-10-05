@@ -219,7 +219,7 @@ Vi::System_bus::System_bus(Inhibitor_mux *mux)
   _handle = 0; // the vBUS root device always has handle 0
   _devices_by_id.push_back(this);
   register_property("num_msis", &_num_msis);
-  add_feature(&_vbus_feature);
+  add_feature(std::make_shared<Vbus_feature>(this));
   add_resource(std::make_shared<Root_resource>(
     Resource::Irq_res, std::make_shared<Root_irq_rs>(this)));
   auto x = std::make_shared<Root_x_rs>(this);
@@ -784,7 +784,7 @@ Vi::System_bus::dispatch_generic(L4vbus::Vbus::Rights obj, Vi::Device *dev,
       break;
     }
 
-  for (auto *i: *dev->features())
+  for (auto const &i: *dev->features())
     {
       int e = i->dispatch(obj & L4_CAP_FPAGE_RS, func, ios);
       if (e != -L4_ENOSYS)

@@ -146,7 +146,6 @@ protected:
 
   int enumerate_peer_dma_reservations(Dma_domain_if::Resv_cb cb) const;
 
-  Pci_dma_src_feature _dma_src_feature;
   Hw::Device *_host;
   Bridge_if *_bridge = nullptr;
 
@@ -229,9 +228,9 @@ public:
 
   explicit Dev(Hw::Device *host, Bridge_if *bridge,
                Config_cache const &cfg)
-  : _dma_src_feature(this), _host(host), _bridge(bridge), cfg(cfg)
+  : _host(host), _bridge(bridge), cfg(cfg)
   {
-    host->add_feature(&_dma_src_feature);
+    host->add_feature(std::make_shared<Pci_dma_src_feature>(this));
 
     // PCIe root ports do not need to implement the "ACS Upstream Forwarding"
     // feature. As they are at the root of the hierarchy and we don't support

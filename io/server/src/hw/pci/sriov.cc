@@ -248,7 +248,7 @@ Hw::Pci::Sr_iov_feature::init_vf(unsigned vf_idx,
   // of the PF VBAR resources.
 
   Hw::Device *vf_dev = new Hw::Device(cfg.addr().devfn());
-  Hw::Pci::Sr_iov_vf *vf = new Hw::Pci::Sr_iov_vf(vf_dev, _dev->bridge(), cfg);
+  auto vf = std::make_shared<Hw::Pci::Sr_iov_vf>(vf_dev, _dev->bridge(), cfg);
   vf_dev->add_feature(vf);
   _dev->host()->parent()->add_child(vf_dev);
 
@@ -361,8 +361,7 @@ Hw::Pci::Sr_iov_feature::dump(int indent) const
 bool
 Hw::Pci::Dev::handle_sriov_cap(Hw::Pci::Dev *dev, Hw::Pci::Extended_cap cap)
 {
-  Hw::Pci::Sr_iov_feature *sriov =
-    new Hw::Pci::Sr_iov_feature(dev, cap.addr().reg());
-  dev->host()->add_feature(sriov);
+  dev->host()->add_feature(
+    std::make_shared<Hw::Pci::Sr_iov_feature>(dev, cap.addr().reg()));
   return true;
 }

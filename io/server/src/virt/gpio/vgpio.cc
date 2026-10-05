@@ -139,7 +139,7 @@ public:
   explicit Gpio(Hw::Device *d)
   : _hwd(dynamic_cast<Hw::Gpio_chip*>(d))
   {
-    add_feature(&_gpio_feature);
+    add_feature(std::make_shared<Gpio_feature>(this));
     d->add_client(this);
 
     _pins.resize(_hwd->nr_pins());
@@ -225,7 +225,6 @@ private:
     Gpio *_gpio;
   };
 
-  Gpio_feature _gpio_feature{this};
   Hw::Gpio_chip *_hwd;
 
   Bitmap _pins;

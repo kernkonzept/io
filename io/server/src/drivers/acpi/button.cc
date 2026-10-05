@@ -226,16 +226,15 @@ public:
   Hw::Acpi_dev *probe(Hw::Device *device, ACPI_HANDLE handle,
                       ACPI_DEVICE_INFO const *) override
   {
-    Acpi_lid *dev;
     d_printf(DBG_DEBUG, "ACPI: found LID: %s\n", device->name());
-    dev = new Acpi_lid(handle, device);
+    auto dev = std::make_shared<Acpi_lid>(handle, device);
 
     dev->discover_crs(device);
     device->add_feature(dev);
 
     // LID and buttons are always wake sources therefore tell ACPICA about it
     acpi_setup_device_wake(device, handle);
-    return dev;
+    return dev.get();
   }
 };
 
@@ -245,17 +244,15 @@ public:
   Hw::Acpi_dev *probe(Hw::Device *device, ACPI_HANDLE handle,
                       ACPI_DEVICE_INFO const *) override
   {
-    Hw::Acpi_dev *dev;
-
     d_printf(DBG_DEBUG, "ACPI: found ACPI button: %s\n", device->name());
-    dev = new Hw::Acpi_dev(handle);
+    auto dev = std::make_shared<Hw::Acpi_dev>(handle);
 
     dev->discover_crs(device);
     device->add_feature(dev);
 
     // LID and buttons are always wake sources therefore tell ACPICA about it
     acpi_setup_device_wake(device, handle);
-    return dev;
+    return dev.get();
   }
 };
 

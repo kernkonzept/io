@@ -10,7 +10,7 @@
 
 Vi::Pci_to_pci_bridge::Pci_to_pci_bridge()
 {
-  add_feature(&_function);
+  add_feature(_function);
 }
 
 Vi::Pci_to_pci_bridge::Function::Function(Pci_to_pci_bridge *bridge)

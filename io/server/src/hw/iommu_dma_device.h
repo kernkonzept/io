@@ -123,7 +123,7 @@ public:
     register_property("iommus", &_iommus);
     property("flags")->set(-1, DF_dma_supported);
 
-    add_feature(&_dma_src_feature);
+    add_feature(std::make_shared<Iommu_dma_src_feature>(this));
   }
 
 private:
@@ -145,6 +145,5 @@ private:
   };
 
   Iommus_property _iommus;
-  Iommu_dma_src_feature _dma_src_feature{this};
 };
 } // namespace Hw

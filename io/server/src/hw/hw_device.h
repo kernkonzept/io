@@ -151,9 +151,9 @@ public:
   using Device_tree_mixin<Device>::end;
 
 
-  typedef std::vector<Dev_feature *> Feature_list;
+  typedef std::vector<std::shared_ptr<Dev_feature>> Feature_list;
   Feature_list const *features() const { return &_features; }
-  void add_feature(Dev_feature *f);
+  void add_feature(std::shared_ptr<Dev_feature> const &f);
 
   template<typename T>
   T *find_feature()
@@ -161,7 +161,7 @@ public:
     for (Feature_list::const_iterator i = _features.begin();
          i != _features.end();
          ++i)
-      if (T *r = dynamic_cast<T*>(*i))
+      if (T *r = dynamic_cast<T*>(i->get()))
         return r;
 
     return 0;
@@ -471,7 +471,7 @@ struct Feature_manager : Feature_manager_base
     for (Device::Feature_list::const_iterator i = dev->features()->begin();
          !h.have_all() && i != dev->features()->end();
          ++i)
-      h.add(*i);
+      h.add(i->get());
 
     if (!h.have_all())
       return false;

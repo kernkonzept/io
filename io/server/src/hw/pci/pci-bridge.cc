@@ -427,7 +427,7 @@ public:
 
 }}
 
-static Hw::Pci::Bridge *
+static std::shared_ptr<Hw::Pci::Bridge>
 create_pci_pci_bridge(Hw::Pci::Bridge_if *bridge,
                       Hw::Pci::Config const &,
                       Hw::Pci::Config_cache const &cc,
@@ -441,40 +441,40 @@ create_pci_pci_bridge(Hw::Pci::Bridge_if *bridge,
       return nullptr;
     }
 
-  Hw::Pci::Bridge *b = nullptr;
+  std::shared_ptr<Hw::Pci::Bridge> b;
   if (cc.pcie_cap)
     {
       switch (cc.pcie_type)
         {
         case 0x4: // Root Port of PCI Express Root Complex
         case 0x6: // Downstream Port of PCI Express Switch
-          b = new Hw::Pci::Pcie_downstream_port(hw, bridge, cc);
+          b = std::make_shared<Hw::Pci::Pcie_downstream_port>(hw, bridge, cc);
           break;
 
         case 0x5: // Upstream Port of PCI Express Switch
-          b = new Hw::Pci::Pcie_upstream_port(hw, bridge, cc);
+          b = std::make_shared<Hw::Pci::Pcie_upstream_port>(hw, bridge, cc);
           break;
 
         case 0x7: // PCI Express to PCI/PCI-X bridge
-          b = new Hw::Pci::Pcie_bridge(hw, bridge, cc);
+          b = std::make_shared<Hw::Pci::Pcie_bridge>(hw, bridge, cc);
           break;
 
         default:
           // all other ids are either no busses or
           // legacy PCI/PCI-X busses
-          b = new Hw::Pci::Bridge(hw, bridge, cc);
+          b = std::make_shared<Hw::Pci::Bridge>(hw, bridge, cc);
           break;
         }
     }
   else
-    b = new Hw::Pci::Bridge(hw, bridge, cc);
+    b = std::make_shared<Hw::Pci::Bridge>(hw, bridge, cc);
 
   b->check_bus_config();
   hw->set_name_if_empty("PCI-to-PCI bridge");
   return b;
 }
 
-static Hw::Pci::Dev *
+static std::shared_ptr<Hw::Pci::Dev>
 create_pci_bridge(Hw::Pci::Bridge_if *bridge,
                   Hw::Pci::Config const &cfg,
                   Hw::Pci::Config_cache const &cc,
@@ -496,7 +496,7 @@ create_pci_bridge(Hw::Pci::Bridge_if *bridge,
         }
 
       hw->set_name_if_empty("PCI device");
-      return new Hw::Pci::Dev(hw, bridge, cc);
+      return std::make_shared<Hw::Pci::Dev>(hw, bridge, cc);
     }
 }
 
@@ -542,7 +542,7 @@ Hw::Pci::Bridge_base::discover_func(Hw::Device *host_bus,
   Hw::Pci::Config_cache cc;
   cc.fill(vendor, config);
 
-  Hw::Pci::Dev *d;
+  std::shared_ptr<Hw::Pci::Dev> d;
   if (cc.base_class() == 0x6) // bridge
     {
       d = create_pci_bridge(this, config, cc, child);
@@ -552,7 +552,7 @@ Hw::Pci::Bridge_base::discover_func(Hw::Device *host_bus,
   else
     {
       child->set_name_if_empty("PCI device");
-      d = new Hw::Pci::Dev(child, this, cc);
+      d = std::make_shared<Hw::Pci::Dev>(child, this, cc);
     }
 
   child->add_feature(d);
@@ -564,15 +564,15 @@ Hw::Pci::Bridge_base::discover_func(Hw::Device *host_bus,
   // that were not preset
   d->discover_resources(child);
 
-  Hw::Pci::Driver *drv = Hw::Pci::Driver::find(d);
+  Hw::Pci::Driver *drv = Hw::Pci::Driver::find(d.get());
   if (drv)
-    drv->probe(d);
+    drv->probe(d.get());
 
   // go down the PCI hierarchy recursively,
   // to assign bus numbers (if not yet assigned) the right way
   d->discover_bus(child);
 
-  return d;
+  return d.get();
 }
 
 void
