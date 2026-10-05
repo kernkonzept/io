@@ -23,7 +23,8 @@
 
 bool
 Resource_provider::_RS::request(Resource *parent, Device *,
-                                Resource *child, Device *)
+                                std::shared_ptr<Resource> const &child,
+                                Device *)
 {
   Addr start = child->start();
   Addr end   = child->end();
@@ -56,7 +57,8 @@ Resource_provider::_RS::request(Resource *parent, Device *,
 }
 
 void
-Resource_provider::_RS::assign(Resource *parent, Resource *child)
+Resource_provider::_RS::assign(Resource *parent,
+                               std::shared_ptr<Resource> const &child)
 {
   auto p = _rl.begin();
   for ( ; p != _rl.end(); ++p)
@@ -75,7 +77,7 @@ Resource_provider::_RS::assign(Resource *parent, Resource *child)
   Size sz = 0;
   Size min_align = this->min_align(parent);
 
-  for (auto r: _rl)
+  for (auto const &r: _rl)
     {
       Size a = cxx::max<Size>(r->alignment(), min_align);
       sz = (sz + a) & ~a;
@@ -93,8 +95,8 @@ Resource_provider::_RS::assign(Resource *parent, Resource *child)
 */
 bool
 Resource_provider::_RS::alloc(Resource *parent, Device *pdev,
-                              Resource *child, Device *cdev,
-                              bool resize)
+                              std::shared_ptr<Resource> const &child,
+                              Device *cdev, bool resize)
 {
   Resource_list::iterator p = _rl.begin();
   Addr start = parent->start();
@@ -142,7 +144,7 @@ Resource_provider::_RS::alloc(Resource *parent, Device *pdev,
     }
 
   if (child->provided())
-    child->provided()->adjust_children(child);
+    child->provided()->adjust_children(child.get());
 
   return request(parent, pdev, child, cdev);
 }
@@ -158,7 +160,7 @@ Resource_provider::_RS::adjust_children(Resource *self)
   Addr start = self->start();
   Size min_align = this->min_align(self);
 
-  for (auto c: _rl)
+  for (auto const &c: _rl)
     {
       if (c->fixed_addr() || c->relative() || c->empty())
         {
@@ -184,7 +186,7 @@ Resource_provider::_RS::adjust_children(Resource *self)
       c->enable();
 
       if (c->provided())
-        c->provided()->adjust_children(c);
+        c->provided()->adjust_children(c.get());
     }
   return true;
 }

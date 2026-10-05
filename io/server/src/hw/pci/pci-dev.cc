@@ -223,7 +223,7 @@ Hw::Pci::Dev::reserve_dma_resources(Dma_domain_if::Resv_cb const &cb) const
 {
   // Report all MMIO resources of the device. This includes all BARs and
   // potentially the expansion ROM.
-  for (Resource const *r : *_host->resources())
+  for (auto const &r : *_host->resources())
     if (r->type() == Resource::Mmio_res)
       if (int err = cb(Dma_domain_if::Resv_type::Device_mmio, r->start(),
                        r->end());
@@ -285,7 +285,7 @@ Hw::Pci::Dev::recheck_bars(unsigned enable_decoders)
       unsigned const decoder = is_io_bar ? 1 : 2;
       l4_uint32_t const mask = is_io_bar ? l4_uint32_t(~3) : l4_uint32_t(~0xf);
 
-      Resource *r = _bars[i];
+      Resource *r = _bars[i].get();
 
       if (!r)
         continue;
@@ -454,7 +454,7 @@ Hw::Pci::Dev::discover_bar(int bar)
 {
   Hw::Pci::Cfg_bar c = config(Hw::Pci::Config::Bar_0 + bar * 4);
 
-  _bars[bar] = 0;
+  _bars[bar] = nullptr;
   l4_uint16_t cmd = disable_decoders();
   bool valid = c.parse();
   restore_decoders(cmd);
@@ -473,11 +473,11 @@ Hw::Pci::Dev::discover_bar(int bar)
                        | Resource::F_hierarchical
                        | Resource::F_can_move;
 
-  Resource *res = 0;
+  std::shared_ptr<Resource> res;
   switch (c.type())
     {
     case Hw::Pci::Cfg_bar::T_mmio:
-      res = new Resource(mem_flags);
+      res = std::make_shared<Resource>(mem_flags);
       // set ID to 'BARx', x == bar
       res->set_id(0x00524142 + (((l4_uint32_t)('0' + bar)) << 24));
       _bars[bar] = res;
@@ -494,7 +494,7 @@ Hw::Pci::Dev::discover_bar(int bar)
       res->start_size(c.base(), c.size());
       break;
     case Hw::Pci::Cfg_bar::T_io:
-      res = new Resource(io_flags);
+      res = std::make_shared<Resource>(io_flags);
       // set ID to 'BARx', x == bar
       res->set_id(0x00524142 + (((l4_uint32_t)('0' + bar)) << 24));
 
@@ -545,7 +545,7 @@ Hw::Pci::Dev::discover_expansion_rom()
   unsigned flags = Resource::Mmio_res | Resource::Mem_type_rw
                    | Resource::F_size_aligned | Resource::F_rom
                    | Resource::F_prefetchable | Resource::F_can_move;
-  Resource *res = new Resource(flags);
+  auto res = std::make_shared<Resource>(flags);
   res->set_id("ROM");
 
   if (Io_config::cfg->expansion_rom(host()))
@@ -623,9 +623,10 @@ Hw::Pci::Dev::discover_resources(Hw::Device *host)
 
   if (cfg.irq_pin)
     {
-      Resource * r = new Resource(Resource::Irq_res | Resource::F_relative
-                                  | Resource::F_hierarchical,
-                                  cfg.irq_pin - 1, cfg.irq_pin - 1);
+      auto r = std::make_shared<Resource>(Resource::Irq_res
+                                          | Resource::F_relative
+                                          | Resource::F_hierarchical,
+                                          cfg.irq_pin - 1, cfg.irq_pin - 1);
       r->set_id("PIN");
       host->add_resource_rq(r);
     }

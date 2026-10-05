@@ -75,7 +75,7 @@ public:
   // Factory to create root resource objects
   struct Root_resource_factory : cxx::H_list_item_t<Root_resource_factory>
   {
-    virtual Root_resource *create(System_bus *bus) const = 0;
+    virtual std::shared_ptr<Root_resource> create(System_bus *bus) const = 0;
     Root_resource_factory()
     { _factories.push_front(this); }
 
@@ -88,25 +88,40 @@ public:
   template< unsigned TYPE, typename RS >
   struct Root_resource_factory_t : Root_resource_factory
   {
-    Root_resource *create(System_bus *bus) const override
+    std::shared_ptr<Root_resource> create(System_bus *bus) const override
     {
-      return new Root_resource(TYPE, new RS(bus));
+      return std::make_shared<Root_resource>(TYPE, new RS(bus));
     }
   };
 
   // comparison operation to sort resources
   struct Res_cmp
   {
+    // Allow lookups by plain resource pointers.
+    using is_transparent = void;
+
     bool operator () (Resource const *a, Resource const *b) const
     {
       if (a->type() == b->type())
         return a->lt_compare(b);
       return a->type() < b->type();
     }
+
+    bool operator () (std::shared_ptr<Resource> const &a,
+                      std::shared_ptr<Resource> const &b) const
+    { return (*this)(a.get(), b.get()); }
+
+    bool operator () (std::shared_ptr<Resource> const &a,
+                      Resource const *b) const
+    { return (*this)(a.get(), b); }
+
+    bool operator () (Resource const *a,
+                      std::shared_ptr<Resource> const &b) const
+    { return (*this)(a, b.get()); }
   };
 
   // Set of all resources of all types
-  typedef std::set<Resource*, Res_cmp> Resource_set;
+  typedef std::set<std::shared_ptr<Resource>, Res_cmp> Resource_set;
 
 
   // Vi::System_bus interface
@@ -114,7 +129,7 @@ public:
   ~System_bus() noexcept;
 
   void dump_resources() const;
-  bool add_resource_to_bus(Resource *r);
+  bool add_resource_to_bus(std::shared_ptr<Resource> const &r);
   Resource_set const *resource_set() const { return &_resources; }
   Sw_icu *sw_icu() const { return _sw_icu; }
   void sw_icu(Sw_icu *icu) { _sw_icu = icu; }

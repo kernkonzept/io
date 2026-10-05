@@ -61,12 +61,16 @@ class Device
 class Generic_device : public Device
 {
 public:
-  void add_resource(Resource *disown);
   Property *property(std::string const &name);
 };
 
 %extend Generic_device
 {
+  void add_resource(Resource *disown)
+  {
+    self->add_resource(std::shared_ptr<Resource>(disown));
+  }
+
   int nresources() const
   {
     return self->resources()->size();
@@ -74,7 +78,7 @@ public:
 
   Resource *resource(int idx) const
   {
-    return self->resources()->at(idx);
+    return self->resources()->at(idx).get();
   }
 };
 

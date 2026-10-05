@@ -30,7 +30,7 @@ class Device;
 class Dma_domain_factory
 {
 public:
-  virtual Dma_domain *create(Hw::Device *dev) = 0;
+  virtual std::shared_ptr<Dma_domain> create(Hw::Device *dev) = 0;
   virtual ~Dma_domain_factory() = default;
 };
 
@@ -228,7 +228,7 @@ public:
    */
   Dma_domain *dma_domain_for(Device *dev)
   {
-    Dma_domain *d = 0;
+    std::shared_ptr<Dma_domain> d;
     for (Device *c = this; c; c = c->parent())
       {
         if (c->_downstream_dma_domain)
@@ -250,16 +250,16 @@ public:
         dev->add_resource_rq(d);
       }
 
-    return d;
+    return d.get();
   }
 
   void set_dma_domain_factory(Dma_domain_factory *dma)
   { _dma_domain_factory = dma; }
 
   Dma_domain *dma_domain()
-  { return _dma_domain; }
+  { return _dma_domain.get(); }
 
-  void set_downstream_dma_domain(Dma_domain *dma)
+  void set_downstream_dma_domain(std::shared_ptr<Dma_domain> const &dma)
   { _downstream_dma_domain = dma; }
 
   /**
@@ -269,7 +269,7 @@ public:
    * to the root and check until it finds a non-NULL secondary DMA domain.
    */
   Dma_domain *downstream_dma_domain() const
-  { return _downstream_dma_domain; }
+  { return _downstream_dma_domain.get(); }
 
   bool is_multi_vbus_dev() const { return _flags & DF_multi_vbus; }
 
@@ -295,10 +295,10 @@ private:
   Device_client::Client_list _clients;
   cxx::unique_ptr<Io::Event_source_infos> _event_source_infos;
   /// The DMA domain to be used for this device itself.
-  Dma_domain *_dma_domain = 0;
+  std::shared_ptr<Dma_domain> _dma_domain;
 
   /// DMA domain that **must** be used for all children of this device.
-  Dma_domain *_downstream_dma_domain = 0;
+  std::shared_ptr<Dma_domain> _downstream_dma_domain;
   Dma_domain_factory *_dma_domain_factory = 0;
 };
 

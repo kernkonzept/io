@@ -150,7 +150,7 @@ Vi::Pci_proxy_dev::irq_enable(Irq_info *irq)
   for (Resource_list::const_iterator i = host()->resources()->begin();
        i != host()->resources()->end(); ++i)
     {
-      Resource *res = *i;
+      Resource *res = i->get();
 
       if (!res->disabled() && res->type() == Resource::Irq_res)
         {

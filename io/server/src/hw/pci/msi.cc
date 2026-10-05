@@ -268,7 +268,7 @@ Hw::Pci::Dev::parse_msi_cap(Hw::Pci::Cfg_addr cap_ptr)
   d_printf(DBG_DEBUG, "Use MSI PCI device %02x:%02x:%x: pin=%x\n",
            bus_nr(), host()->adr() >> 16, host()->adr() & 0xff, msi);
 
-  auto *res = new Msi_res(msi, this, cap_ptr.reg());
+  auto res = std::make_shared<Msi_res>(msi, this, cap_ptr.reg());
   flags.msi() = true;
   _host->add_resource_rq(res);
   _transp_msi = res;

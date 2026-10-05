@@ -68,11 +68,12 @@ public:
   int add_prt_entry(ACPI_HANDLE obj, ACPI_PCI_ROUTING_TABLE *e);
   int find(int device, int pin, struct acpica_pci_irq **irq);
   bool request(Resource *parent, ::Device *,
-               Resource *child, ::Device *cdev) override;
-  bool alloc(Resource *, ::Device *, Resource *, ::Device *, bool) override
+               std::shared_ptr<Resource> const &child, ::Device *cdev) override;
+  bool alloc(Resource *, ::Device *, std::shared_ptr<Resource> const &,
+             ::Device *, bool) override
   { return false; }
 
-  void assign(Resource *, Resource *) override
+  void assign(Resource *, std::shared_ptr<Resource> const &) override
   {
     d_printf(DBG_ERR, "internal error: cannot assign to root Acpi_pci_irq_router_rs\n");
   }
@@ -87,7 +88,8 @@ public:
 
 bool
 Acpi_pci_irq_router_rs::request(Resource *parent, ::Device *,
-                                Resource *child, ::Device *cdev)
+                                std::shared_ptr<Resource> const &child,
+                                ::Device *cdev)
 {
   if (dlevel(DBG_ALL))
     {
@@ -218,7 +220,7 @@ Acpi_pci_irq_router_rs::find(int device, int pin, struct acpica_pci_irq **irq)
 }
 
 static
-Resource *discover_prt(Hw::Acpi_dev *adev)
+std::shared_ptr<Resource> discover_prt(Hw::Acpi_dev *adev)
 {
   ACPI_STATUS status;
   ACPI_HANDLE handle;
@@ -227,7 +229,7 @@ Resource *discover_prt(Hw::Acpi_dev *adev)
 
   // no PRT!!
   if (ACPI_FAILURE(status))
-    return 0;
+    return nullptr;
 
   Acpi_auto_buffer buf;
   buf.Length = ACPI_ALLOCATE_BUFFER;
@@ -237,11 +239,11 @@ Resource *discover_prt(Hw::Acpi_dev *adev)
   if (ACPI_FAILURE(status))
     {
       d_printf(DBG_ERR, "ERROR: while getting PRT for [%s]\n", "buffer");
-      return 0;
+      return nullptr;
     }
 
   typedef Hw::Pci::Irq_router_res<Acpi_pci_irq_router_rs> Irq_res;
-  Irq_res *r = new Irq_res();
+  auto r = std::make_shared<Irq_res>();
 
   char *p = (char*)buf.Pointer;
   char *e = (char*)buf.Pointer + buf.Length;
@@ -258,8 +260,7 @@ Resource *discover_prt(Hw::Acpi_dev *adev)
       if (err < 0)
         {
           d_printf(DBG_ERR, "error: adding PRT entry: %d\n", err);
-          delete r;
-          return 0;
+          return nullptr;
         }
 
       p += prt->Length;
@@ -272,13 +273,12 @@ struct Acpi_pci_bridge_handler : Hw::Feature_manager<Hw::Acpi_dev>
 {
   bool setup(Hw::Device *dev, Hw::Acpi_dev *acpi_dev) const override
   {
-    if (Resource *router = discover_prt(acpi_dev))
+    if (auto router = discover_prt(acpi_dev))
       {
         if (dev->resources()->find_if(Resource::is_irq_provider_s))
           {
             d_printf(DBG_WARN, "warning: multiple IRQ routing tables for device: %s\n",
                      dev->get_full_path().c_str());
-            delete router;
             return false;
           }
 

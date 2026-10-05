@@ -3049,11 +3049,14 @@ SWIGINTERN int SWIG_lua_isnilstring(lua_State *L, int idx) {
   return ret;
 }
 
+SWIGINTERN void Generic_device_add_resource(Generic_device *self,Resource *disown){
+    self->add_resource(std::shared_ptr<Resource>(disown));
+  }
 SWIGINTERN int Generic_device_nresources(Generic_device const *self){
     return self->resources()->size();
   }
 SWIGINTERN Resource *Generic_device_resource(Generic_device const *self,int idx){
-    return self->resources()->at(idx);
+    return self->resources()->at(idx).get();
   }
 SWIGINTERN void Vi_Device_set_name(Vi::Device *self,char const *name){ self->name(name); }
 SWIGINTERN Hw::Device *Hw_Device_find_by_name(Hw::Device const *self,std::string const &name){
@@ -3719,15 +3722,6 @@ static swig_lua_class *swig_Device_bases[] = {0};
 static const char *swig_Device_base_names[] = {0};
 static swig_lua_class _wrap_class_Device = { "Device", "Device", &SWIGTYPE_p_Device,0, swig_delete_Device, swig_Device_methods, swig_Device_attributes, &swig_Device_Sf_SwigStatic, swig_Device_meta, swig_Device_bases, swig_Device_base_names };
 
-static int _wrap_Generic_device_add_resource(lua_State* L) { { int SWIG_arg = 0; Generic_device *arg1 = (Generic_device *) 0 ;
-    Resource *arg2 = (Resource *) 0 ; SWIG_check_num_args("Generic_device::add_resource",2,2)
-    if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Generic_device::add_resource",1,"Generic_device *");
-    if(!SWIG_isptrtype(L,2)) SWIG_fail_arg("Generic_device::add_resource",2,"Resource *");
-    if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_Generic_device,0))){
-      SWIG_fail_ptr("Generic_device_add_resource",1,SWIGTYPE_p_Generic_device); } 
-    if (!SWIG_IsOK(SWIG_ConvertPtr(L,2,(void**)&arg2,SWIGTYPE_p_Resource,SWIG_POINTER_DISOWN))){
-      SWIG_fail_ptr("Generic_device_add_resource",2,SWIGTYPE_p_Resource); }  (arg1)->add_resource(arg2); return SWIG_arg;
-    fail: SWIGUNUSED; }  lua_error(L); return 0; }
 static int _wrap_Generic_device_property(lua_State* L) { { int SWIG_arg = 0; Generic_device *arg1 = (Generic_device *) 0 ;
     std::string *arg2 = 0 ; std::string temp2 ; Property *result = 0 ; SWIG_check_num_args("Generic_device::property",2,2)
     if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Generic_device::property",1,"Generic_device *");
@@ -3738,6 +3732,15 @@ static int _wrap_Generic_device_property(lua_State* L) { { int SWIG_arg = 0; Gen
     result = (Property *)(arg1)->property((std::string const &)*arg2);
     SWIG_NewPointerObj(L,result,SWIGTYPE_p_Property,0); SWIG_arg++;  return SWIG_arg; fail: SWIGUNUSED; }  lua_error(L);
   return 0; }
+static int _wrap_Generic_device_add_resource(lua_State* L) { { int SWIG_arg = 0; Generic_device *arg1 = (Generic_device *) 0 ;
+    Resource *arg2 = (Resource *) 0 ; SWIG_check_num_args("Generic_device::add_resource",2,2)
+    if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Generic_device::add_resource",1,"Generic_device *");
+    if(!SWIG_isptrtype(L,2)) SWIG_fail_arg("Generic_device::add_resource",2,"Resource *");
+    if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_Generic_device,0))){
+      SWIG_fail_ptr("Generic_device_add_resource",1,SWIGTYPE_p_Generic_device); } 
+    if (!SWIG_IsOK(SWIG_ConvertPtr(L,2,(void**)&arg2,SWIGTYPE_p_Resource,SWIG_POINTER_DISOWN))){
+      SWIG_fail_ptr("Generic_device_add_resource",2,SWIGTYPE_p_Resource); }  Generic_device_add_resource(arg1,arg2);
+    return SWIG_arg; fail: SWIGUNUSED; }  lua_error(L); return 0; }
 static int _wrap_Generic_device_nresources(lua_State* L) { { int SWIG_arg = 0; Generic_device *arg1 = (Generic_device *) 0 ;
     int result; SWIG_check_num_args("Generic_device::nresources",1,1)
     if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Generic_device::nresources",1,"Generic_device const *");
@@ -3762,8 +3765,8 @@ static swig_lua_attribute swig_Generic_device_attributes[] = {
     {0,0,0}
 };
 static swig_lua_method swig_Generic_device_methods[]= {
-    { "add_resource", _wrap_Generic_device_add_resource},
     { "property", _wrap_Generic_device_property},
+    { "add_resource", _wrap_Generic_device_add_resource},
     { "nresources", _wrap_Generic_device_nresources},
     { "resource", _wrap_Generic_device_resource},
     {0,0}

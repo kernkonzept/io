@@ -11,7 +11,7 @@
 #include "vmsi.h"
 #include "debug.h"
 
-Vi::Msi_resource::Msi_resource(Hw::Msi_resource *hr)
+Vi::Msi_resource::Msi_resource(std::shared_ptr<Hw::Msi_resource> const &hr)
 : Resource(Resource::Irq_res | Resource::Irq_type_falling_edge
            | Resource::F_disabled | F_can_move, 0, 0), _hw_msi(hr)
 {

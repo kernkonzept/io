@@ -101,12 +101,14 @@ public:
   char const *res_type_name() const override
   { return "i.MX8M Plus PCIe IRQ router"; }
 
-  bool request(Resource *parent, ::Device *, Resource *child,
+  bool request(Resource *parent, ::Device *,
+               std::shared_ptr<Resource> const &child,
                ::Device *cdev) override;
-  bool alloc(Resource *, ::Device *, Resource *, ::Device *, bool) override
+  bool alloc(Resource *, ::Device *, std::shared_ptr<Resource> const &,
+             ::Device *, bool) override
   { return false; }
 
-  void assign(Resource *, Resource *) override
+  void assign(Resource *, std::shared_ptr<Resource> const &) override
   {
     d_printf(DBG_ERR, "internal error: cannot assign to Pci_irq_router_rs\n");
   }
@@ -319,7 +321,8 @@ private:
 };
 
 bool Pci_irq_router_rs::request(Resource *parent, ::Device *pdev,
-                                Resource *child, ::Device *cdev)
+                                std::shared_ptr<Resource> const &child,
+                                ::Device *cdev)
 {
   auto *cd = dynamic_cast<Hw::Device *>(cdev);
   if (!cd)
@@ -637,8 +640,7 @@ void Pcie_imx8mp::init()
   d_printf(DBG_INFO, "%s: Link up, gen %d, x%d\n", name(),
            (int)(sts & Lnk_speed_mask), (int)((sts >> 4) & 0x3f));
 
-  typedef Hw::Pci::Irq_router_res<Pci_irq_router_rs> Irq_res;
-  Irq_res *ir = new Irq_res();
+  auto ir = std::make_shared<Hw::Pci::Irq_router_res<Pci_irq_router_rs>>();
   ir->set_id("IRQR");
   add_resource_rq(ir);
 

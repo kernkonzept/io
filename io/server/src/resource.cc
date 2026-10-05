@@ -23,7 +23,7 @@ Resource_list::find(l4_uint32_t id) const
 {
   for (auto i = begin(); i != end(); ++i)
     if ((*i)->id() == id)
-      return *i;
+      return i->get();
 
   return 0;
 }

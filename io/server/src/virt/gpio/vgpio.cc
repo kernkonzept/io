@@ -432,11 +432,11 @@ static Vi::Dev_factory_t<Gpio, Hw::Gpio_device> __gpio_factory;
 class Gpio_resource : public Resource
 {
 public:
-  explicit Gpio_resource(::Gpio_resource *hr)
+  explicit Gpio_resource(std::shared_ptr<::Gpio_resource> const &hr)
   : Resource(hr->flags(), hr->start(), hr->end()), _hwr(hr), _provider(nullptr)
   { set_id(hr->id()); }
 
-  ::Gpio_resource *hwr() const { return _hwr; }
+  ::Gpio_resource *hwr() const { return _hwr.get(); }
 
   void set_provider(Gpio *provider)
   { _provider = provider; }
@@ -445,7 +445,7 @@ public:
   { return _provider->handle(); }
 
 private:
-  ::Gpio_resource *_hwr;
+  std::shared_ptr<::Gpio_resource> _hwr;
   Gpio *_provider;
 };
 
@@ -459,13 +459,13 @@ public:
   {}
 
   bool request(Resource *parent, ::Device *pdev,
-               Resource *child, ::Device *) override
+               std::shared_ptr<Resource> const &child, ::Device *) override
   {
     Vi::System_bus *vsb = dynamic_cast<Vi::System_bus *>(pdev);
     if (!vsb || !parent)
       return false;
 
-    Vi::Gpio_resource *r = dynamic_cast<Vi::Gpio_resource*>(child);
+    Vi::Gpio_resource *r = dynamic_cast<Vi::Gpio_resource*>(child.get());
     if (!r)
       return false;
 
@@ -524,7 +524,7 @@ public:
   }
 
   bool alloc(Resource *parent, ::Device *,
-             Resource *child, ::Device *, bool) override
+             std::shared_ptr<Resource> const &child, ::Device *, bool) override
   {
     d_printf(DBG_DEBUG2, "Allocate virtual GPIO resource ...\n");
     if (dlevel(DBG_DEBUG2))
@@ -535,7 +535,7 @@ public:
     return false;
   }
 
-  void assign(Resource *, Resource *) override
+  void assign(Resource *, std::shared_ptr<Resource> const &) override
   {
     d_printf(DBG_ERR, "internal error: cannot assign to root Root_gpio_rs\n");
   }

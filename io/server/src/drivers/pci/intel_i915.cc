@@ -82,8 +82,8 @@ struct Pci_intel_i915_drv : Hw::Pci::Driver
                      | Resource::F_prefetchable;
 
     // the opregion address might not be page aligned... (0xdaf68018)
-    Resource *res = new Resource(flags, l4_trunc_page(v),
-                                 l4_round_page(v + size * 0x400) - 1);
+    auto res = std::make_shared<Resource>(flags, l4_trunc_page(v),
+                                          l4_round_page(v + size * 0x400) - 1);
     d->host()->add_resource(res);
     Device *p;
     for (p = d->host()->parent(); p && p->parent(); p = p->parent())

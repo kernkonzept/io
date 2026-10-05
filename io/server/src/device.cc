@@ -34,7 +34,7 @@ Generic_device::get_full_path() const
 // (e.g. System Management Mode on x86 systems) continues to use the old setup.
 
 bool
-Device::alloc_child_resource(Resource *r, Device *cld)
+Device::alloc_child_resource(std::shared_ptr<Resource> const &r, Device *cld)
 {
   bool found_as = false;
   // The first run requires exact match between client and parent resource.
@@ -44,7 +44,7 @@ Device::alloc_child_resource(Resource *r, Device *cld)
   auto const *rl = resources();
   while (true)
     {
-      for (auto *br: *rl)
+      for (auto const &br: *rl)
         {
           if (!br)
             continue;
@@ -55,24 +55,24 @@ Device::alloc_child_resource(Resource *r, Device *cld)
           if (!br->provided())
             continue;
 
-          if (!br->compatible(r, exact))
+          if (!br->compatible(r.get(), exact))
             continue;
 
-          if (parent() && !parent()->can_alloc_from_res(br))
+          if (parent() && !parent()->can_alloc_from_res(br.get()))
             continue;
 
           found_as = true;
 
-          if (parent() && !parent()->resource_allocated(br))
+          if (parent() && !parent()->resource_allocated(br.get()))
             {
-              br->provided()->assign(br, r);
+              br->provided()->assign(br.get(), r);
               d_printf(DBG_ALL, "assigned resource: ");
               if (dlevel(DBG_ALL))
                 r->dump();
 
               return true;
             }
-          else if (br->provided()->alloc(br, this, r, cld, false))
+          else if (br->provided()->alloc(br.get(), this, r, cld, false))
             {
               r->enable();
               d_printf(DBG_ALL, "allocated resource: ");
@@ -102,7 +102,7 @@ Device::alloc_child_resource(Resource *r, Device *cld)
 
 
 void
-Device::request_resource(Resource *r)
+Device::request_resource(std::shared_ptr<Resource> const &r)
 {
   Device *p = parent();
 
@@ -113,7 +113,7 @@ Device::request_resource(Resource *r)
   if (r->empty())
     return;
 
-  if (p->resource_allocated(r))
+  if (p->resource_allocated(r.get()))
     return; // already allocated
 
   if (r->disabled())
@@ -167,11 +167,11 @@ namespace {
 
 struct Res_dev
 {
-  Resource *r;
+  std::shared_ptr<Resource> r;
   Device *d;
 
   Res_dev() = default;
-  Res_dev(Resource *r, Device *d) : r(r), d(d) {}
+  Res_dev(std::shared_ptr<Resource> const &r, Device *d) : r(r), d(d) {}
 };
 
 static bool res_cmp(Res_dev const &l, Res_dev const &r)
@@ -185,7 +185,7 @@ static bool _allocate_pending_resources(Device *dev, UAD *to_allocate)
   Device *p = dev->parent();
   assert (p);
   auto const *rl = dev->resources();
-  for (auto *r: *rl)
+  for (auto const &r: *rl)
     {
       if (!r)
         continue;
@@ -193,7 +193,7 @@ static bool _allocate_pending_resources(Device *dev, UAD *to_allocate)
       if (r->empty())
         continue;
 
-      if (p->resource_allocated(r))
+      if (p->resource_allocated(r.get()))
         continue;
 
       if (r->fixed_addr())
@@ -258,7 +258,8 @@ Device::allocate_pending_child_resources()
 
 
 bool
-Device::request_child_resource(Resource *r, Device *cld)
+Device::request_child_resource(std::shared_ptr<Resource> const &r,
+                               Device *cld)
 {
   bool found_as = false;
   // The first run requires exact match between client and parent resource.
@@ -270,7 +271,7 @@ Device::request_child_resource(Resource *r, Device *cld)
     {
       // scan through all our resources and try to find a
       // provided resource that is consumed by resource 'r'
-      for (auto *br: *rl)
+      for (auto const &br: *rl)
 	{
           if (!br)
             continue;
@@ -281,12 +282,12 @@ Device::request_child_resource(Resource *r, Device *cld)
 	  if (!br->provided())
 	    continue;
 
-	  if (!br->compatible(r, exact))
+	  if (!br->compatible(r.get(), exact))
 	    continue;
 
 	  found_as = true;
 
-	  if (br->provided()->request(br, this, r, cld))
+	  if (br->provided()->request(br.get(), this, r, cld))
 	    return true;
 	}
 

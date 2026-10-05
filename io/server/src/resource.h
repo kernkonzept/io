@@ -10,6 +10,7 @@
 #include <l4/sys/icu>
 
 #include <l4/vbus/vbus_types.h>
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -28,7 +29,7 @@
 class Resource;
 class Device;
 
-class Resource_list : public std::vector<Resource *>
+class Resource_list : public std::vector<std::shared_ptr<Resource>>
 {
 public:
   /**
@@ -49,9 +50,9 @@ public:
   template<typename PRED>
   Resource *find_if(PRED &&p) const
   {
-    for (auto i: *this)
-      if (p(i))
-        return i;
+    for (auto const &i: *this)
+      if (p(i.get()))
+        return i.get();
 
     return nullptr;
   }
@@ -63,10 +64,13 @@ public:
   virtual char const *res_type_name() const = 0;
 
   virtual bool request(Resource *parent, Device *pdev,
-                       Resource *child, Device *cdev) = 0;
-  virtual void assign(Resource *parent, Resource *child) = 0;
+                       std::shared_ptr<Resource> const &child,
+                       Device *cdev) = 0;
+  virtual void assign(Resource *parent,
+                      std::shared_ptr<Resource> const &child) = 0;
   virtual bool alloc(Resource *parent, Device *pdev,
-                     Resource *child, Device *cdev, bool resize) = 0;
+                     std::shared_ptr<Resource> const &child, Device *cdev,
+                     bool resize) = 0;
   virtual bool adjust_children(Resource *self) = 0;
 
 protected:
@@ -78,6 +82,7 @@ class Resource
 private:
   unsigned long _f = 0;
   l4_uint32_t _id = 0;
+  /// Non-owning, only records that the resource was assigned to a parent.
   Resource *_p = nullptr;
 
 public:

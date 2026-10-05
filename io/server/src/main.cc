@@ -390,7 +390,7 @@ private:
 class Iommu_dma_domain_factory : public Hw::Dma_domain_factory
 {
 public:
-  Dma_domain *create(Hw::Device *dev) override
+  std::shared_ptr<Dma_domain> create(Hw::Device *dev) override
   {
     if (!dev)
       return nullptr;
@@ -399,7 +399,7 @@ public:
     if (!s)
       return nullptr;
 
-    return new Iommu_dma_domain(s);
+    return std::make_shared<Iommu_dma_domain>(s);
   }
 };
 
@@ -430,7 +430,7 @@ run(int argc, char * const *argv)
   if (!iommu || !iommu.validate().label())
     {
       d_printf(DBG_INFO, "no 'iommu' capability found, using CPU-phys for DMA\n");
-      Dma_domain *d = new Dma_domain_phys;
+      auto d = std::make_shared<Dma_domain_phys>();
       system_bus()->add_resource(d);
       system_bus()->set_downstream_dma_domain(d);
     }

@@ -29,7 +29,7 @@ Vi::Proxy_dev::Proxy_dev(Hw::Device *d)
       if (i->disabled() || i->internal())
         continue;
 
-      Resource *vr = Vi::Resource_factory::match(i);
+      std::shared_ptr<Resource> vr = Vi::Resource_factory::match(i);
       if (!vr)
         vr = i;
 

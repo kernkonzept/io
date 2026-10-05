@@ -91,8 +91,8 @@ public:
     if (p[3] & 1)
       flags |= Resource::F_prefetchable | Resource::F_cached_mem;
 
-    Resource *r = new Resource(Resource::Mmio_res, flags, p[1],
-                               p[1] + p[2] - 1);
+    auto r = std::make_shared<Resource>(Resource::Mmio_res, flags, p[1],
+                                        p[1] + p[2] - 1);
     add_resource(r);
 
     d_printf(DBG_DEBUG, "OP-TEE module initialized successfully.\n");

@@ -44,7 +44,7 @@ struct Pci_intel_gma500_drv : Hw::Pci::Driver
                      | Resource::F_prefetchable;
     l4_addr_t end = v + gfx_mem_sz - 1;
 
-    Resource *res = new Resource(flags, v, end);
+    auto res = std::make_shared<Resource>(flags, v, end);
     d->host()->add_resource(res);
     Device *p;
     for (p = d->host()->parent(); p && p->parent(); p = p->parent())

@@ -155,10 +155,10 @@ public:
 
 private:
   unsigned char _phantomfn_bits = 0;
-  Resource *_bars[6];
-  Resource *_rom;
+  std::shared_ptr<Resource> _bars[6];
+  std::shared_ptr<Resource> _rom;
 
-  Transparent_msi *_transp_msi = 0;
+  std::shared_ptr<Transparent_msi> _transp_msi;
 
   /**
    * Is "ACS Upstream Forwarding" active on the port?
@@ -212,14 +212,14 @@ public:
 
   Resource *bar(int b) const override
   {
-    return _bars[b];
+    return _bars[b].get();
   }
 
-  void set_bar(unsigned bar, Resource *r)
+  void set_bar(unsigned bar, std::shared_ptr<Resource> const &r)
   { _bars[bar] = r; }
 
   Resource *rom() const override
-  { return _rom; }
+  { return _rom.get(); }
 
   l4_uint32_t recheck_bars(unsigned decoders) override;
   l4_uint32_t checked_cmd_read() override;
@@ -228,10 +228,8 @@ public:
 
   explicit Dev(Hw::Device *host, Bridge_if *bridge,
                Config_cache const &cfg)
-  : _dma_src_feature(this), _host(host), _bridge(bridge), cfg(cfg), _rom(0)
+  : _dma_src_feature(this), _host(host), _bridge(bridge), cfg(cfg)
   {
-    for (unsigned i = 0; i < sizeof(_bars)/sizeof(_bars[0]); ++i)
-      _bars[i] = 0;
     host->add_feature(&_dma_src_feature);
 
     // PCIe root ports do not need to implement the "ACS Upstream Forwarding"

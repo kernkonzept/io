@@ -196,7 +196,7 @@ Hw::Pci::Sr_iov_feature::discover_vbars()
       d_printf(DBG_INFO, "  VBAR[%d]: %llx-%llx (%s-bit)\n",
                vbar_idx, vbar_cfg.base(), vbar_cfg.size(),
                vbar_cfg.is_64bit() ? "64" : "32");
-      Resource_provider *vbar = new Resource_provider(Resource::Mmio_res
+      auto vbar = std::make_shared<Resource_provider>(Resource::Mmio_res
                                                       | Resource::Mem_type_rw
                                                       | Resource::F_hierarchical
                                                       | Resource::F_can_move
@@ -258,9 +258,9 @@ Hw::Pci::Sr_iov_feature::init_vf(unsigned vf_idx,
     if (!vbar)
       continue;
 
-    Resource *bar = new Resource(Resource::Mmio_res
-                                 | Resource::Mem_type_rw
-                                 | Resource::F_hierarchical);
+    auto bar = std::make_shared<Resource>(Resource::Mmio_res
+                                          | Resource::Mem_type_rw
+                                          | Resource::F_hierarchical);
 
     // 'BAR'n' as ID
     bar->set_id(0x00524142 + (l4_uint32_t{'0' + bar_idx} << 24));

@@ -390,7 +390,7 @@ public:
   { return "ECAM PCIe IRQ router"; }
 
   bool request(Resource *parent, ::Device *pdev,
-               Resource *child, ::Device *cdev) override
+               std::shared_ptr<Resource> const &child, ::Device *cdev) override
   {
     auto *cd = dynamic_cast<Hw::Device *>(cdev);
     if (!cd)
@@ -421,10 +421,11 @@ public:
     return true;
   }
 
-  bool alloc(Resource *, ::Device *, Resource *, ::Device *, bool) override
+  bool alloc(Resource *, ::Device *, std::shared_ptr<Resource> const &,
+             ::Device *, bool) override
   { return false; }
 
-  void assign(Resource *, Resource *) override
+  void assign(Resource *, std::shared_ptr<Resource> const &) override
   {
     d_printf(DBG_ERR, "internal error: cannot assign to Irq_router_rs\n");
   }
@@ -543,32 +544,34 @@ Ecam_pcie_bridge::init()
   if (host_init())
     return;
 
-  Resource *mr;
+  std::shared_ptr<Resource> mr;
 
   // I/O ports are not supported on ARM anyway.
   if (_ioport_base != ~0 && _ioport_size != ~0)
     {
-      mr = new Resource_provider(Resource::Io_res);
+      mr = std::make_shared<Resource_provider>(Resource::Io_res);
       mr->start_size(_ioport_base & 0xffff, _ioport_size);
       mr->set_id("IO");
       add_resource_rq(mr);
     }
 
-  mr = new Resource_provider(Resource::Mmio_res | Resource::Mem_type_rw);
+  mr = std::make_shared<Resource_provider>(Resource::Mmio_res
+                                           | Resource::Mem_type_rw);
   mr->start_size(_mmio_base, _mmio_size);
   mr->set_id("MMIO");
   add_resource_rq(mr);
 
   if (_mmio_base_64 != ~0 && _mmio_size_64 != ~0)
     {
-      mr = new Resource_provider(Resource::Mmio_res | Resource::Mem_type_rw
-                                 | Resource::F_width_64bit);
+      mr = std::make_shared<Resource_provider>(Resource::Mmio_res
+                                               | Resource::Mem_type_rw
+                                               | Resource::F_width_64bit);
       mr->start_size(_mmio_base_64, _mmio_size_64);
       mr->set_id("MMIO");
       add_resource_rq(mr);
     }
 
-  auto *ir = new Hw::Pci::Irq_router_res<Irq_router_rs>();
+  auto ir = std::make_shared<Hw::Pci::Irq_router_res<Irq_router_rs>>();
   ir->set_id("IRQR");
   add_resource_rq(ir);
 

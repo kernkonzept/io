@@ -26,8 +26,9 @@ Hw::Pci::Irq_router::dump(int indent) const
 }
 
 bool
-Hw::Pci::Pci_pci_bridge_irq_router_rs::request(Resource *parent, ::Device *pdev,
-                                               Resource *child, ::Device *cdev)
+Hw::Pci::Pci_pci_bridge_irq_router_rs::request(
+  Resource *parent, ::Device *pdev, std::shared_ptr<Resource> const &child,
+  ::Device *cdev)
 {
   bool res = false;
 
@@ -199,9 +200,11 @@ Hw::Pci::Bridge::discover_resources(Hw::Device *host)
   s = (v & 0xfff0) << 16;
   e = (v & 0xfff00000) | 0xfffff;
 
-  Resource *r = new Resource_provider(Resource::Mmio_res | Resource::Mem_type_rw
-                                      | Resource::F_can_move
-                                      | Resource::F_can_resize);
+  std::shared_ptr<Resource> r =
+    std::make_shared<Resource_provider>(Resource::Mmio_res
+                                        | Resource::Mem_type_rw
+                                        | Resource::F_can_move
+                                        | Resource::F_can_resize);
   r->set_id("WIN0");
   r->alignment(0xfffff);
   if (s < e)
@@ -215,9 +218,11 @@ Hw::Pci::Bridge::discover_resources(Hw::Device *host)
   mmio->validate();
   _host->add_resource_rq(mmio);
 
-  r = new Resource_provider(Resource::Mmio_res | Resource::Mem_type_rw
-                            | Resource::F_prefetchable
-                            | Resource::F_can_move | Resource::F_can_resize);
+  r = std::make_shared<Resource_provider>(Resource::Mmio_res
+                                          | Resource::Mem_type_rw
+                                          | Resource::F_prefetchable
+                                          | Resource::F_can_move
+                                          | Resource::F_can_resize);
   r->set_id("WIN1");
   v = c.read<l4_uint32_t>(Hw::Pci::Config::Pref_mem_base);
   s = (v & 0xfff0) << 16;
@@ -246,8 +251,9 @@ Hw::Pci::Bridge::discover_resources(Hw::Device *host)
   s = (v & 0xf0) << 8;
   e = (v & 0xf000) | 0xfff;
 
-  r = new Resource_provider(Resource::Io_res | Resource::F_can_move
-                            | Resource::F_can_resize);
+  r = std::make_shared<Resource_provider>(Resource::Io_res
+                                          | Resource::F_can_move
+                                          | Resource::F_can_resize);
   r->set_id("WIN2");
   r->alignment(0xfff);
   if (s < e)
@@ -572,11 +578,10 @@ Hw::Pci::Bridge_base::discover_func(Hw::Device *host_bus,
 void
 Hw::Pci::Bridge_base::discover_bus(Hw::Device *host, Hw::Pci::Config_space *cfg)
 {
-  Resource *r = host->resources()->find_if(Resource::is_irq_provider_s);
-
-  if (!r)
+  if (!host->resources()->find_if(Resource::is_irq_provider_s))
     {
-      r = new Hw::Pci::Irq_router_res<Hw::Pci::Pci_pci_bridge_irq_router_rs>();
+      auto r = std::make_shared<
+        Hw::Pci::Irq_router_res<Hw::Pci::Pci_pci_bridge_irq_router_rs>>();
       r->set_id("IRQR");
       host->add_resource_rq(r);
     }

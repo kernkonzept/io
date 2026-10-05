@@ -179,11 +179,11 @@ acpi_adr_res(l4_uint32_t id, Hw::Device *host, ACPI_RESOURCE_ADDRESS const *ar,
   if (qw)
     flags |= Resource::F_width_64bit;
 
-  Resource *r;
+  std::shared_ptr<Resource> r;
   if (ar->ProducerConsumer == ACPI_PRODUCER)
-    r = new Resource_provider(flags, s, s + l - 1);
+    r = std::make_shared<Resource_provider>(flags, s, s + l - 1);
   else
-    r = new Resource(flags, s, s + l -1);
+    r = std::make_shared<Resource>(flags, s, s + l -1);
 
   r->set_id(id);
   host->add_resource_rq(r);
@@ -208,11 +208,11 @@ acpi_gpio_res(l4_uint32_t *id, Hw::Device *host, ACPI_RESOURCE_GPIO const* gpior
     {
       UINT16 pin = gpior->PinTable[i];
 
-      Resource *r;
+      std::shared_ptr<Resource> r;
       if (gpior->ProducerConsumer == ACPI_PRODUCER)
-        r = new Resource_provider(flags, pin, pin);
+        r = std::make_shared<Resource_provider>(flags, pin, pin);
       else
-        r = new Resource(flags, pin, pin);
+        r = std::make_shared<Resource>(flags, pin, pin);
 
       r->set_id(*id++);
       host->add_resource_rq(r);
@@ -270,11 +270,11 @@ acpi_serial_bus_res(l4_uint32_t *id, Hw::Device *host,
   unsigned flags = Resource::Bus_res;
   unsigned adr = sb->SlaveAddress;
 
-  Resource *r;
+  std::shared_ptr<Resource> r;
   if (sb->ProducerConsumer == ACPI_PRODUCER)
-    r = new Resource_provider(flags, adr, adr);
+    r = std::make_shared<Resource_provider>(flags, adr, adr);
   else
-    r = new Resource(flags, adr, adr);
+    r = std::make_shared<Resource>(flags, adr, adr);
 
   r->set_id(*id++);
   host->add_resource_rq(r);
@@ -912,10 +912,10 @@ namespace {
     return k;
   }
 
-  static Resource *res(l4_uint32_t id, unsigned long flags, l4_uint64_t start,
-                       l4_uint64_t end)
+  static std::shared_ptr<Resource>
+  res(l4_uint32_t id, unsigned long flags, l4_uint64_t start, l4_uint64_t end)
   {
-    Resource *r = new Resource(flags, start, end);
+    auto r = std::make_shared<Resource>(flags, start, end);
     r->set_id(id);
     return r;
   }

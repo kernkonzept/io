@@ -34,7 +34,7 @@ public:
   explicit Sr_iov_feature(Dev *dev, l4_uint16_t cap_ofs);
 
   Resource_provider *get_vbar(unsigned i) const
-  { return _vbar[i]; }
+  { return _vbar[i].get(); }
 
   /// Enables SR-IOV, runs after discover and resource allocation phase.
   void setup(Hw::Device *host) override;
@@ -66,7 +66,7 @@ private:
 private:
   Dev *_dev;
   l4_uint16_t _cap_ofs;
-  Resource_provider *_vbar[6];
+  std::shared_ptr<Resource_provider> _vbar[6];
 
   Sr_iov_cap::Total_vfs _total_vfs;
   Sr_iov_cap::Num_vfs _num_vfs;

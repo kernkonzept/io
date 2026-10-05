@@ -414,7 +414,7 @@ public:
   { return "Tegra PCIe IRQ router"; }
 
   bool request(Resource *parent, ::Device *pdev,
-               Resource *child, ::Device *cdev) override
+               std::shared_ptr<Resource> const &child, ::Device *cdev) override
   {
     auto *cd = dynamic_cast<Hw::Device *>(cdev);
     if (!cd)
@@ -449,10 +449,11 @@ public:
     return true;
   }
 
-  bool alloc(Resource *, ::Device *, Resource *, ::Device *, bool) override
+  bool alloc(Resource *, ::Device *, std::shared_ptr<Resource> const &,
+             ::Device *, bool) override
   { return false; }
 
-  void assign(Resource *, Resource *) override
+  void assign(Resource *, std::shared_ptr<Resource> const &) override
   {
     d_printf(DBG_ERR, "internal error: cannot assign to Irq_router_rs\n");
   }
@@ -837,7 +838,7 @@ bool Pcie_tegra194_bridge::do_init()
     dbg_dump_dbi();
 
   typedef Hw::Pci::Irq_router_res<Irq_router_rs> Irq_res;
-  Irq_res *ir = new Irq_res();
+  auto ir = std::make_shared<Irq_res>();
   ir->set_id("IRQR");
   add_resource_rq(ir);
 

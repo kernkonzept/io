@@ -38,7 +38,7 @@ Vi::Device::get_resource_info(unsigned index) const
   if (index >= resources->size())
     L4Re::throw_error(-L4_ENOENT);
 
-  Resource *r = resources->at(index);
+  Resource *r = resources->at(index).get();
   l4vbus_resource_t res;
   res.start = r->start();
   res.end = r->end();

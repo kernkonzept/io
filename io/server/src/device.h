@@ -279,10 +279,10 @@ public:
   virtual Device *next() const = 0;
   virtual int depth() const = 0;
 
-  bool request_child_resource(Resource *, Device *);
-  bool alloc_child_resource(Resource *, Device *);
+  bool request_child_resource(std::shared_ptr<Resource> const &, Device *);
+  bool alloc_child_resource(std::shared_ptr<Resource> const &, Device *);
 
-  void request_resource(Resource *r);
+  void request_resource(std::shared_ptr<Resource> const &r);
   void request_resources();
   void request_child_resources();
   void allocate_pending_child_resources();
@@ -319,10 +319,10 @@ public:
   //typedef gen_iterator<Generic_device> iterator;
 
   Resource_list const *resources() const override { return &_resources; }
-  void add_resource(Resource *r)
+  void add_resource(std::shared_ptr<Resource> const &r)
   { _resources.push_back(r); }
 
-  void add_resource_rq(Resource *r)
+  void add_resource_rq(std::shared_ptr<Resource> const &r)
   {
     add_resource(r);
     request_resource(r);

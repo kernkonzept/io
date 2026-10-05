@@ -38,7 +38,18 @@ protected:
 
 
 typedef Generic_type_factory<Dev_feature, Hw::Dev_feature> Feature_factory;
-typedef Generic_type_factory<Resource, Resource> Resource_factory;
+
+class Resource_factory
+: public Type_matcher<Resource_factory, std::shared_ptr<Resource>>
+{
+public:
+  virtual std::shared_ptr<Resource>
+  do_match(std::shared_ptr<Resource> const &r) = 0;
+
+protected:
+  explicit Resource_factory(std::type_info const *type)
+  : Type_matcher<Resource_factory, std::shared_ptr<Resource>>(type) {}
+};
 
 class Dev_factory : public Type_matcher<Dev_factory, Device *>
 {
@@ -96,9 +107,20 @@ class Feature_factory_t
 {};
 
 template< typename VI, typename HW >
-class Resource_factory_t
-: public Generic_factory_t<VI, Resource, HW, Resource_factory >
-{};
+class Resource_factory_t : public Resource_factory
+{
+public:
+  Resource_factory_t() : Resource_factory(&typeid(HW)) {}
+
+  std::shared_ptr<Resource>
+  do_match(std::shared_ptr<Resource> const &r) override
+  {
+    if (auto h = std::dynamic_pointer_cast<HW>(r))
+      return std::make_shared<VI>(h);
+
+    return nullptr;
+  }
+};
 
 template< typename V_DEV, typename HW_DEV = void >
 class Dev_factory_t :  public Dev_factory

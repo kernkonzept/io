@@ -90,11 +90,12 @@ public:
   { return "PCI-PCI root bridge IRQ router"; }
 
   bool request(Resource *parent, ::Device *,
-               Resource *child, ::Device *cdev) override;
-  bool alloc(Resource *, ::Device *, Resource *, ::Device *, bool) override
+               std::shared_ptr<Resource> const &child, ::Device *cdev) override;
+  bool alloc(Resource *, ::Device *, std::shared_ptr<Resource> const &,
+             ::Device *, bool) override
   { return false; }
 
-  void assign(Resource *, Resource *) override
+  void assign(Resource *, std::shared_ptr<Resource> const &) override
   {
     d_printf(DBG_ERR, "internal error: cannot assign to root Pci_pci_bridge_irq_router_rs\n");
   }
@@ -108,9 +109,9 @@ public:
 
 class Bridge : public Bridge_base, public Dev
 {
-  Resource *mmio = nullptr;
-  Resource *pref_mmio = nullptr;
-  Resource *io = nullptr;
+  std::shared_ptr<Resource> mmio;
+  std::shared_ptr<Resource> pref_mmio;
+  std::shared_ptr<Resource> io;
 
 public:
   unsigned char primary;

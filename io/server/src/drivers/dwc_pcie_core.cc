@@ -302,7 +302,7 @@ Dwc_pcie::setup_rc()
   l4_addr_t bus_addr = _mem_base;
   set_iatu_region(Iatu_vp::Idx0, _mem_base, _mem_size, bus_addr, Tlp_type::Mem);
 
-  Resource *re = new Resource_provider(Resource::Mmio_res);
+  auto re = std::make_shared<Resource_provider>(Resource::Mmio_res);
   re->alignment(0xfffff);
   re->start_end(_mem_base, _mem_base + _mem_size - 1);
   re->set_id("MMIO");

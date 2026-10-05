@@ -22,7 +22,7 @@ class Root_irq_rs : public Resource_space
 {
 public:
   bool request(Resource *parent, Device *,
-               Resource *child, Device *) override
+               std::shared_ptr<Resource> const &child, Device *) override
   {
     child->parent(parent);
 
@@ -32,10 +32,11 @@ public:
   char const *res_type_name() const override
   { return "Root IRQ"; }
 
-  bool alloc(Resource *, Device *, Resource *, Device *, bool) override
+  bool alloc(Resource *, Device *, std::shared_ptr<Resource> const &, Device *,
+             bool) override
   { return false; }
 
-  void assign(Resource *, Resource *) override
+  void assign(Resource *, std::shared_ptr<Resource> const &) override
   {
     d_printf(DBG_ERR, "internal error: cannot assign to root Root_irq_rs\n");
   }
@@ -55,7 +56,7 @@ public:
   { return "Root IO"; }
 
   bool request(Resource *parent, Device *,
-               Resource *child, Device *) override
+               std::shared_ptr<Resource> const &child, Device *) override
   {
     child->parent(parent);
 
@@ -63,14 +64,14 @@ public:
   }
 
   bool alloc(Resource *parent, Device *,
-             Resource *child, Device *, bool) override
+             std::shared_ptr<Resource> const &child, Device *, bool) override
   {
     child->parent(parent);
 
     return true;
   }
 
-  void assign(Resource *, Resource *) override
+  void assign(Resource *, std::shared_ptr<Resource> const &) override
   {
     d_printf(DBG_ERR, "internal error: cannot assign to root Root_io_rs\n");
   }
@@ -90,10 +91,11 @@ public:
   char const *res_type_name() const override
   { return "Root MMIO"; }
 
-  bool request(Resource *parent, Device *, Resource *child, Device *) override;
+  bool request(Resource *parent, Device *,
+               std::shared_ptr<Resource> const &child, Device *) override;
   bool alloc(Resource *parent, Device *,
-             Resource *child, Device *, bool) override;
-  void assign(Resource *, Resource *) override
+             std::shared_ptr<Resource> const &child, Device *, bool) override;
+  void assign(Resource *, std::shared_ptr<Resource> const &) override
   {
     d_printf(DBG_ERR, "internal error: cannot assign to root Root_mmio_rs\n");
   }
@@ -106,7 +108,8 @@ public:
 };
 
 bool
-Root_mmio_rs::request(Resource *parent, Device *, Resource *child, Device *)
+Root_mmio_rs::request(Resource *parent, Device *,
+                      std::shared_ptr<Resource> const &child, Device *)
 {
   //printf("request resource at root level: "); child->dump();
   if (Phys_space::space.request(
@@ -125,7 +128,8 @@ Root_mmio_rs::request(Resource *parent, Device *, Resource *child, Device *)
 
 
 bool
-Root_mmio_rs::alloc(Resource * /*parent*/, Device *, Resource * /*child*/,
+Root_mmio_rs::alloc(Resource * /*parent*/, Device *,
+                    std::shared_ptr<Resource> const & /*child*/,
                     Device *, bool /*resize*/)
 {
   d_printf(DBG_ERR, "internal error: cannot alloc from Root_mmio_rs\n");
@@ -163,17 +167,18 @@ public:
   { return "Root DMA domain"; }
 
   bool request(Resource *parent, Device *,
-               Resource *child, Device *) override
+               std::shared_ptr<Resource> const &child, Device *) override
   {
     child->parent(parent);
 
     return true;
   }
 
-  bool alloc(Resource *, Device *, Resource *, Device *, bool) override
+  bool alloc(Resource *, Device *, std::shared_ptr<Resource> const &, Device *,
+             bool) override
   { return false; }
 
-  void assign(Resource *, Resource *) override
+  void assign(Resource *, std::shared_ptr<Resource> const &) override
   {
     d_printf(DBG_ERR, "internal error: cannot assign to root Root_dma_domain_rs\n");
   }
@@ -237,31 +242,35 @@ Hw::Root_bus::Root_bus(char const *name)
   set_name(name);
 
   // add root resource for IRQs
-  Root_resource *r = new Root_resource(Resource::Irq_res, new Root_irq_rs());
+  auto r = std::make_shared<Root_resource>(Resource::Irq_res,
+                                           new Root_irq_rs());
   r->set_id("IRQR");
   add_resource(r);
 
   Resource_space *rs_mmio = new Root_mmio_rs();
   // add root resource for non-prefetchable MMIO resources
-  r = new Root_resource(Resource::Mmio_res | Resource::Mem_type_rw, rs_mmio);
+  r = std::make_shared<Root_resource>(Resource::Mmio_res
+                                      | Resource::Mem_type_rw, rs_mmio);
   r->add_flags(Resource::F_width_64bit);
   r->set_id("MMIO");
   add_resource(r);
 
   // add root resource for prefetchable MMIO resources
-  r = new Root_resource(Resource::Mmio_res | Resource::Mem_type_rw
-                        | Resource::F_prefetchable, rs_mmio);
+  r = std::make_shared<Root_resource>(Resource::Mmio_res
+                                      | Resource::Mem_type_rw
+                                      | Resource::F_prefetchable, rs_mmio);
   r->add_flags(Resource::F_width_64bit);
   r->set_id("MMIO");
   add_resource(r);
 
   // add root resource for IO ports
-  r = new Root_resource(Resource::Io_res, new Root_io_rs());
+  r = std::make_shared<Root_resource>(Resource::Io_res, new Root_io_rs());
   r->set_id("IO");
   add_resource(r);
 
   // add root DMA domain resource space
-  r = new Root_resource(Resource::Dma_domain_res, new Root_dma_domain_rs());
+  r = std::make_shared<Root_resource>(Resource::Dma_domain_res,
+                                      new Root_dma_domain_rs());
   r->set_id("DMAD");
   add_resource(r);
 }

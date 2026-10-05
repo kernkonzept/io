@@ -155,7 +155,7 @@ public:
   { return "RCar3 PCIe IRQ router"; }
 
   bool request(Resource *parent, ::Device *pdev,
-               Resource *child, ::Device *cdev) override
+               std::shared_ptr<Resource> const &child, ::Device *cdev) override
   {
     auto *cd = dynamic_cast<Hw::Device *>(cdev);
     if (!cd)
@@ -185,10 +185,11 @@ public:
     return true;
   }
 
-  bool alloc(Resource *, ::Device *, Resource *, ::Device *, bool) override
+  bool alloc(Resource *, ::Device *, std::shared_ptr<Resource> const &,
+             ::Device *, bool) override
   { return false; }
 
-  void assign(Resource *, Resource *) override
+  void assign(Resource *, std::shared_ptr<Resource> const &) override
   {
     d_printf(DBG_ERR, "internal error: cannot assign to Irq_router_rs\n");
   }
@@ -616,31 +617,34 @@ Rcar3_pcie_bridge::init()
         }
     }
 
-  Resource *mr;
+  std::shared_ptr<Resource> mr;
 
   // Ignore I/O ports in _mem_base_1 / _mem_size_1 as we don't support IO ports
   // on ARM anyway (at least for now).
 
-  mr = new Resource_provider(Resource::Mmio_res | Resource::Mem_type_rw);
+  mr = std::make_shared<Resource_provider>(Resource::Mmio_res
+                                           | Resource::Mem_type_rw);
   mr->start_size(_mem_base_2, _mem_size_2);
   mr->alignment(0xfffff);
   mr->set_id("MMIO");
   add_resource_rq(mr);
 
-  mr = new Resource_provider(Resource::Mmio_res | Resource::Mem_type_rw);
+  mr = std::make_shared<Resource_provider>(Resource::Mmio_res
+                                           | Resource::Mem_type_rw);
   mr->start_size(_mem_base_3, _mem_size_3);
   mr->alignment(0xfffff);
   mr->set_id("MMIO");
   add_resource_rq(mr);
 
-  mr = new Resource_provider(Resource::Mmio_res | Resource::Mem_type_rw
-                             | Resource::F_prefetchable);
+  mr = std::make_shared<Resource_provider>(Resource::Mmio_res
+                                           | Resource::Mem_type_rw
+                                           | Resource::F_prefetchable);
   mr->start_size(_mem_base_4, _mem_size_4);
   mr->alignment(0xfffff);
   mr->set_id("MMIO");
   add_resource_rq(mr);
 
-  auto *ir = new Hw::Pci::Irq_router_res<Irq_router_rs>();
+  auto ir = std::make_shared<Hw::Pci::Irq_router_res<Irq_router_rs>>();
   ir->set_id("IRQR");
   add_resource_rq(ir);
 

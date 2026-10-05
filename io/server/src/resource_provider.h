@@ -37,11 +37,14 @@ private:
     char const *res_type_name() const override
     { return "RS"; }
 
-    bool request(Resource *parent, Device *pdev, Resource *child,
+    bool request(Resource *parent, Device *pdev,
+                 std::shared_ptr<Resource> const &child,
                  Device *cdev) override;
-    bool alloc(Resource *parent, Device *pdev, Resource *child,
+    bool alloc(Resource *parent, Device *pdev,
+               std::shared_ptr<Resource> const &child,
                Device *cdev, bool resize) override;
-    void assign(Resource *parent, Resource *child) override;
+    void assign(Resource *parent,
+                std::shared_ptr<Resource> const &child) override;
     bool adjust_children(Resource *self) override;
   };
 

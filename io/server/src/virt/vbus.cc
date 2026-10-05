@@ -51,7 +51,8 @@ public:
   char const *res_type_name() const override
   { return "Root IRQ"; }
 
-  bool request(Resource *parent, Device *, Resource *child, Device *) override
+  bool request(Resource *parent, Device *,
+               std::shared_ptr<Resource> const &child, Device *) override
   {
     if (0)
       {
@@ -73,18 +74,18 @@ public:
     if (dlevel(DBG_DEBUG2))
       child->dump();
 
-    _icu->add_irqs(child);
+    _icu->add_irqs(child.get());
     return _bus->add_resource_to_bus(child);
   };
 
   bool alloc(Resource *parent, Device *,
-             Resource *child, Device *, bool) override
+             std::shared_ptr<Resource> const &child, Device *, bool) override
   {
     d_printf(DBG_DEBUG2, "Allocate virtual IRQ resource ...\n");
     if (dlevel(DBG_DEBUG2))
       child->dump();
 
-    Vi::Msi_resource *msi = dynamic_cast<Vi::Msi_resource*>(child);
+    auto msi = std::dynamic_pointer_cast<Vi::Msi_resource>(child);
     if (!msi || !parent)
       return false;
 
@@ -115,7 +116,7 @@ public:
     return _bus->add_resource_to_bus(msi);
   }
 
-  void assign(Resource *, Resource *) override
+  void assign(Resource *, std::shared_ptr<Resource> const &) override
   {
     d_printf(DBG_ERR, "internal error: cannot assign to root Root_irq_rs\n");
   }
@@ -139,7 +140,8 @@ public:
   char const *res_type_name() const override
   { return "Root X"; }
 
-  bool request(Resource *parent, Device *, Resource *child, Device *) override
+  bool request(Resource *parent, Device *,
+               std::shared_ptr<Resource> const &child, Device *) override
   {
     if (0)
       {
@@ -154,10 +156,11 @@ public:
     return _bus->add_resource_to_bus(child);
   }
 
-  bool alloc(Resource *, Device *, Resource *, Device *, bool) override
+  bool alloc(Resource *, Device *, std::shared_ptr<Resource> const &, Device *,
+             bool) override
   { return false; }
 
-  void assign(Resource *, Resource *) override
+  void assign(Resource *, std::shared_ptr<Resource> const &) override
   {
     d_printf(DBG_ERR, "internal error: cannot assign to root Root_x_rs\n");
   }
@@ -183,17 +186,19 @@ public:
   char const *res_type_name() const override
   { return "Root DMA domain"; }
 
-  bool request(Resource *, Device *, Resource *child, Device *) override
+  bool request(Resource *, Device *, std::shared_ptr<Resource> const &child,
+               Device *) override
   {
-    Dma_domain *d = dynamic_cast<Dma_domain *>(child);
+    Dma_domain *d = dynamic_cast<Dma_domain *>(child.get());
     d->add_to_group(_domain_group);
     return _bus->add_resource_to_bus(child);
   }
 
-  bool alloc(Resource *, Device *, Resource *, Device *, bool) override
+  bool alloc(Resource *, Device *, std::shared_ptr<Resource> const &, Device *,
+             bool) override
   { return false; }
 
-  void assign(Resource *, Resource *) override
+  void assign(Resource *, std::shared_ptr<Resource> const &) override
   {
     d_printf(DBG_ERR, "internal error: cannot assign to root Root_dma_domain_rs\n");
   }
@@ -215,15 +220,19 @@ Vi::System_bus::System_bus(Inhibitor_mux *mux)
   _devices_by_id.push_back(this);
   register_property("num_msis", &_num_msis);
   add_feature(this);
-  add_resource(new Root_resource(Resource::Irq_res, new Root_irq_rs(this)));
+  add_resource(std::make_shared<Root_resource>(Resource::Irq_res,
+                                               new Root_irq_rs(this)));
   Resource_space *x = new Root_x_rs(this);
-  add_resource(new Root_resource(Resource::Mmio_res | Resource::Mem_type_rw, x));
-  add_resource(new Root_resource(Resource::Mmio_res | Resource::Mem_type_rw
-                                 | Resource::F_prefetchable, x));
-  add_resource(new Root_resource(Resource::Io_res, x));
-  add_resource(new Root_resource(Resource::Clock_res, x));
-  add_resource(new Root_resource(Resource::Dma_domain_res,
-                                 new Root_dma_domain_rs(this, &_dma_domain_group)));
+  add_resource(std::make_shared<Root_resource>(Resource::Mmio_res
+                                               | Resource::Mem_type_rw, x));
+  add_resource(std::make_shared<Root_resource>(Resource::Mmio_res
+                                               | Resource::Mem_type_rw
+                                               | Resource::F_prefetchable, x));
+  add_resource(std::make_shared<Root_resource>(Resource::Io_res, x));
+  add_resource(std::make_shared<Root_resource>(Resource::Clock_res, x));
+  add_resource(std::make_shared<Root_resource>(
+    Resource::Dma_domain_res,
+    new Root_dma_domain_rs(this, &_dma_domain_group)));
 
   for (auto const *i: Root_resource_factory::_factories)
     add_resource(i->create(this));
@@ -242,7 +251,7 @@ Vi::System_bus::~System_bus() noexcept
  * This also supports overlapping resources by merging them together.
  */
 bool
-Vi::System_bus::add_resource_to_bus(Resource *r)
+Vi::System_bus::add_resource_to_bus(std::shared_ptr<Resource> const &r)
 {
   if (_resources.count(r) == 0)
     {
@@ -250,10 +259,14 @@ Vi::System_bus::add_resource_to_bus(Resource *r)
       return true;
     }
 
+  // Helper to avoid clang warning that typeid(*r) has side effects.
+  auto is_typeof_r = [rp = r.get()](Resource const *other) -> bool
+    { return typeid(*rp) == typeid(*other); };
+
   // at least one overlapping resource entry found
   auto lower = _resources.lower_bound(r);
-  Resource const *l = *lower;
-  if (typeid (*r) != typeid (*l))
+  Resource const *l = lower->get();
+  if (!is_typeof_r(l))
     {
       if (dlevel(DBG_ERR))
         {
@@ -271,8 +284,8 @@ Vi::System_bus::add_resource_to_bus(Resource *r)
   auto upper = _resources.upper_bound(r);
   for (auto it = lower; it != upper; ++it)
     {
-      Resource const *i = *it;
-      bool same_type = typeid (*r) == typeid (*i);
+      Resource const *i = it->get();
+      bool same_type = is_typeof_r(i);
       if (!same_type || !r->contains(*i))
         {
           if (dlevel(DBG_ERR))
@@ -298,7 +311,7 @@ Vi::System_bus::resource_allocated(Resource const *r) const
   if (r->disabled())
     return false;
 
-  auto i = _resources.find(const_cast<Resource *>(r));
+  auto i = _resources.find(r);
   if (i == _resources.end())
     return false;
 
@@ -437,7 +450,7 @@ Vi::System_bus::assign_dma_domain(L4::Ipc::Iostream &ios)
       if (i == _resources.end() || !(*i)->contains(ires))
         return -L4_ENOENT;
 
-      d = dynamic_cast<Dma_domain_if *>(*i);
+      d = dynamic_cast<Dma_domain_if *>(i->get());
       if (!d)
         {
           d_printf(DBG_ERR, "%s:%d: error: internal IO error,"
