@@ -552,30 +552,5 @@ public:
   DEVICE *dev() { return _dev; }
 };
 
-/// This class implements a resource property
-class Resource_property : public Property
-{
-private:
-  Resource *_res;
-
-public:
-  Resource_property() : _res(0) {}
-
-  int set(int, std::string const &) override { return -EINVAL; }
-  int set(int, l4_int64_t) override { return -EINVAL; }
-  int set(int, Generic_device *) override { return -EINVAL; }
-  int set(int k, Resource *r) override
-  {
-    if (k != -1)
-      return -EINVAL;
-
-    _res = r;
-
-    return 0;
-  }
-
-  Resource *res() { return _res; }
-};
-
 /// Helper function used to dump a Device instance
 void dump(Device *d);
