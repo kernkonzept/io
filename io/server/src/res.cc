@@ -21,6 +21,7 @@
 #include <cstdio>
 #include <cstring>
 #include <limits>
+#include <memory>
 
 #include "debug.h"
 #include "res.h"
@@ -55,8 +56,19 @@ struct Io_region : public Phys_region, public cxx::Avl_tree_node
   mutable cxx::Bitmap_base pages;
   cxx::Bitmap_base cached;
 
-  Io_region() : virt(0), pages(0), cached(0) {}
-  Io_region(Phys_region const &pr) : Phys_region(pr), virt(0), pages(0), cached(0) {}
+  Io_region() : virt(0), pages(nullptr), cached(nullptr) {}
+  Io_region(Phys_region const &pr)
+  : Phys_region(pr), virt(0), pages(nullptr), cached(nullptr)
+  {}
+
+  Io_region(Io_region const &) = delete;
+  Io_region &operator = (Io_region const &) = delete;
+
+  ~Io_region()
+  {
+    free(pages.bit_buffer());
+    free(cached.bit_buffer());
+  }
 };
 
 struct Io_region_get_key
@@ -194,48 +206,37 @@ l4_addr_t res_map_iomem(l4_uint64_t phys, l4_uint64_t size, bool cached)
       Io_region *reg = io_set.find_node(io_reg);
       if (!reg)
 	{
-	  iomem = new Io_region(io_reg);
+	  auto region = std::make_unique<Io_region>(io_reg);
 
           // start searching for virtual region at L4_PAGESIZE
 #ifdef CONFIG_MMU
-	  iomem->virt = L4_PAGESIZE;
-	  int res = L4Re::Env::env()->rm()->reserve_area(&iomem->virt,
-	      iomem->size, L4Re::Rm::F::Search_addr, p2size);
+	  region->virt = L4_PAGESIZE;
+	  int res = L4Re::Env::env()->rm()->reserve_area(&region->virt,
+	      region->size, L4Re::Rm::F::Search_addr, p2size);
 #else
-	  iomem->virt = iomem->phys;
-	  int res = L4Re::Env::env()->rm()->reserve_area(&iomem->virt,
-	      iomem->size, L4Re::Rm::Flags(0), p2size);
+	  region->virt = region->phys;
+	  int res = L4Re::Env::env()->rm()->reserve_area(&region->virt,
+	      region->size, L4Re::Rm::Flags(0), p2size);
 #endif
 
 	  if (res < 0)
-	    {
-	      delete iomem;
-	      return 0;
-	    }
+	    return 0;
 
 	  l4_size_t bytes
-	    = cxx::Bitmap_base::bit_buffer_bytes(iomem->size >> Page_shift);
-          void *pages_bit_buffer = malloc(bytes);
-          if (!pages_bit_buffer)
+	    = cxx::Bitmap_base::bit_buffer_bytes(region->size >> Page_shift);
+          region->pages = cxx::Bitmap_base(malloc(bytes));
+          region->cached = cxx::Bitmap_base(malloc(bytes));
+          if (!region->pages.bit_buffer() || !region->cached.bit_buffer())
             {
-              L4Re::Env::env()->rm()->free_area(iomem->virt);
-              delete iomem;
-              return 0;
-            }
-          void *cached_bit_buffer = malloc(bytes);
-          if (!cached_bit_buffer)
-            {
-              free(pages_bit_buffer);
-              L4Re::Env::env()->rm()->free_area(iomem->virt);
-              delete iomem;
+              L4Re::Env::env()->rm()->free_area(region->virt);
               return 0;
             }
 
-	  iomem->pages = cxx::Bitmap_base(pages_bit_buffer);
-	  memset(iomem->pages.bit_buffer(), 0, bytes);
-	  iomem->cached = cxx::Bitmap_base(cached_bit_buffer);
-	  memset(iomem->cached.bit_buffer(), 0, bytes);
+	  memset(region->pages.bit_buffer(), 0, bytes);
+	  memset(region->cached.bit_buffer(), 0, bytes);
 
+	  // the set owns the region from now on
+	  iomem = region.release();
 	  io_set.insert(iomem);
 
 	  d_printf(DBG_DEBUG, "new iomem region: p=%014lx v=%014lx s=%lx (bmb=%p)\n",
@@ -250,11 +251,6 @@ l4_addr_t res_map_iomem(l4_uint64_t phys, l4_uint64_t size, bool cached)
 	}
       else
 	{
-	  if (reg->pages.bit_buffer())
-	    free(reg->pages.bit_buffer());
-	  if (reg->cached.bit_buffer())
-	    free(reg->cached.bit_buffer());
-
 	  io_set.remove(*reg);
 	  delete reg;
 	}
