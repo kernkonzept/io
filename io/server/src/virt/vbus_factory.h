@@ -15,7 +15,7 @@
 #include <string>
 #include <typeinfo>
 
-#include "hw_device.h"
+#include "hw/hw_device.h"
 #include "type_matcher.h"
 #include "vdevice.h"
 

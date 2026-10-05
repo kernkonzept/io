@@ -2944,8 +2944,8 @@ inline int swig_instance_of(lua_State *L)
 
 #include "virt/vdevice.h"
 #include "virt/vbus_factory.h"
-#include "hw_device.h"
-#include "gpio"
+#include "hw/hw_device.h"
+#include "hw/gpio"
 
 int luaopen_Io(lua_State *);
 int add_vbus(Vi::Device *dev);

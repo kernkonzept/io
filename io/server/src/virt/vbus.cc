@@ -19,7 +19,7 @@
 #include <cstdio>
 
 #include "debug.h"
-#include "hw_msi.h"
+#include "hw/hw_msi.h"
 #include "vbus.h"
 #include "vmsi.h"
 #include "vicu.h"

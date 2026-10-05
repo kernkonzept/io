@@ -117,10 +117,10 @@
 
 #include <l4/drivers/hw_mmio_register_block>
 
-#include "hw_device.h"
+#include "hw/hw_device.h"
 #include <pci-root.h>
-#include "iommu.h"
-#include "msi_controller.h"
+#include "hw/iommu.h"
+#include "hw/msi_controller.h"
 #include "resource_provider.h"
 
 namespace {

@@ -4,9 +4,9 @@
 #include "main.h"
 #include "irqs.h"
 #include "debug.h"
-#include "gpio"
-#include "hw_device.h"
-#include "hw_irqs.h"
+#include "hw/gpio"
+#include "hw/hw_device.h"
+#include "hw/hw_irqs.h"
 #include "server.h"
 #include "gpio_irq.h"
 

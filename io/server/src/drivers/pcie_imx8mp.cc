@@ -85,7 +85,7 @@
 #include <l4/util/util.h>
 
 #include "dwc_pcie_core.h"
-#include "gpio"
+#include "hw/gpio"
 #include <l4/drivers/hw_mmio_register_block>
 #include <l4/re/env>
 #include <l4/sys/arm_smccc>

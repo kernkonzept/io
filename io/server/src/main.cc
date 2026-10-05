@@ -16,8 +16,8 @@
 #include <l4/util/kip.h>
 
 #include "main.h"
-#include "hw_root_bus.h"
-#include "hw_device.h"
+#include "hw/hw_root_bus.h"
+#include "hw/hw_device.h"
 #include "server.h"
 #include "res.h"
 #include "platform_control.h"

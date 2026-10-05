@@ -19,25 +19,25 @@ SRC_CC-$(CONFIG_L4IO_PCI)  += virt/pci/vpci.cc \
                               virt/pci/vpci_proxy_dev.cc \
                               virt/pci/vpci_virtual_dev.cc \
                               virt/pci/vpci_virtual_root.cc \
-                              pci/pci-bridge.cc \
-                              pci/pci-dev.cc \
-                              pci/pci-driver.cc \
-                              pci/pci-root.cc \
-                              pci/pci-saved-config.cc \
-                              pci/msi.cc \
-                              pci/pm.cc \
-                              pci/acs.cc \
-                              pci/ari.cc
+                              hw/pci/pci-bridge.cc \
+                              hw/pci/pci-dev.cc \
+                              hw/pci/pci-driver.cc \
+                              hw/pci/pci-root.cc \
+                              hw/pci/pci-saved-config.cc \
+                              hw/pci/msi.cc \
+                              hw/pci/pm.cc \
+                              hw/pci/acs.cc \
+                              hw/pci/ari.cc
 
 SRC_CC-$(CONFIG_L4IO_PCI_SRIOV) += virt/pci/vpci_sriov.cc \
-                                   pci/sriov.cc
+                                   hw/pci/sriov.cc
 
-SRC_CC := main.cc res.cc phys_space.cc resource.cc hw_device.cc \
+SRC_CC := main.cc res.cc phys_space.cc resource.cc hw/hw_device.cc \
           resource_provider.cc \
-          hw_root_bus.cc device.cc hw_irqs.cc \
+          hw/hw_root_bus.cc device.cc hw/hw_irqs.cc \
           hw_register_block.cc \
           dma_domain.cc \
-          gpio.cc \
+          hw/gpio.cc \
           server.cc irqs.cc debug.cc \
           irq_server.cc \
           lua_glue.swg.cc \
@@ -52,7 +52,7 @@ SRC_CC := main.cc res.cc phys_space.cc resource.cc hw_device.cc \
           virt/gpio/vgpio.cc \
           inhibitor_mux.cc \
           platform_control.cc \
-          iommu.cc iommu_dma_device.cc msi_controller.cc
+          hw/iommu.cc hw/iommu_dma_device.cc hw/msi_controller.cc
 
 # WARNING EXCEPTION: This is auto generated code and thus the code may contain
 # variables that are set but never read.
@@ -60,8 +60,8 @@ WARNINGS_lua_glue.swg.cc += -Wno-unused-but-set-variable
 
 SRC_DATA     := io.lua
 
-SRC_CC_arm-l4f    += arm_dma_device.cc optee.cc
-SRC_CC_arm64-l4f  += arm_dma_device.cc optee.cc
+SRC_CC_arm-l4f    += hw/arm_dma_device.cc optee.cc
+SRC_CC_arm64-l4f  += hw/arm_dma_device.cc optee.cc
 
 OPTS         := -g -O3
 

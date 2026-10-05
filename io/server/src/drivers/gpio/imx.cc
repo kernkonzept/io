@@ -8,9 +8,9 @@
 
 #include "debug.h"
 #include "irqs.h"
-#include "gpio"
-#include "hw_device.h"
-#include "hw_irqs.h"
+#include "hw/gpio"
+#include "hw/hw_device.h"
+#include "hw/hw_irqs.h"
 #include "gpio_irq.h"
 #include "../scu_imx8qm.h"
 

@@ -55,7 +55,7 @@
  */
 
 #include "cpg_rcar3.h"
-#include "hw_device.h"
+#include "hw/hw_device.h"
 #include <pci-root.h>
 #include "resource_provider.h"
 #include "pcie_rcar3_regs.h"

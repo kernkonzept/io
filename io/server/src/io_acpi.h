@@ -8,7 +8,7 @@
 
 #include <l4/sys/compiler.h>
 
-#include "hw_device.h"
+#include "hw/hw_device.h"
 #include "irqs.h"
 #include <pci-root.h>
 #include <functional>

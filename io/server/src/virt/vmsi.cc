@@ -7,7 +7,7 @@
 
 #include "vbus_factory.h"
 #include "resource.h"
-#include "hw_msi.h"
+#include "hw/hw_msi.h"
 #include "vmsi.h"
 #include "debug.h"
 

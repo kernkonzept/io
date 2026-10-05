@@ -156,7 +156,7 @@
 
 #include "dwc_pcie_core.h"
 #include "scu_imx8qm.h"
-#include "gpio"
+#include "hw/gpio"
 #include <l4/drivers/hw_mmio_register_block>
 
 #include <cstdio>

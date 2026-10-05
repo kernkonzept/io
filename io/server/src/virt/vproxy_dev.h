@@ -8,8 +8,8 @@
 #pragma once
 
 #include "vdevice.h"
-#include "hw_device.h"
-#include "hw_device_client.h"
+#include "hw/hw_device.h"
+#include "hw/hw_device_client.h"
 
 namespace Vi {
 

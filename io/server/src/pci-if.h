@@ -8,7 +8,7 @@
 #pragma once
 
 #include <pci-cfg.h>
-#include <hw_device.h>
+#include <hw/hw_device.h>
 #include <irqs.h>
 
 namespace Hw { namespace Pci {

@@ -7,9 +7,9 @@
 
 
 #include "debug.h"
-#include "gpio"
-#include "hw_device.h"
-#include "hw_device_client.h"
+#include "hw/gpio"
+#include "hw/hw_device.h"
+#include "hw/hw_device_client.h"
 #include "virt/vdevice.h"
 #include "virt/vbus_factory.h"
 #include "virt/vbus.h"

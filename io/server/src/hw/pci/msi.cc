@@ -9,7 +9,7 @@
 
 #include "cfg.h"
 #include "debug.h"
-#include "hw_msi.h"
+#include "hw/hw_msi.h"
 #include "main.h"
 
 namespace {

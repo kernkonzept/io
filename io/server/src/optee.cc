@@ -8,7 +8,7 @@
 #include <l4/re/env>
 #include <l4/sys/arm_smccc>
 
-#include "hw_device.h"
+#include "hw/hw_device.h"
 
 class Optee_memory : public Hw::Device
 {

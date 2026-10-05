@@ -12,7 +12,7 @@
 #include "server.h"
 #include "main.h"
 #include "debug.h"
-#include "hw_irqs.h"
+#include "hw/hw_irqs.h"
 
 #include <l4/re/util/cap_alloc>
 #include <l4/re/namespace>

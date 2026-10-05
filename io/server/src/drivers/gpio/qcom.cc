@@ -23,8 +23,8 @@
 #include <l4/drivers/hw_mmio_register_block>
 
 #include "debug.h"
-#include "gpio"
-#include "hw_device.h"
+#include "hw/gpio"
+#include "hw/hw_device.h"
 #include "irqs.h"
 #include "server.h"
 

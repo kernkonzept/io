@@ -6,7 +6,7 @@
  */
 
 #include "debug.h"
-#include "hw_device.h"
+#include "hw/hw_device.h"
 #include "irqs.h"
 
 #include "iomuxc.h"

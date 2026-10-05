@@ -8,7 +8,7 @@
 #pragma once
 
 #include "debug.h"
-#include "hw_device.h"
+#include "hw/hw_device.h"
 #include "resource_provider.h"
 #include <l4/cxx/unique_ptr>
 #include <l4/drivers/hw_mmio_register_block>

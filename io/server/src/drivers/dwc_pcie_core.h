@@ -10,7 +10,7 @@
 #include <l4/cxx/type_traits>
 
 #include <l4/drivers/hw_mmio_register_block>
-#include "hw_device.h"
+#include "hw/hw_device.h"
 #include <pci-root.h>
 
 /**

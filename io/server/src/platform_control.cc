@@ -4,7 +4,7 @@
  * License: see LICENSE.spdx (in this directory or the directories above)
  */
 
-#include "hw_root_bus.h"
+#include "hw/hw_root_bus.h"
 #include "platform_control.h"
 #include "server.h"
 #include "debug.h"
