@@ -289,7 +289,8 @@ arg_init(int argc, char * const *argv, Io_config_x *cfg)
 class Dma_domain_phys : public Dma_domain
 {
 public:
-  int set_managed_dma_space(std::shared_ptr<Managed_dma_space>) override
+  int set_managed_dma_space(std::shared_ptr<Managed_dma_space>,
+                            Dma_domain_owner *) override
   { return -L4_EPERM; }
 
   int enumerate_dma_reservations(Dma_domain::Resv_cb) const override
@@ -311,9 +312,10 @@ public:
     _supports_remapping = true;
   }
 
-  int set_managed_dma_space(std::shared_ptr<Managed_dma_space> space) override
+  int set_managed_dma_space(std::shared_ptr<Managed_dma_space> space,
+                            Dma_domain_owner *owner) override
   {
-    if (int err = Dma_domain::set_managed_dma_space(space); err < 0)
+    if (int err = Dma_domain::set_managed_dma_space(space, owner); err < 0)
       return err;
 
     L4::Cap<L4::Iommu> iommu = L4Re::Env::env()->get_cap<L4::Iommu>("iommu");
@@ -323,26 +325,33 @@ public:
                                               });
         err < 0)
       {
-        Dma_domain::clear_managed_dma_space();
+        Dma_domain::clear_managed_dma_space(owner);
         return err;
       }
 
     return 0;
   }
 
-  void clear_managed_dma_space() override
+  bool clear_managed_dma_space(Dma_domain_owner *owner) override
   {
-    if (_managed_dma_space)
-      {
-        L4::Cap<L4::Iommu> iommu = L4Re::Env::env()->get_cap<L4::Iommu>("iommu");
-        _src->enumerate_dma_src_ids([this, iommu](l4_uint64_t src) -> int
-                                    {
-                                      this->iommu_unbind(iommu, src);
-                                      return 0;
-                                    });
-      }
+    // Get hold of Managed_dma_space. The call below will clear it.
+    auto mds = _managed_dma_space;
 
-    Dma_domain::clear_managed_dma_space();
+    if (!Dma_domain::clear_managed_dma_space(owner))
+      return false;
+
+    // set_managed_dma_space may not have been called in the first place
+    if (!mds)
+      return true;
+
+    L4::Cap<L4::Iommu> iommu = L4Re::Env::env()->get_cap<L4::Iommu>("iommu");
+    _src->enumerate_dma_src_ids([iommu, mds](l4_uint64_t src) -> int
+                                {
+                                  iommu_unbind(iommu, src, mds.get());
+                                  return 0;
+                                });
+
+    return true;
   }
 
   int enumerate_dma_reservations(Dma_domain::Resv_cb cb) const override
@@ -373,13 +382,12 @@ private:
     return r;
   }
 
-  int iommu_unbind(L4::Cap<L4::Iommu> iommu, l4_uint64_t src)
+  static void iommu_unbind(L4::Cap<L4::Iommu> iommu, l4_uint64_t src,
+                           Managed_dma_space *mds)
   {
-    int r = l4_error(iommu->unbind(src, _managed_dma_space->dma_task()));
+    int r = l4_error(iommu->unbind(src, mds->dma_task()));
     if (r < 0)
       d_printf(DBG_ERR, "error: unbinding DMA for device: %d\n", r);
-
-    return r;
   }
 
   Hw::Dma_src_feature *_src = nullptr;

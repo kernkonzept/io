@@ -460,14 +460,14 @@ Vi::System_bus::assign_dma_domain(L4::Ipc::Iostream &ios)
         }
     }
 
-  return is_bind ? d->set_dma_space(std::move(dma_space))
-                 : d->clear_dma_space();
+  return is_bind ? d->set_dma_space(std::move(dma_space), this)
+                 : d->clear_dma_space(this);
 }
 
 void
 Vi::System_bus::reset_dma_domains()
 {
-  _dma_domains.clear_dma_space();
+  _dma_domains.clear_dma_space(this);
 }
 
 Vi::System_bus::Dma_domains::Domains

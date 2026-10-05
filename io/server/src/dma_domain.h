@@ -36,10 +36,18 @@ private:
   std::map<l4_uint64_t, l4_uint64_t> _msi_mappings;
 };
 
+/**
+ * Denotes the user of a Dma_domain that has set an L4Re::Dma_space.
+ *
+ * Used to claim ownership of the Dma_domain.
+ */
+class Dma_domain_owner
+{
+};
+
 class Dma_domain_if
 {
 protected:
-  std::shared_ptr<Managed_dma_space> _managed_dma_space;
   static bool _supports_remapping;
 
 public:
@@ -70,17 +78,16 @@ public:
   using Resv_cb = std::function<int(Resv_type type, l4_uint64_t first,
                                     l4_uint64_t last)>;
 
-  std::shared_ptr<Managed_dma_space> managed_dma_space() const
-  { return _managed_dma_space; }
-
   static bool supports_remapping()
   { return _supports_remapping; }
 
-  int set_dma_space(L4Re::Util::Unique_cap<L4Re::Dma_space> dma_space);
-  int clear_dma_space();
+  int set_dma_space(L4Re::Util::Unique_cap<L4Re::Dma_space> dma_space,
+                    Dma_domain_owner *owner);
+  int clear_dma_space(Dma_domain_owner *owner);
 
-  virtual int set_managed_dma_space(std::shared_ptr<Managed_dma_space> space);
-  virtual void clear_managed_dma_space();
+  virtual int set_managed_dma_space(std::shared_ptr<Managed_dma_space> space,
+                                    Dma_domain_owner *owner) = 0;
+  virtual bool clear_managed_dma_space(Dma_domain_owner *owner) = 0;
 
   virtual int enumerate_dma_reservations(Resv_cb cb) const = 0;
   virtual int get_dma_limits(l4_uint64_t *min_addr, l4_uint64_t *max_addr) const = 0;
@@ -97,6 +104,10 @@ class Dma_domain : public Resource, public Dma_domain_if
 private:
   static unsigned _next_free_domain;
 
+protected:
+  std::shared_ptr<Managed_dma_space> _managed_dma_space;
+  Dma_domain_owner *_owner = nullptr;
+
 public:
   Dma_domain(Dma_domain const &) = delete;
   Dma_domain &operator = (Dma_domain const &) = delete;
@@ -104,6 +115,13 @@ public:
   Dma_domain()
   : Resource("DMAD", Dma_domain_res, _next_free_domain, _next_free_domain)
   { ++_next_free_domain; }
+
+  std::shared_ptr<Managed_dma_space> managed_dma_space() const
+  { return _managed_dma_space; }
+
+  int set_managed_dma_space(std::shared_ptr<Managed_dma_space> space,
+                            Dma_domain_owner *owner) override;
+  bool clear_managed_dma_space(Dma_domain_owner *owner) override;
 };
 
 /**
@@ -126,13 +144,21 @@ public:
    * Get the domains of the set.
    *
    * The domains are queried on each operation, so the set may change between
-   * binding and unbinding. Unbinding only affects domains that are bound to
-   * the DMA space of the set.
+   * binding and unbinding.
    */
   virtual Domains domains() const = 0;
 
-  int set_managed_dma_space(std::shared_ptr<Managed_dma_space> space) override;
-  void clear_managed_dma_space() override;
+  /**
+   * Bind DMA space to all domains in the set.
+   */
+  int set_managed_dma_space(std::shared_ptr<Managed_dma_space> space,
+                            Dma_domain_owner *owner) override;
+
+  /**
+   * Unbinding releases all domains owned by the given owner.
+   */
+  bool clear_managed_dma_space(Dma_domain_owner *owner) override;
+
   int enumerate_dma_reservations(Resv_cb cb) const override;
   int get_dma_limits(l4_uint64_t *min_addr, l4_uint64_t *max_addr) const override;
 };

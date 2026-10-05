@@ -128,7 +128,8 @@ Dma_domain_if::resv_type_to_str(Resv_type type)
 }
 
 int
-Dma_domain_if::set_dma_space(L4Re::Util::Unique_cap<L4Re::Dma_space> dma_space)
+Dma_domain_if::set_dma_space(L4Re::Util::Unique_cap<L4Re::Dma_space> dma_space,
+                             Dma_domain_owner *owner)
 {
   auto dma_mgr =
     L4Re::chkcap(L4Re::Env::env()->get_cap<L4Re::Dma_space_mgr>("dma_mgr"),
@@ -146,7 +147,7 @@ Dma_domain_if::set_dma_space(L4Re::Util::Unique_cap<L4Re::Dma_space> dma_space)
 
   // Bind the device / all devices to the Managed_dma_space. This gathers the
   // DMA address limits.
-  if (int err = set_managed_dma_space(mds); err < 0)
+  if (int err = set_managed_dma_space(mds, owner); err < 0)
     return err;
 
   // Enumerate all required identity mappings and constraints. They have to be
@@ -190,7 +191,7 @@ Dma_domain_if::set_dma_space(L4Re::Util::Unique_cap<L4Re::Dma_space> dma_space)
   if (err < 0)
     {
       d_printf(DBG_DEBUG2, "DMA: enumerate_dma_reservations failed: %d\n", err);
-      clear_managed_dma_space();
+      clear_managed_dma_space(owner);
       return err;
     }
 
@@ -199,7 +200,7 @@ Dma_domain_if::set_dma_space(L4Re::Util::Unique_cap<L4Re::Dma_space> dma_space)
   if (err < 0)
     {
       d_printf(DBG_DEBUG2, "DMA: get_dma_limits failed: %d\n", err);
-      clear_managed_dma_space();
+      clear_managed_dma_space(owner);
       return err;
     }
 
@@ -208,7 +209,7 @@ Dma_domain_if::set_dma_space(L4Re::Util::Unique_cap<L4Re::Dma_space> dma_space)
   if (err < 0)
     {
       d_printf(DBG_DEBUG2, "DMA: set_dma_limits failed: %d\n", err);
-      clear_managed_dma_space();
+      clear_managed_dma_space(owner);
       return err;
     }
 
@@ -220,70 +221,77 @@ Dma_domain_if::set_dma_space(L4Re::Util::Unique_cap<L4Re::Dma_space> dma_space)
   if (err < 0)
     {
       d_printf(DBG_DEBUG2, "DMA: associate failed: %d\n", err);
-      clear_managed_dma_space();
+      clear_managed_dma_space(owner);
     }
 
   return err;
 }
 
 int
-Dma_domain_if::clear_dma_space()
+Dma_domain_if::clear_dma_space(Dma_domain_owner *owner)
 {
-  if (!_supports_remapping || !_managed_dma_space)
-    return 0;
+  if (!_supports_remapping)
+    return L4_EOK;
 
   // This will unbind the device(s) from the IOMMU.
-  clear_managed_dma_space();
-
-  return 0;
+  return clear_managed_dma_space(owner) ? L4_EOK : -L4_EPERM;
 }
 
+
 int
-Dma_domain_if::set_managed_dma_space(std::shared_ptr<Managed_dma_space> space)
+Dma_domain::set_managed_dma_space(std::shared_ptr<Managed_dma_space> space,
+                                  Dma_domain_owner *owner)
 {
-  if (_managed_dma_space)
+  assert(owner);
+  if (_owner)
     return -L4_EBUSY;
 
   _managed_dma_space = space;
-  return 0;
+  _owner = owner;
+
+  return L4_EOK;
 }
 
-void
-Dma_domain_if::clear_managed_dma_space()
-{ _managed_dma_space = nullptr; }
+bool
+Dma_domain::clear_managed_dma_space(Dma_domain_owner *owner)
+{
+  if (!_owner)
+    return true;
+
+  if (_owner != owner)
+    return false;
+
+  _managed_dma_space = nullptr;
+  _owner = nullptr;
+
+  return true;
+}
 
 
 int
-Dma_domain_set::set_managed_dma_space(std::shared_ptr<Managed_dma_space> space)
+Dma_domain_set::set_managed_dma_space(std::shared_ptr<Managed_dma_space> space,
+                                      Dma_domain_owner *owner)
 {
-  if (_managed_dma_space)
-    return -L4_EBUSY;
-
   Domains doms = domains();
   for (auto i = doms.begin(); i != doms.end(); ++i)
-    if (int err = (*i)->set_managed_dma_space(space); err < 0)
+    if (int err = (*i)->set_managed_dma_space(space, owner); err < 0)
       {
         // Domain i did not take the space. Only roll back the ones before it.
         while (i != doms.begin())
-          (*--i)->clear_managed_dma_space();
+          (*--i)->clear_managed_dma_space(owner);
         return err;
       }
 
-  return Dma_domain_if::set_managed_dma_space(space);
+  return L4_EOK;
 }
 
-void
-Dma_domain_set::clear_managed_dma_space()
+bool
+Dma_domain_set::clear_managed_dma_space(Dma_domain_owner *owner)
 {
-  if (!_managed_dma_space)
-    return;
-
-  // Leave domains alone that are bound to some other space, e.g. by their id.
   for (auto d : domains())
-    if (d->managed_dma_space() == _managed_dma_space)
-      d->clear_managed_dma_space();
+    d->clear_managed_dma_space(owner);
 
-  Dma_domain_if::clear_managed_dma_space();
+  return true;
 }
 
 int

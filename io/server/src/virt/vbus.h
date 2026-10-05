@@ -65,7 +65,8 @@ class System_bus :
   public Device,
   public L4::Epiface_t<System_bus, L4vbus::Vbus>,
   public Inhibitor_provider,
-  public Vbus_event_source
+  public Vbus_event_source,
+  public Dma_domain_owner
 {
 public:
   char const *type_name() const override
