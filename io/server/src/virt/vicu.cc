@@ -45,13 +45,11 @@ Vi::Sw_icu::get_msi_pin(unsigned msin)
       return 0;
     }
 
-  Irq_set::Iterator i = _msis.find(msin);
-  if (i != _msis.end())
-    return &*i;
+  std::unique_ptr<Sw_irq_pin> &p = _msis[msin];
+  if (!p)
+    p = std::make_unique<Sw_irq_pin>(std::make_unique<Msi_irq_pin>(), msin, 0);
 
-  Sw_irq_pin *p = new Sw_irq_pin(new Msi_irq_pin(), msin, 0);
-  _msis.insert(p);
-  return p;
+  return p.get();
 }
 
 int
@@ -104,10 +102,10 @@ Vi::Sw_icu::bind_irq(unsigned irqn, L4::Ipc::Snd_fpage const &irqc)
     }
   else
     {
-      Irq_set::Iterator i = _irqs.find(irqn);
+      Irq_set::iterator i = _irqs.find(irqn);
       if (i == _irqs.end())
         return -L4_ENOENT;
-      irq = &*i;
+      irq = i->second.get();
     }
 
   int err = irq->bind(server_iface()->get_rcv_cap(0));
@@ -122,7 +120,7 @@ Vi::Sw_icu::unbind_irq(unsigned irqn, L4::Ipc::Snd_fpage const &/*irqc*/)
 {
   d_printf(DBG_ALL, "%s[%p]: unbind_irq(%u, ...)\n", name(), this, irqn);
 
-  Irq_set::Iterator i;
+  Irq_set::iterator i;
   if (irqn & L4::Icu::F_msi)
     {
       i = _msis.find(irqn & ~L4::Icu::F_msi);
@@ -136,7 +134,7 @@ Vi::Sw_icu::unbind_irq(unsigned irqn, L4::Ipc::Snd_fpage const &/*irqc*/)
         return -L4_ENOENT;
     }
   // could check the validity of the cap too, however we just don't care
-  return i->unbind();
+  return i->second->unbind();
 }
 
 int
@@ -148,11 +146,11 @@ Vi::Sw_icu::set_mode(unsigned irqn, l4_umword_t mode)
       return 0;
     }
 
-  Irq_set::Iterator i = _irqs.find(irqn);
+  Irq_set::iterator i = _irqs.find(irqn);
   if (i == _irqs.end())
     return -L4_ENOENT;
 
-  return i->set_mode(mode);
+  return i->second->set_mode(mode);
 }
 
 int
@@ -168,15 +166,15 @@ Vi::Sw_icu::unmask_irq(unsigned irqn)
   else
     interrupts = &_irqs;
 
-  Irq_set::Iterator i = interrupts->find(irqn);
+  Irq_set::iterator i = interrupts->find(irqn);
 
   if (i == interrupts->end())
     return -L4_ENOENT;
 
-  if (!i->unmask_via_icu())
+  if (!i->second->unmask_via_icu())
     return -L4_EINVAL;
 
-  return i->unmask();
+  return i->second->unmask();
 }
 
 
@@ -206,20 +204,8 @@ Vi::Sw_icu::add_irqs(Resource const *r)
           d_printf(DBG_ERR, "ERROR: No IRQ%d available.\n", n);
           continue;
         }
-      Sw_irq_pin *irq = new Sw_irq_pin(ri, n, r->flags());
-      _irqs.insert(irq);
+      _irqs.emplace(n, std::make_unique<Sw_irq_pin>(ri, n, r->flags()));
     }
-  return true;
-}
-
-bool
-Vi::Sw_icu::add_irq(unsigned n, unsigned flags, Io_irq_pin *be)
-{
-  if (_irqs.find(n) == _irqs.end())
-    return false;
-
-  Sw_irq_pin *irq = new Sw_irq_pin(be, n, flags);
-  _irqs.insert(irq);
   return true;
 }
 
@@ -234,8 +220,7 @@ Vi::Sw_icu::alloc_irq(unsigned flags, Io_irq_pin *be)
   if (i == 1000)
     return -1;
 
-  Sw_irq_pin *irq = new Sw_irq_pin(be, i, flags);
-  _irqs.insert(irq);
+  _irqs.emplace(i, std::make_unique<Sw_irq_pin>(be, i, flags));
   return i;
 }
 

@@ -73,6 +73,7 @@ public:
   };
 
   void add_sw_irq() { ++_max_sw_irqs; }
+  void remove_sw_irq() { --_max_sw_irqs; }
   int sw_irqs() const { return _sw_irqs; }
   void inc_sw_irqs() { ++_sw_irqs; }
   void dec_sw_irqs() { --_sw_irqs; }

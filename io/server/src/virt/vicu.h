@@ -11,8 +11,10 @@
 #include <l4/sys/icu>
 
 #include <l4/sys/cxx/ipc_epiface>
-#include <l4/cxx/avl_tree>
 #include <l4/cxx/list>
+
+#include <map>
+#include <memory>
 
 #include <l4/vbus/vbus>
 
@@ -48,8 +50,8 @@ public:
   int op_info(L4::Icu::Rights, L4::Icu::_Info &ii)
   {
     ii.features = ii.nr_msis = ii.nr_irqs = 0;
-    if (_irqs.rbegin() != _irqs.rend())
-      ii.nr_irqs = (*_irqs.rbegin()).irqn() + 1;
+    if (!_irqs.empty())
+      ii.nr_irqs = _irqs.rbegin()->first + 1;
 
     if (Int_property *p = dynamic_cast<Int_property*>(get_root()->property("num_msis")))
       {
@@ -75,7 +77,6 @@ public:
   { return set_mode(irqnum, mode); }
 
   bool add_irqs(Resource const *r);
-  bool add_irq(unsigned n, unsigned flags, Io_irq_pin *be);
   int alloc_irq(unsigned flags, Io_irq_pin *be);
   bool irqs_allocated(Resource const *r);
 
@@ -85,7 +86,7 @@ private:
   int unmask_irq(unsigned irqn);
   int set_mode(unsigned irqn, l4_umword_t mode);
 
-  class Sw_irq_pin : public cxx::Avl_tree_node
+  class Sw_irq_pin
   {
   private:
     enum
@@ -96,6 +97,8 @@ private:
     unsigned _state;
     unsigned _irqn;
     Io_irq_pin *_master;
+    /// The MSI pin of a virtual MSI, owned by this pin.
+    std::unique_ptr<Msi_irq_pin> _msi;
     using Triggerable = L4Re::Util::Shared_cap<L4::Triggerable>;
     Triggerable _irq;
 
@@ -113,10 +116,6 @@ private:
       S_user_mask = S_irq_type_mask | S_allow_set_mode
     };
 
-    typedef unsigned Key_type;
-
-    static unsigned key_of(Sw_irq_pin const *o) { return o->_irqn; }
-
     Sw_irq_pin(Io_irq_pin *master, unsigned irqn, unsigned flags)
     : _state(flags & S_user_mask), _irqn(irqn), _master(master)
     {
@@ -124,6 +123,19 @@ private:
         _state |= S_allow_set_mode;
 
       master->add_sw_irq();
+    }
+
+    /// Construct a virtual MSI that owns its MSI pin.
+    Sw_irq_pin(std::unique_ptr<Msi_irq_pin> msi, unsigned irqn, unsigned flags)
+    : Sw_irq_pin(msi.get(), irqn, flags)
+    { _msi = std::move(msi); }
+
+    ~Sw_irq_pin()
+    {
+      if (bound())
+        _unbind(false);
+
+      _master->remove_sw_irq();
     }
 
     unsigned irqn() const { return _irqn; }
@@ -148,7 +160,7 @@ private:
 
   Sw_irq_pin *get_msi_pin(unsigned msin);
 
-  typedef cxx::Avl_tree<Sw_irq_pin, Sw_irq_pin> Irq_set;
+  typedef std::map<unsigned, std::unique_ptr<Sw_irq_pin>> Irq_set;
   Irq_set _irqs;
   unsigned _num_msis = 0;
   Irq_set _msis;
