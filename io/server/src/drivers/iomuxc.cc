@@ -6,10 +6,8 @@
  */
 #include "iomuxc.h"
 
-namespace Hw {
-
 void
-Iomuxc_imx8mp::init()
+Hw::Iomuxc_imx8mp::init()
 {
   if (_initialized)
     return;
@@ -49,8 +47,7 @@ Iomuxc_imx8mp::init()
   d_printf(DBG_INFO, "%s: mapped 0x%lx registers to 0x%08lx\n",
            name(), phys_base, vbase);
 
-  _mregs = cxx::make_unique<Mem_regs>(vbase, size);
+  _mregs = cxx::make_unique<Hw::Mem_regs>(vbase, size);
 }
 
-static Hw::Device_factory_t<Iomuxc_imx8mp> __hw_pf_factory("Iomuxc_imx8mp");
-}
+static Hw::Device_factory_t<Hw::Iomuxc_imx8mp> __hw_pf_factory("Iomuxc_imx8mp");

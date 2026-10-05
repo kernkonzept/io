@@ -231,9 +231,7 @@ struct Generic_pm : Hw::Root_bus::Pm
 
 }
 
-namespace Hw {
-
-Root_bus::Root_bus(char const *name)
+Hw::Root_bus::Root_bus(char const *name)
 : Hw::Device(), _pm(new Generic_pm)  // cannot use make_unique because of upcast
 {
   set_name(name);
@@ -272,7 +270,7 @@ Root_bus::Root_bus(char const *name)
  * \pre supports_pm() must be true
  */
 void
-Root_bus::suspend()
+Hw::Root_bus::suspend()
 {
   int res;
   if ((res = ::Pm::pm_suspend_all()) < 0)
@@ -286,6 +284,4 @@ Root_bus::suspend()
 
   if ((res = ::Pm::pm_resume_all()) < 0)
     d_printf(DBG_ERR, "error: pm_resume_all failed: %d\n", res);
-}
-
 }

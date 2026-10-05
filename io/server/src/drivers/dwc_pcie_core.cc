@@ -373,7 +373,7 @@ Dwc_pcie::cfg_read(Cfg_addr addr, l4_uint32_t *value, Cfg_width w)
   d_printf(DBG_ALL,
            "%s: cfg_read  addr=%02x:%02x.%x reg=%04x => %*.*x\n",
            name(), addr.bus(), addr.dev(), addr.fn(), addr.reg(),
-           2 << w, 2 << w, *value & cfg_o_to_mask(w));
+           2 << w, 2 << w, *value & Hw::Pci::cfg_o_to_mask(w));
 
   return 0;
 }
@@ -390,7 +390,7 @@ Dwc_pcie::cfg_write(Cfg_addr addr, l4_uint32_t value, Cfg_width w)
   d_printf(DBG_ALL,
            "%s: cfg_write addr=%02x:%02x.%x reg=%04x value=%*.*x\n",
            name(), addr.bus(), addr.dev(), addr.fn(), addr.reg(),
-           2 << w, 2 << w, value & cfg_o_to_mask(w));
+           2 << w, 2 << w, value & Hw::Pci::cfg_o_to_mask(w));
 
   switch (w)
     {

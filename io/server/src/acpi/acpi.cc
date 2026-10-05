@@ -889,10 +889,8 @@ void acpi_late_setup()
 
 
 
-namespace Hw {
-
 namespace {
-  typedef std::map<l4_uint64_t, Acpi_device_driver *> Drv_list;
+  typedef std::map<l4_uint64_t, Hw::Acpi_device_driver *> Drv_list;
 
   static Drv_list &drv_list()
   {
@@ -923,15 +921,14 @@ namespace {
   }
 }
 
-namespace Acpi {
-void register_sci(Io_irq_pin *sci)
+void
+Hw::Acpi::register_sci(Io_irq_pin *sci)
 {
   ::_sci = sci;
 }
-}
 
 void
-Acpi_dev::discover_crs(Hw::Device *host)
+Hw::Acpi_dev::discover_crs(Hw::Device *host)
 {
   Acpi_auto_buffer buf;
   buf.Length = ACPI_ALLOCATE_BUFFER;
@@ -1066,11 +1063,11 @@ static void acpi_dev_notification_handler(ACPI_HANDLE, UINT32 event, void *ctxt)
   Hw::Device *device = static_cast<Hw::Device*>(ctxt);
   trace_event(TRACE_ACPI_EVENT, "ACPI device notification. Device = %s, Event = 0x%x\n",
               device->name(), event);
-  device->notify(Acpi_dev::Acpi_event, event, 1);
+  device->notify(Hw::Acpi_dev::Acpi_event, event, 1);
 }
 
 void
-Acpi_dev::enable_notifications(Hw::Device *host)
+Hw::Acpi_dev::enable_notifications(Hw::Device *host)
 {
   if (_have_notification_handler)
     return;
@@ -1086,7 +1083,7 @@ Acpi_dev::enable_notifications(Hw::Device *host)
 }
 
 void
-Acpi_dev::disable_notifications(Hw::Device *)
+Hw::Acpi_dev::disable_notifications(Hw::Device *)
 {
   if (!_have_notification_handler)
     return;
@@ -1101,21 +1098,23 @@ Acpi_dev::disable_notifications(Hw::Device *)
 }
 
 bool
-Acpi_device_driver::register_driver(char const *hid, Acpi_device_driver *driver)
+Hw::Acpi_device_driver::register_driver(char const *hid,
+                                        Hw::Acpi_device_driver *driver)
 {
   drv_list()[acpi_get_key(hid)] = driver;
   return true;
 }
 
 bool
-Acpi_device_driver::register_driver(unsigned short type, Acpi_device_driver *driver)
+Hw::Acpi_device_driver::register_driver(unsigned short type,
+                                        Hw::Acpi_device_driver *driver)
 {
   drv_list()[acpi_get_key(type)] = driver;
   return true;
 }
 
-Acpi_device_driver *
-Acpi_device_driver::find(char const *hid)
+Hw::Acpi_device_driver *
+Hw::Acpi_device_driver::find(char const *hid)
 {
   Drv_list const &l = drv_list();
   Drv_list::const_iterator r = l.find(acpi_get_key(hid));
@@ -1124,8 +1123,8 @@ Acpi_device_driver::find(char const *hid)
   return 0;
 }
 
-Acpi_device_driver *
-Acpi_device_driver::find(unsigned short type)
+Hw::Acpi_device_driver *
+Hw::Acpi_device_driver::find(unsigned short type)
 {
   Drv_list const &l = drv_list();
   Drv_list::const_iterator r = l.find(acpi_get_key(type));
@@ -1134,12 +1133,12 @@ Acpi_device_driver::find(unsigned short type)
   return 0;
 }
 
-Acpi_dev *
-Acpi_device_driver::probe(Hw::Device *device, ACPI_HANDLE acpi_hdl,
-                          ACPI_DEVICE_INFO const *)
+Hw::Acpi_dev *
+Hw::Acpi_device_driver::probe(Hw::Device *device, ACPI_HANDLE acpi_hdl,
+                              ACPI_DEVICE_INFO const *)
 {
   ACPI_NAMESPACE_NODE *node = AcpiNsValidateHandle(acpi_hdl);
-  Acpi_dev *adev = new Acpi_dev(acpi_hdl);
+  Hw::Acpi_dev *adev = new Hw::Acpi_dev(acpi_hdl);
   UINT32 sta;
 
   if (ACPI_SUCCESS(AcpiUtExecute_STA(node, &sta))
@@ -1148,6 +1147,4 @@ Acpi_device_driver::probe(Hw::Device *device, ACPI_HANDLE acpi_hdl,
 
   device->add_feature(adev);
   return adev;
-}
-
 }

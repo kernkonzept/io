@@ -8,10 +8,9 @@
 
 #include <pci-driver.h>
 
-namespace Hw { namespace Pci {
 namespace {
 
-typedef std::map<l4_uint32_t, Driver *> Drv_list;
+typedef std::map<l4_uint32_t, Hw::Pci::Driver *> Drv_list;
 
 static Drv_list &driver_for_vendor_device()
 {
@@ -28,21 +27,21 @@ static Drv_list &driver_for_class()
 }
 
 bool
-Driver::register_driver_for_class(l4_uint32_t device_class)
+Hw::Pci::Driver::register_driver_for_class(l4_uint32_t device_class)
 {
   driver_for_class()[device_class] = this;
   return true;
 }
 
 bool
-Driver::register_driver(l4_uint16_t vendor, l4_uint16_t device)
+Hw::Pci::Driver::register_driver(l4_uint16_t vendor, l4_uint16_t device)
 {
   driver_for_vendor_device()[((l4_uint32_t)device) << 16 | (l4_uint32_t)vendor] = this;
   return true;
 }
 
-Driver *
-Driver::find(Dev *dev)
+Hw::Pci::Driver *
+Hw::Pci::Driver::find(Hw::Pci::Dev *dev)
 {
   //d_printf(DBG_DEBUG, "find(device_class = %x, vendor = %x, device = %x\n", device_class, vendor, device);
 
@@ -61,5 +60,3 @@ Driver::find(Dev *dev)
 
   return 0;
 }
-
-}}

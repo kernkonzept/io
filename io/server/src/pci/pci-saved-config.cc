@@ -11,10 +11,8 @@
 // there is some stray l4_sleep in the code used during config space restore
 #include <l4/util/util.h>
 
-namespace Hw { namespace Pci {
-
-Saved_cap *
-Saved_config::find_cap(l4_uint8_t type)
+Hw::Pci::Saved_cap *
+Hw::Pci::Saved_config::find_cap(l4_uint8_t type)
 {
   for (auto c = _caps.begin(); c != _caps.end(); ++c)
     if (c->type() == type)
@@ -24,7 +22,7 @@ Saved_config::find_cap(l4_uint8_t type)
 }
 
 void
-Saved_config::save(If *dev)
+Hw::Pci::Saved_config::save(Hw::Pci::If *dev)
 {
   auto cfg = dev->config();
   for (unsigned i = 0; i < 16; ++i)
@@ -35,7 +33,7 @@ Saved_config::save(If *dev)
 }
 
 static void
-restore_cfg_word(Config cfg, l4_uint32_t value, int retry)
+restore_cfg_word(Hw::Pci::Config cfg, l4_uint32_t value, int retry)
 {
   l4_uint32_t v;
   cfg.read(0, &v);
@@ -58,7 +56,7 @@ restore_cfg_word(Config cfg, l4_uint32_t value, int retry)
 }
 
 static void
-restore_cfg_range(Config cfg, l4_uint32_t *saved,
+restore_cfg_range(Hw::Pci::Config cfg, l4_uint32_t *saved,
                   unsigned start, unsigned end, unsigned retry = 0)
 {
   for (unsigned i = start; i <= end; ++i)
@@ -66,9 +64,9 @@ restore_cfg_range(Config cfg, l4_uint32_t *saved,
 }
 
 void
-Saved_config::restore(If *dev)
+Hw::Pci::Saved_config::restore(Hw::Pci::If *dev)
 {
-  Saved_cap *pcie = find_cap(Cap::Pcie);
+  Hw::Pci::Saved_cap *pcie = find_cap(Hw::Pci::Cap::Pcie);
 
   auto cfg = dev->config();
 
@@ -76,7 +74,7 @@ Saved_config::restore(If *dev)
   if (pcie)
     pcie->restore(cfg);
 
-  if ((read<l4_uint8_t>(Config::Header_type) & 0x7f) == 0)
+  if ((read<l4_uint8_t>(Hw::Pci::Config::Header_type) & 0x7f) == 0)
     {
       restore_cfg_range(cfg, _regs.w, 10, 15);
       restore_cfg_range(cfg, _regs.w, 4, 9, 10); //< BARs
@@ -87,8 +85,7 @@ Saved_config::restore(If *dev)
     restore_cfg_range(cfg, _regs.w, 0, 15);
 
   for (auto c = _caps.begin(); c != _caps.end(); ++c)
-    if (c->type() != Cap::Pcie) // skip the PCI express state (already restored)
+    // skip the PCI express state (already restored)
+    if (c->type() != Hw::Pci::Cap::Pcie)
       c->restore(cfg);
 }
-
-}}

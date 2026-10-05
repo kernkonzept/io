@@ -20,10 +20,8 @@
 #include "vpci_proxy_dev.h"
 #include "vpci_sriov.h"
 
-namespace Vi {
-
 bool
-Pci_proxy_dev::scan_pci_caps()
+Vi::Pci_proxy_dev::scan_pci_caps()
 {
   l4_uint8_t pci_cap = _hwf->config().read<l4_uint8_t>(Hw::Pci::Config::Capability_ptr);
   bool is_pci_express = false;
@@ -40,7 +38,7 @@ Pci_proxy_dev::scan_pci_caps()
         case Hw::Pci::Cap::Msi_x:
         case Hw::Pci::Cap::Vndr:
         default:
-          add_pci_cap(new Pci_proxy_cap(_hwf, pci_cap));
+          add_pci_cap(new Vi::Pci_proxy_cap(_hwf, pci_cap));
           break;
         }
 
@@ -50,10 +48,10 @@ Pci_proxy_dev::scan_pci_caps()
 }
 
 namespace {
-    struct Pcie_dummy_cap : Pcie_capability
+    struct Pcie_dummy_cap : Vi::Pcie_capability
     {
       Pcie_dummy_cap(unsigned offset, unsigned sz)
-      : Pcie_capability(offset)
+      : Vi::Pcie_capability(offset)
       {
         set_cap(0xfe); // reserved ID
         set_size(sz);
@@ -73,7 +71,7 @@ namespace {
 }
 
 l4_uint16_t
-Pci_proxy_dev::_skip_pcie_cap(Hw::Pci::Extended_cap const &cap, unsigned sz)
+Vi::Pci_proxy_dev::_skip_pcie_cap(Hw::Pci::Extended_cap const &cap, unsigned sz)
 {
   // create "fake" capability with a reserved ID, according to
   // PCI-SIG IDs >0x2c are reserved
@@ -82,7 +80,7 @@ Pci_proxy_dev::_skip_pcie_cap(Hw::Pci::Extended_cap const &cap, unsigned sz)
 }
 
 void
-Pci_proxy_dev::scan_pcie_caps()
+Vi::Pci_proxy_dev::scan_pcie_caps()
 {
   l4_uint16_t offset = 0x100;
   while (offset)
@@ -101,7 +99,8 @@ Pci_proxy_dev::scan_pcie_caps()
 
         case Hw::Pci::Sr_iov_cap::Id:
 #ifdef CONFIG_L4IO_PCI_SRIOV
-          add_pcie_cap(new Sr_iov_proxy_cap(_hwf, cap.header(), offset, offset));
+          add_pcie_cap(new Vi::Sr_iov_proxy_cap(_hwf, cap.header(), offset,
+                                                offset));
           offset = cap.next();
 #else
           offset = _skip_pcie_cap(cap, Hw::Pci::Sr_iov_cap::Size);
@@ -119,7 +118,7 @@ Pci_proxy_dev::scan_pcie_caps()
           }
         }
 
-      add_pcie_cap(new Pcie_proxy_cap(_hwf, cap.header(), offset, offset));
+      add_pcie_cap(new Vi::Pcie_proxy_cap(_hwf, cap.header(), offset, offset));
       offset = cap.next();
     }
 
@@ -131,7 +130,7 @@ Pci_proxy_dev::scan_pcie_caps()
 #endif
 }
 
-Pci_proxy_dev::Pci_proxy_dev(Hw::Pci::If *hwf)
+Vi::Pci_proxy_dev::Pci_proxy_dev(Hw::Pci::If *hwf)
 : _hwf(hwf), _rom(0)
 {
   assert (hwf);
@@ -146,7 +145,7 @@ Pci_proxy_dev::Pci_proxy_dev(Hw::Pci::If *hwf)
 }
 
 int
-Pci_proxy_dev::irq_enable(Irq_info *irq)
+Vi::Pci_proxy_dev::irq_enable(Irq_info *irq)
 {
   for (Resource_list::const_iterator i = host()->resources()->begin();
        i != host()->resources()->end(); ++i)
@@ -169,7 +168,7 @@ Pci_proxy_dev::irq_enable(Irq_info *irq)
 }
 
 void
-Pci_proxy_dev::write_rom(l4_uint32_t v)
+Vi::Pci_proxy_dev::write_rom(l4_uint32_t v)
 {
   Hw::Pci::If *p = _hwf;
 
@@ -186,13 +185,13 @@ Pci_proxy_dev::write_rom(l4_uint32_t v)
   p->cfg_write(0x30, (r->start() & ~1U) | (v & 1), Hw::Pci::Cfg_long);
 }
 
-Pci_capability *
-Pci_proxy_dev::find_pci_cap(unsigned offset) const
+Vi::Pci_capability *
+Vi::Pci_proxy_dev::find_pci_cap(unsigned offset) const
 {
   if (!_pci_caps || offset < 0x3c)
     return 0;
 
-  for (Pci_capability *c = _pci_caps; c; c = c->next())
+  for (Vi::Pci_capability *c = _pci_caps; c; c = c->next())
     if (c->is_inside(offset))
       return c;
 
@@ -200,9 +199,9 @@ Pci_proxy_dev::find_pci_cap(unsigned offset) const
 }
 
 void
-Pci_proxy_dev::add_pci_cap(Pci_capability *c)
+Vi::Pci_proxy_dev::add_pci_cap(Vi::Pci_capability *c)
 {
-  Pci_capability **i;
+  Vi::Pci_capability **i;
   for (i = &_pci_caps; *i; i = &(*i)->next())
     if ((*i)->offset() > c->offset())
       break;
@@ -211,13 +210,13 @@ Pci_proxy_dev::add_pci_cap(Pci_capability *c)
   *i = c;
 }
 
-Pcie_capability *
-Pci_proxy_dev::find_pcie_cap(unsigned offset) const
+Vi::Pcie_capability *
+Vi::Pci_proxy_dev::find_pcie_cap(unsigned offset) const
 {
   if (!_pcie_caps || offset < 0x100)
     return 0;
 
-  for (Pcie_capability *c = _pcie_caps; c; c = c->next())
+  for (Vi::Pcie_capability *c = _pcie_caps; c; c = c->next())
     if (c->is_inside(offset))
       return c;
 
@@ -225,9 +224,9 @@ Pci_proxy_dev::find_pcie_cap(unsigned offset) const
 }
 
 void
-Pci_proxy_dev::add_pcie_cap(Pcie_capability *c)
+Vi::Pci_proxy_dev::add_pcie_cap(Vi::Pcie_capability *c)
 {
-  Pcie_capability **i;
+  Vi::Pcie_capability **i;
   for (i = &_pcie_caps; *i; i = &(*i)->next())
     if ((*i)->offset() > c->offset())
       break;
@@ -237,7 +236,7 @@ Pci_proxy_dev::add_pcie_cap(Pcie_capability *c)
 }
 
 int
-Pci_proxy_dev::cfg_read(l4_uint32_t reg, l4_uint32_t *v, Cfg_width order)
+Vi::Pci_proxy_dev::cfg_read(l4_uint32_t reg, l4_uint32_t *v, Cfg_width order)
 {
   Hw::Pci::If *p = _hwf;
 
@@ -247,10 +246,10 @@ Pci_proxy_dev::cfg_read(l4_uint32_t reg, l4_uint32_t *v, Cfg_width order)
   reg &= ~0U << order;
   int dw_reg = reg & ~3;
 
-  if (Pci_capability *cap = find_pci_cap(dw_reg))
+  if (Vi::Pci_capability *cap = find_pci_cap(dw_reg))
     return cap->cfg_read(reg, v, order);
 
-  if (Pcie_capability *cap = find_pcie_cap(dw_reg))
+  if (Vi::Pcie_capability *cap = find_pcie_cap(dw_reg))
     return cap->cfg_read(reg, v, order);
 
   switch (dw_reg)
@@ -299,13 +298,13 @@ Pci_proxy_dev::cfg_read(l4_uint32_t reg, l4_uint32_t *v, Cfg_width order)
 
 
 void
-Pci_proxy_dev::_do_cmd_write(unsigned mask,unsigned value)
+Vi::Pci_proxy_dev::_do_cmd_write(unsigned mask,unsigned value)
 {
   _hwf->checked_cmd_write(mask, value);
 }
 
 int
-Pci_proxy_dev::_do_status_cmd_write(l4_uint32_t mask, l4_uint32_t value)
+Vi::Pci_proxy_dev::_do_status_cmd_write(l4_uint32_t mask, l4_uint32_t value)
 {
   if (mask & 0xffff)
     _do_cmd_write(mask & 0xffff, value & 0xffff);
@@ -313,13 +312,14 @@ Pci_proxy_dev::_do_status_cmd_write(l4_uint32_t mask, l4_uint32_t value)
   // status register has 'write 1 to clear' semantics so we can always write
   // 16bit with the bits masked that we do not want to affect.
   if (mask & value & 0xffff0000)
-    _hwf->cfg_write(Pci::Config::Status, (value & mask) >> 16, Hw::Pci::Cfg_short);
+    _hwf->cfg_write(Vi::Pci::Config::Status, (value & mask) >> 16,
+                    Hw::Pci::Cfg_short);
 
   return 0;
 }
 
 int
-Pci_proxy_dev::_do_rom_bar_write(l4_uint32_t mask, l4_uint32_t value)
+Vi::Pci_proxy_dev::_do_rom_bar_write(l4_uint32_t mask, l4_uint32_t value)
 {
   l4_uint32_t b = read_rom();
 
@@ -334,7 +334,7 @@ Pci_proxy_dev::_do_rom_bar_write(l4_uint32_t mask, l4_uint32_t value)
 
 
 int
-Pci_proxy_dev::cfg_write(l4_uint32_t reg, l4_uint32_t v, Cfg_width order)
+Vi::Pci_proxy_dev::cfg_write(l4_uint32_t reg, l4_uint32_t v, Cfg_width order)
 {
   Hw::Pci::If *p = _hwf;
 
@@ -343,10 +343,10 @@ Pci_proxy_dev::cfg_write(l4_uint32_t reg, l4_uint32_t v, Cfg_width order)
   l4_uint32_t const mask_32 = (~0U >> (32 - (8U << order))) << (offset_32 * 8);
   l4_uint32_t const value_32 = v << (offset_32 * 8);
 
-  if (Pci_capability *cap = find_pci_cap(reg & ~3))
+  if (Vi::Pci_capability *cap = find_pci_cap(reg & ~3))
     return cap->cfg_write(reg, v, order);
 
-  if (Pcie_capability *cap = find_pcie_cap(reg & ~3))
+  if (Vi::Pcie_capability *cap = find_pcie_cap(reg & ~3))
     return cap->cfg_write(reg, v, order);
 
   switch (reg & ~3)
@@ -375,7 +375,7 @@ Pci_proxy_dev::cfg_write(l4_uint32_t reg, l4_uint32_t v, Cfg_width order)
 }
 
 void
-Pci_proxy_dev::dump() const
+Vi::Pci_proxy_dev::dump() const
 {
   Hw::Pci::If *p = _hwf;
 
@@ -390,15 +390,14 @@ Pci_proxy_dev::dump() const
 #endif
 }
 
-Pci_dev::Msi_src *
-Pci_proxy_dev::msi_src() const
+Vi::Pci_dev::Msi_src *
+Vi::Pci_proxy_dev::msi_src() const
 {
   assert (hwf());
   return hwf()->get_msi_src();
 }
 
 namespace {
-  static Feature_factory_t<Pci_proxy_dev, Hw::Pci::Dev> __pci_f_factory1;
-}
-
+  static Vi::Feature_factory_t<Vi::Pci_proxy_dev, Hw::Pci::Dev>
+    __pci_f_factory1;
 }

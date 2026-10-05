@@ -8,10 +8,8 @@
 #include <pci-dev.h>
 #include <pci-caps.h>
 
-namespace Hw { namespace Pci {
-
 bool
-Dev::handle_ari_cap(Dev *dev, Extended_cap)
+Hw::Pci::Dev::handle_ari_cap(Hw::Pci::Dev *dev, Hw::Pci::Extended_cap)
 {
   // This device is an ARI device, if it is immediately below a Downstream Port
   // (devfn == 0) try to enable ARI forwarding.
@@ -20,5 +18,3 @@ Dev::handle_ari_cap(Dev *dev, Extended_cap)
 
   return true;
 }
-
-}}

@@ -30,8 +30,8 @@ class Pci_mixin
 protected:
   static std::optional<std::tuple<l4_uint8_t, l4_uint8_t, l4_uint8_t>>
   find_pci_bdf(l4_uint16_t segment, l4_uint8_t bus,
-               Dmar_dev_scope::Path_entry const *path_it,
-               Dmar_dev_scope::Path_entry const *path_end)
+               Hw::Acpi::Dmar_dev_scope::Path_entry const *path_it,
+               Hw::Acpi::Dmar_dev_scope::Path_entry const *path_end)
   {
     l4_uint8_t dev = 0, fn = 0;
 
@@ -60,7 +60,7 @@ protected:
 
 };
 
-class Vtd_iommu: Pci_mixin
+class Vtd_iommu: Hw::Acpi::Pci_mixin
 {
   struct Info
   {
@@ -125,18 +125,24 @@ public:
   static int get_index(l4_uint16_t segment, l4_uint8_t bus, l4_uint8_t devfn);
 
 private:
-  static void parse_drhd_entry(Dmar_drhd const &drhd, unsigned entry_num);
-  static void parse_drhd_dev_scope(Dev_scope_vect const &devs,
+  static void parse_drhd_entry(Hw::Acpi::Dmar_drhd const &drhd,
+                               unsigned entry_num);
+  static void parse_drhd_dev_scope(Hw::Acpi::Dev_scope_vect const &devs,
                                    Info &iommu);
 
   static std::list<Info> _iommus;
   static std::vector<Dev_mmu> _devs;
 }; // class Vtd_iommu
 
-std::list<Vtd_iommu::Info> Vtd_iommu::_iommus;
-std::vector<Vtd_iommu::Dev_mmu> Vtd_iommu::_devs;
+}
+}
 
-int Vtd_iommu::get_index(l4_uint16_t segment, l4_uint8_t bus, l4_uint8_t devfn)
+std::list<Hw::Acpi::Vtd_iommu::Info> Hw::Acpi::Vtd_iommu::_iommus;
+std::vector<Hw::Acpi::Vtd_iommu::Dev_mmu> Hw::Acpi::Vtd_iommu::_devs;
+
+int
+Hw::Acpi::Vtd_iommu::get_index(l4_uint16_t segment, l4_uint8_t bus,
+                               l4_uint8_t devfn)
 {
   // check explicit devices
   for (auto const &d : _devs)
@@ -166,10 +172,11 @@ int Vtd_iommu::get_index(l4_uint16_t segment, l4_uint8_t bus, l4_uint8_t devfn)
 }
 
 
-void Vtd_iommu::parse_drhd_dev_scope(Dev_scope_vect const &devs,
-                                     Info &iommu)
+void
+Hw::Acpi::Vtd_iommu::parse_drhd_dev_scope(Hw::Acpi::Dev_scope_vect const &devs,
+                                           Info &iommu)
 {
-  for (Dmar_dev_scope const &dev_scope : devs)
+  for (Hw::Acpi::Dmar_dev_scope const &dev_scope : devs)
     {
       d_printf(DBG_DEBUG,
                "Dev scope:\n\ttype: %u, length %u, enum id: %x, start bus num: "
@@ -189,7 +196,7 @@ void Vtd_iommu::parse_drhd_dev_scope(Dev_scope_vect const &devs,
 
       switch (dev_scope.type)
         {
-        case Dmar_dev_scope::Pci_endpoint:
+        case Hw::Acpi::Dmar_dev_scope::Pci_endpoint:
           if (path_length > 1)
             {
               auto bdf = find_pci_bdf(segment, bus, path_it, dev_scope.end());
@@ -203,7 +210,7 @@ void Vtd_iommu::parse_drhd_dev_scope(Dev_scope_vect const &devs,
           _devs.emplace_back(bus, dev, fn, iommu);
           break;
 
-        case Dmar_dev_scope::Pci_subhierarchy:
+        case Hw::Acpi::Dmar_dev_scope::Pci_subhierarchy:
           {
             if (path_length > 1)
               d_printf(DBG_ERR,
@@ -244,7 +251,8 @@ void Vtd_iommu::parse_drhd_dev_scope(Dev_scope_vect const &devs,
 }
 
 void
-Vtd_iommu::parse_drhd_entry(Dmar_drhd const &drhd, unsigned entry_num)
+Hw::Acpi::Vtd_iommu::parse_drhd_entry(Hw::Acpi::Dmar_drhd const &drhd,
+                                      unsigned entry_num)
 {
   d_printf(DBG_DEBUG,
            "DRHD[%p]: type %u, length %u, flags 0x%x, size %u, segment %u, "
@@ -258,7 +266,7 @@ Vtd_iommu::parse_drhd_entry(Dmar_drhd const &drhd, unsigned entry_num)
   parse_drhd_dev_scope(drhd.devs(), iommu);
 }
 
-bool Vtd_iommu::probe()
+bool Hw::Acpi::Vtd_iommu::probe()
 {
   ACPI_TABLE_HEADER *tblhdr;
 
@@ -273,7 +281,7 @@ bool Vtd_iommu::probe()
 
   for (auto it = dmar_table->begin(); it != dmar_table->end(); ++it)
     {
-      if (auto *drhd = it->cast<Dmar_drhd>())
+      if (auto *drhd = it->cast<Hw::Acpi::Dmar_drhd>())
         {
           parse_drhd_entry(*drhd, count);
 
@@ -285,6 +293,9 @@ bool Vtd_iommu::probe()
   return count > 0;
 }
 
+namespace Hw {
+namespace Acpi {
+
 /**
  * Managing entity for ACPI DMAR-RMRR table.
  *
@@ -292,7 +303,7 @@ bool Vtd_iommu::probe()
  * content of the RMRR table to facilitate assignment of the memory regions to
  * the corresponding devices.
  */
-class Vtd_rmrr : Pci_mixin
+class Vtd_rmrr : Hw::Acpi::Pci_mixin
 {
 public:
   struct Devid
@@ -355,7 +366,7 @@ public:
     unsigned count = 0;
     for (Acpi_dmar::Iterator it = dmar->begin() ; it != dmar->end(); ++it)
       {
-        Dmar_rmrr const *entry = it->cast<Dmar_rmrr>();
+        Hw::Acpi::Dmar_rmrr const *entry = it->cast<Hw::Acpi::Dmar_rmrr>();
         if (!entry)
           continue;
 
@@ -417,7 +428,7 @@ public:
     d_printf(DBG_DEBUG, "Found %u RMRR entries\n", count);
   }
 
-  static Vtd_rmrr *get()
+  static Hw::Acpi::Vtd_rmrr *get()
   {
     if (!_rmrr)
       {
@@ -430,7 +441,7 @@ public:
           return nullptr;
 
         Acpi_dmar const *dmar_table = reinterpret_cast<Acpi_dmar const *>(tblhdr);
-        _rmrr = new Vtd_rmrr(dmar_table);
+        _rmrr = new Hw::Acpi::Vtd_rmrr(dmar_table);
       }
     return _rmrr;
   }
@@ -469,16 +480,16 @@ public:
   }
 
 private:
-  static Vtd_rmrr *_rmrr;
+  static Hw::Acpi::Vtd_rmrr *_rmrr;
 
   std::map<Devid, std::vector<Mem_region>> dev_regions;
   std::map<Subhierarchy, std::vector<Mem_region>> subs_regions;
-  std::vector<Devid> parse_dev_scope(Dev_scope_vect const &devs,
+  std::vector<Devid> parse_dev_scope(Hw::Acpi::Dev_scope_vect const &devs,
                                      l4_uint16_t segment,
                                      std::vector<Devid> &ids,
                                      std::vector<Subhierarchy> &subs)
   {
-    for (Dmar_dev_scope const &dev_scope: devs)
+    for (Hw::Acpi::Dmar_dev_scope const &dev_scope: devs)
       {
         l4_uint8_t bus = dev_scope.start_bus_nr;
         auto path_it = dev_scope.begin();
@@ -496,7 +507,7 @@ private:
 
         switch (dev_scope.type)
           {
-          case Dmar_dev_scope::Pci_endpoint:
+          case Hw::Acpi::Dmar_dev_scope::Pci_endpoint:
             if (path_length > 1)
               {
                 auto bdf = find_pci_bdf(segment, bus, path_it, dev_scope.end());
@@ -509,7 +520,7 @@ private:
 
             ids.emplace_back(segment, bus, dev, fn);
             break;
-          case Dmar_dev_scope::Pci_subhierarchy:
+          case Hw::Acpi::Dmar_dev_scope::Pci_subhierarchy:
             {
               if (path_length > 1)
                 d_printf(DBG_ERR,
@@ -551,8 +562,6 @@ private:
     return ids;
   }
 };
-
-Vtd_rmrr *Vtd_rmrr::_rmrr;
 
 class Vtd_platform_adapter : public Hw::Pci::Platform_adapter_if
 {
@@ -685,7 +694,8 @@ public:
     id.bus() = rid.bus();
     id.devfn() = rid.devfn();
 
-    int idx = Vtd_iommu::get_index(rid.segment(), rid.bus(), rid.devfn());
+    int idx = Hw::Acpi::Vtd_iommu::get_index(rid.segment(), rid.bus(),
+                                             rid.devfn());
     if (idx < 0)
       {
         d_printf(DBG_WARN,
@@ -716,8 +726,9 @@ public:
                                 Dma_domain_if::Resv_cb cb) const override
   {
     // report RMRRs applicable to the device
-    auto devid = Vtd_rmrr::Devid(id.segment(), id.bus(), id.dev(), id.fn());
-    auto *rmrr = Vtd_rmrr::get();
+    auto devid = Hw::Acpi::Vtd_rmrr::Devid(id.segment(), id.bus(), id.dev(),
+                                           id.fn());
+    auto *rmrr = Hw::Acpi::Vtd_rmrr::get();
     if (rmrr == nullptr)
       return L4_EOK;
     auto regions = rmrr->get_blocked_regions(devid);
@@ -736,18 +747,20 @@ public:
   }
 };
 
+}
+}
+
+Hw::Acpi::Vtd_rmrr *Hw::Acpi::Vtd_rmrr::_rmrr;
+
 Hw::Pci::Platform_adapter_if *
-setup_pci_platform()
+Hw::Acpi::setup_pci_platform()
 {
-  static Vtd_platform_adapter vtd_adapter;
+  static Hw::Acpi::Vtd_platform_adapter vtd_adapter;
   return &vtd_adapter;
 }
 
 void
-setup_iommus()
+Hw::Acpi::setup_iommus()
 {
-  Vtd_iommu::probe();
-}
-
-}
+  Hw::Acpi::Vtd_iommu::probe();
 }

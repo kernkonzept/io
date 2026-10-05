@@ -13,14 +13,13 @@
 #include "hw_msi.h"
 #include "main.h"
 
-namespace Hw { namespace Pci {
-
 namespace {
 
-class Saved_acs_cap : public Saved_cap
+class Saved_acs_cap : public Hw::Pci::Saved_cap
 {
 public:
-  explicit Saved_acs_cap(unsigned offset) : Saved_cap(Extended_cap::Acs, offset) {}
+  explicit Saved_acs_cap(unsigned offset)
+  : Hw::Pci::Saved_cap(Hw::Pci::Extended_cap::Acs, offset) {}
 
 private:
   enum Regs
@@ -31,12 +30,12 @@ private:
 
   l4_uint16_t control;
 
-  void _save(Config cap) override
+  void _save(Hw::Pci::Config cap) override
   {
     cap.read(Control, &control);
   }
 
-  void _restore(Config cap) override
+  void _restore(Hw::Pci::Config cap) override
   {
     cap.write(Control, control);
   }
@@ -45,10 +44,10 @@ private:
 }
 
 bool
-Dev::handle_acs_cap(Dev *dev, Extended_cap acs_cap)
+Hw::Pci::Dev::handle_acs_cap(Hw::Pci::Dev *dev, Hw::Pci::Extended_cap acs_cap)
 {
-  auto caps = acs_cap.read<Acs_cap::Caps>();
-  auto ctrl = acs_cap.read<Acs_cap::Ctrl>();
+  auto caps = acs_cap.read<Hw::Pci::Acs_cap::Caps>();
+  auto ctrl = acs_cap.read<Hw::Pci::Acs_cap::Ctrl>();
 
   // always disable egress control and direct translated P2P
   ctrl.p2p_egress_ctrl_enable() = 0;
@@ -65,7 +64,7 @@ Dev::handle_acs_cap(Dev *dev, Extended_cap acs_cap)
   // write into an RO area.
   // We read the control word and compare it with our desired configuration.
   // If they don't match we print a warning.
-  auto c = acs_cap.read<Acs_cap::Ctrl>();
+  auto c = acs_cap.read<Hw::Pci::Acs_cap::Ctrl>();
 
   if (c.enabled() != ctrl.enabled())
     {
@@ -89,5 +88,3 @@ Dev::handle_acs_cap(Dev *dev, Extended_cap acs_cap)
 
   return true;
 }
-
-}}

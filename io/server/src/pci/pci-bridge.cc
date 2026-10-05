@@ -10,8 +10,6 @@
 #include <pci-driver.h>
 #include <resource_provider.h>
 
-namespace Hw { namespace Pci {
-
 namespace {
 
 static inline l4_uint32_t
@@ -21,15 +19,15 @@ devfn(unsigned dev, unsigned fn)
 }
 
 void
-Irq_router::dump(int indent) const
+Hw::Pci::Irq_router::dump(int indent) const
 {
   printf("%*sPCI IRQ ROUTER: %s (%p)\n", indent, "", typeid(*this).name(),
          this);
 }
 
 bool
-Pci_pci_bridge_irq_router_rs::request(Resource *parent, ::Device *pdev,
-                                      Resource *child, ::Device *cdev)
+Hw::Pci::Pci_pci_bridge_irq_router_rs::request(Resource *parent, ::Device *pdev,
+                                               Resource *child, ::Device *cdev)
 {
   bool res = false;
 
@@ -50,13 +48,13 @@ Pci_pci_bridge_irq_router_rs::request(Resource *parent, ::Device *pdev,
 }
 
 void
-Bridge::check_bus_config()
+Hw::Pci::Bridge::check_bus_config()
 {
   auto c = config();
 
   // the config space address for bus config is the same in
   // type 1 and type 2
-  l4_uint32_t b = c.read<l4_uint32_t>(Config::Primary);
+  l4_uint32_t b = c.read<l4_uint32_t>(Hw::Pci::Config::Primary);
 
   l4_uint8_t pb = b & 0xff;
   l4_uint8_t sb = (b >> 8) & 0xff;
@@ -84,12 +82,13 @@ Bridge::check_bus_config()
   b |= static_cast<l4_uint32_t>(subordinate) << 16;
 
   // Write Config::Primary, Config::Secondary and Config::Subordinate.
-  c.write(Config::Primary, b);
+  c.write(Hw::Pci::Config::Primary, b);
 }
 
 int
-Bridge::pci_enum_dma_reservations(If *dev, Dma_requester_id rid,
-                                  Dma_domain_if::Resv_cb cb) const
+Hw::Pci::Bridge::pci_enum_dma_reservations(Hw::Pci::If *dev,
+                                           Hw::Pci::Dma_requester_id rid,
+                                           Dma_domain_if::Resv_cb cb) const
 {
   // The handling here is for all bridges *except* root bridges. The
   // Root_bridge class directly forwards the enumeration to the platform
@@ -107,7 +106,7 @@ Bridge::pci_enum_dma_reservations(If *dev, Dma_requester_id rid,
 
   // Does this bridge create aliases? If yes, override the DMA requester ID of
   // the downstream device for further reporting.
-  Dma_requester_id alias = dma_alias();
+  Hw::Pci::Dma_requester_id alias = dma_alias();
   if (alias)
     rid = alias;
 
@@ -116,13 +115,14 @@ Bridge::pci_enum_dma_reservations(If *dev, Dma_requester_id rid,
 }
 
 int
-Bridge::enumerate_dma_src_ids(Dma_src_feature::Dma_src_id_cb cb) const
+Hw::Pci::Bridge::enumerate_dma_src_ids(
+  Hw::Dma_src_feature::Dma_src_id_cb cb) const
 {
-  if (auto *parent = dynamic_cast<Dev *>(parent_bridge()))
+  if (auto *parent = dynamic_cast<Hw::Pci::Dev *>(parent_bridge()))
     if (int ret = parent->enumerate_dma_src_ids(cb))
       return ret;
 
-  Dma_requester_id alias = dma_alias();
+  Hw::Pci::Dma_requester_id alias = dma_alias();
   if (!alias)
     return 0;
 
@@ -141,7 +141,8 @@ Bridge::enumerate_dma_src_ids(Dma_src_feature::Dma_src_id_cb cb) const
 }
 
 int
-Bridge::enumerate_dma_reservations(Dev *, Dma_domain_if::Resv_cb) const
+Hw::Pci::Bridge::enumerate_dma_reservations(Hw::Pci::Dev *,
+                                            Dma_domain_if::Resv_cb) const
 {
   // This should not happen. A PCI bridge itself should not be part of a vBUS.
   d_printf(DBG_ERR,
@@ -150,27 +151,28 @@ Bridge::enumerate_dma_reservations(Dev *, Dma_domain_if::Resv_cb) const
 }
 
 void
-Bridge::setup_children(Hw::Device *)
+Hw::Pci::Bridge::setup_children(Hw::Device *)
 {
   auto c = config();
   if (!mmio->empty() && mmio->valid())
     {
       l4_uint32_t v = (mmio->start() >> 16) & 0xfff0;
       v |= mmio->end() & 0xfff00000;
-      c.write<l4_uint32_t>(Config::Mem_base, v);
+      c.write<l4_uint32_t>(Hw::Pci::Config::Mem_base, v);
       if (0)
         printf("%08x: set mmio to %08x\n", host()->adr(), v);
       if (0)
         printf("%08x: mmio =      %08x\n", host()->adr(), c.read<l4_uint32_t>(0x20));
 
-      c.write<l4_uint16_t>(Config::Command, c.read<l4_uint16_t>(0x04) | 3);
+      c.write<l4_uint16_t>(Hw::Pci::Config::Command,
+                           c.read<l4_uint16_t>(0x04) | 3);
     }
 
   if (!pref_mmio->empty() && pref_mmio->valid())
     {
       l4_uint32_t v = (pref_mmio->start() >> 16) & 0xfff0;
       v |= pref_mmio->end() & 0xfff00000;
-      c.write<l4_uint32_t>(Config::Pref_mem_base, v);
+      c.write<l4_uint32_t>(Hw::Pci::Config::Pref_mem_base, v);
       if (0)
         printf("%08x: set pref mmio to %08x\n", host()->adr(), v);
     }
@@ -178,12 +180,12 @@ Bridge::setup_children(Hw::Device *)
   enable_bus_master();
 
   // Enable forwarding of secondary interface SERR# assertions.
-  l4_uint16_t v = c.read<l4_uint16_t>(Config::Bridge_control);
-  c.write<l4_uint16_t>(Config::Bridge_control, (v | 0x2));
+  l4_uint16_t v = c.read<l4_uint16_t>(Hw::Pci::Config::Bridge_control);
+  c.write<l4_uint16_t>(Hw::Pci::Config::Bridge_control, (v | 0x2));
 }
 
 void
-Bridge::discover_resources(Hw::Device *host)
+Hw::Pci::Bridge::discover_resources(Hw::Device *host)
 {
   if (flags.discovered())
     return;
@@ -193,7 +195,7 @@ Bridge::discover_resources(Hw::Device *host)
   l4_uint32_t v;
   l4_uint64_t s, e;
 
-  v = c.read<l4_uint32_t>(Config::Mem_base);
+  v = c.read<l4_uint32_t>(Hw::Pci::Config::Mem_base);
   s = (v & 0xfff0) << 16;
   e = (v & 0xfff00000) | 0xfffff;
 
@@ -217,16 +219,16 @@ Bridge::discover_resources(Hw::Device *host)
                             | Resource::F_prefetchable
                             | Resource::F_can_move | Resource::F_can_resize);
   r->set_id("WIN1");
-  v = c.read<l4_uint32_t>(Config::Pref_mem_base);
+  v = c.read<l4_uint32_t>(Hw::Pci::Config::Pref_mem_base);
   s = (v & 0xfff0) << 16;
   e = (v & 0xfff00000) | 0xfffff;
 
   if ((v & 0x0f) == 1)
     {
       r->add_flags(Resource::F_width_64bit);
-      v = c.read<l4_uint32_t>(Config::Pref_mem_base_hi);
+      v = c.read<l4_uint32_t>(Hw::Pci::Config::Pref_mem_base_hi);
       s |= l4_uint64_t(v) << 32;
-      v = c.read<l4_uint32_t>(Config::Pref_mem_limit_hi);
+      v = c.read<l4_uint32_t>(Hw::Pci::Config::Pref_mem_limit_hi);
       e |= l4_uint64_t(v) << 32;
     }
 
@@ -240,7 +242,7 @@ Bridge::discover_resources(Hw::Device *host)
   r->validate();
   _host->add_resource_rq(r);
 
-  v = c.read<l4_uint16_t>(Config::Io_base);
+  v = c.read<l4_uint16_t>(Hw::Pci::Config::Io_base);
   s = (v & 0xf0) << 8;
   e = (v & 0xf000) | 0xfff;
 
@@ -256,18 +258,18 @@ Bridge::discover_resources(Hw::Device *host)
   r->validate();
   _host->add_resource_rq(r);
 
-  Dev::discover_resources(host);
+  Hw::Pci::Dev::discover_resources(host);
 }
 
 Hw::Pci::Dma_requester_id
-Bridge::dma_alias() const
+Hw::Pci::Bridge::dma_alias() const
 {
   // Legacy PCI bridges take ownership of DMA transactions
-  return Dma_requester_id::rewrite(segment_nr(), bus_nr(), devfn());
+  return Hw::Pci::Dma_requester_id::rewrite(segment_nr(), bus_nr(), devfn());
 }
 
 int
-Bridge::reserve_dma_resources(Dma_domain_if::Resv_cb const &cb) const
+Hw::Pci::Bridge::reserve_dma_resources(Dma_domain_if::Resv_cb const &cb) const
 {
   if (!mmio->empty() && mmio->valid())
     if (int err = cb(Dma_domain_if::Resv_type::Bridge_window, mmio->start(),
@@ -284,16 +286,18 @@ Bridge::reserve_dma_resources(Dma_domain_if::Resv_cb const &cb) const
   return 0;
 }
 
-class Pcie_downstream_port : public Bridge
+namespace Hw { namespace Pci {
+
+class Pcie_downstream_port : public Hw::Pci::Bridge
 {
 private:
   /// Whether ARI forwarding is enabled for this downstream port.
   bool _ari = false;
 
 public:
-  explicit Pcie_downstream_port(Hw::Device *host, Bridge_if *bridge,
-                                Config_cache const &cfg)
-  : Bridge(host, bridge, cfg)
+  explicit Pcie_downstream_port(Hw::Device *host, Hw::Pci::Bridge_if *bridge,
+                                Hw::Pci::Config_cache const &cfg)
+  : Hw::Pci::Bridge(host, bridge, cfg)
   {
   }
 
@@ -308,11 +312,11 @@ public:
     if (_ari)
       return true;
 
-    Cap pcie = pcie_cap();
-    auto dev_caps2 = pcie.read<Pcie_cap::Dev_caps2>();
+    Hw::Pci::Cap pcie = pcie_cap();
+    auto dev_caps2 = pcie.read<Hw::Pci::Pcie_cap::Dev_caps2>();
     if (dev_caps2.ari_forwarding_supported())
       {
-        auto dev_ctrl2 = pcie.read<Pcie_cap::Dev_ctrl2>();
+        auto dev_ctrl2 = pcie.read<Hw::Pci::Pcie_cap::Dev_ctrl2>();
         dev_ctrl2.ari_forwarding_enable() = true;
         pcie.write(dev_ctrl2);
 
@@ -324,9 +328,10 @@ public:
   bool ari_forwarding_enabled() const override
   { return _ari; }
 
-  void discover_devices(Hw::Device *host_bus, Config_space *cfg) override
+  void discover_devices(Hw::Device *host_bus,
+                        Hw::Pci::Config_space *cfg) override
   {
-    Dev *d = discover_func(host_bus, cfg, 0, 0);
+    Hw::Pci::Dev *d = discover_func(host_bus, cfg, 0, 0);
     if (!d)
       return;
 
@@ -335,13 +340,14 @@ public:
     // Dev::handle_ari_cap()).
     if (ari_forwarding_enabled())
       {
-        Extended_cap ari = d->find_ext_cap(Ari_cap::Id);
+        Hw::Pci::Extended_cap ari = d->find_ext_cap(Hw::Pci::Ari_cap::Id);
 
         // look for functions in ARI style (optimization to improve enumeration
         // performance)
         while (ari.Config::is_valid())
           {
-            l4_uint8_t next_func = ari.read<Ari_cap::Caps>().next_func();
+            l4_uint8_t next_func =
+              ari.read<Hw::Pci::Ari_cap::Caps>().next_func();
             if (!next_func)
               // In an ARI device each function must implement the ARI
               // capability (see PCI Express Base Specification Revision 6.0,
@@ -354,7 +360,7 @@ public:
               // point to a valid function.
               return;
 
-            ari = d->find_ext_cap(Ari_cap::Id);
+            ari = d->find_ext_cap(Hw::Pci::Ari_cap::Id);
           }
       }
     // look for functions in PCI style
@@ -365,10 +371,10 @@ public:
       }
   }
 
-  Dma_requester_id dma_alias() const override
-  { return Dma_requester_id(); }
+  Hw::Pci::Dma_requester_id dma_alias() const override
+  { return Hw::Pci::Dma_requester_id(); }
 
-  int pci_enum_dma_reservations(If *dev, Dma_requester_id rid,
+  int pci_enum_dma_reservations(Hw::Pci::If *dev, Hw::Pci::Dma_requester_id rid,
                                 Dma_domain_if::Resv_cb cb) const override
   {
     // PCIe switches are special in that they can "reflect" traffic back
@@ -378,46 +384,47 @@ public:
       if (int err = reserve_dma_resources(cb); err < 0)
         return err;
 
-    return Bridge::pci_enum_dma_reservations(dev, rid, cb);
+    return Hw::Pci::Bridge::pci_enum_dma_reservations(dev, rid, cb);
   }
 };
 
-class Pcie_upstream_port : public Bridge
+class Pcie_upstream_port : public Hw::Pci::Bridge
 {
 public:
-  explicit Pcie_upstream_port(Hw::Device *host, Bridge_if *bridge,
-                              Config_cache const &cfg)
-  : Bridge(host, bridge, cfg)
+  explicit Pcie_upstream_port(Hw::Device *host, Hw::Pci::Bridge_if *bridge,
+                              Hw::Pci::Config_cache const &cfg)
+  : Hw::Pci::Bridge(host, bridge, cfg)
   {}
 
-  Dma_requester_id dma_alias() const override
-  { return Dma_requester_id(); }
+  Hw::Pci::Dma_requester_id dma_alias() const override
+  { return Hw::Pci::Dma_requester_id(); }
 };
 
-class Pcie_bridge : public Bridge
+class Pcie_bridge : public Hw::Pci::Bridge
 {
 public:
-  explicit Pcie_bridge(Hw::Device *host, Bridge_if *bridge,
-                       Config_cache const &cfg)
-  : Bridge(host, bridge, cfg)
+  explicit Pcie_bridge(Hw::Device *host, Hw::Pci::Bridge_if *bridge,
+                       Hw::Pci::Config_cache const &cfg)
+  : Hw::Pci::Bridge(host, bridge, cfg)
   {}
 
-  Dma_requester_id dma_alias() const override
+  Hw::Pci::Dma_requester_id dma_alias() const override
   {
     /*
      * PCIe-to-PCI(-X) bridges alias _some_ transactions with their secondary
      * bus number. See PCI Express to PCI/PCI-X Bridge Specification Revision
      * 1.0, section 2.3.
      */
-    return Dma_requester_id::alias(segment_nr(), secondary, 0);
+    return Hw::Pci::Dma_requester_id::alias(segment_nr(), secondary, 0);
   }
 };
 
+}}
 
-static Bridge *
-create_pci_pci_bridge(Bridge_if *bridge,
-                      Config const &,
-                      Config_cache const &cc,
+static Hw::Pci::Bridge *
+create_pci_pci_bridge(Hw::Pci::Bridge_if *bridge,
+                      Hw::Pci::Config const &,
+                      Hw::Pci::Config_cache const &cc,
                       Hw::Device *hw)
 {
   if (cc.type() != 1)
@@ -428,43 +435,43 @@ create_pci_pci_bridge(Bridge_if *bridge,
       return nullptr;
     }
 
-  Bridge *b = nullptr;
+  Hw::Pci::Bridge *b = nullptr;
   if (cc.pcie_cap)
     {
       switch (cc.pcie_type)
         {
         case 0x4: // Root Port of PCI Express Root Complex
         case 0x6: // Downstream Port of PCI Express Switch
-          b = new Pcie_downstream_port(hw, bridge, cc);
+          b = new Hw::Pci::Pcie_downstream_port(hw, bridge, cc);
           break;
 
         case 0x5: // Upstream Port of PCI Express Switch
-          b = new Pcie_upstream_port(hw, bridge, cc);
+          b = new Hw::Pci::Pcie_upstream_port(hw, bridge, cc);
           break;
 
         case 0x7: // PCI Express to PCI/PCI-X bridge
-          b = new Pcie_bridge(hw, bridge, cc);
+          b = new Hw::Pci::Pcie_bridge(hw, bridge, cc);
           break;
 
         default:
           // all other ids are either no busses or
           // legacy PCI/PCI-X busses
-          b = new Bridge(hw, bridge, cc);
+          b = new Hw::Pci::Bridge(hw, bridge, cc);
           break;
         }
     }
   else
-    b = new Bridge(hw, bridge, cc);
+    b = new Hw::Pci::Bridge(hw, bridge, cc);
 
   b->check_bus_config();
   hw->set_name_if_empty("PCI-to-PCI bridge");
   return b;
 }
 
-static Dev *
-create_pci_bridge(Bridge_if *bridge,
-                  Config const &cfg,
-                  Config_cache const &cc,
+static Hw::Pci::Dev *
+create_pci_bridge(Hw::Pci::Bridge_if *bridge,
+                  Hw::Pci::Config const &cfg,
+                  Hw::Pci::Config_cache const &cc,
                   Hw::Device *hw)
 {
   switch (cc.sub_class())
@@ -483,15 +490,15 @@ create_pci_bridge(Bridge_if *bridge,
         }
 
       hw->set_name_if_empty("PCI device");
-      return new Dev(hw, bridge, cc);
+      return new Hw::Pci::Dev(hw, bridge, cc);
     }
 }
 
 void
-Bridge_base::discover_device(Hw::Device *host_bus, Config_space *cfg,
-                             int devnum)
+Hw::Pci::Bridge_base::discover_device(Hw::Device *host_bus,
+                                      Hw::Pci::Config_space *cfg, int devnum)
 {
-  Dev *d = discover_func(host_bus, cfg, devnum, 0);
+  Hw::Pci::Dev *d = discover_func(host_bus, cfg, devnum, 0);
   if (!d)
     return;
 
@@ -501,13 +508,15 @@ Bridge_base::discover_device(Hw::Device *host_bus, Config_space *cfg,
       discover_func(host_bus, cfg, devnum, function);
 }
 
-Dev *
-Bridge_base::discover_func(Hw::Device *host_bus, Config_space *cfg,
-                           int device, int function)
+Hw::Pci::Dev *
+Hw::Pci::Bridge_base::discover_func(Hw::Device *host_bus,
+                                    Hw::Pci::Config_space *cfg,
+                                    int device, int function)
 {
-  Config config(Cfg_addr(secondary, device, function, 0), cfg);
+  Hw::Pci::Config config(Hw::Pci::Cfg_addr(secondary, device, function, 0),
+                         cfg);
 
-  l4_uint32_t vendor = config.read<l4_uint32_t>(Config::Vendor);
+  l4_uint32_t vendor = config.read<l4_uint32_t>(Hw::Pci::Config::Vendor);
   if ((vendor & 0xffff) == 0xffff)
     return nullptr;
 
@@ -521,13 +530,13 @@ Bridge_base::discover_func(Hw::Device *host_bus, Config_space *cfg,
   Hw::Device *child = host_bus->get_child_dev_adr(devfn(device, function), true);
 
   // skip device if we already were here
-  if (Dev *dev = child->find_feature<Dev>())
+  if (Hw::Pci::Dev *dev = child->find_feature<Hw::Pci::Dev>())
     return dev;
 
-  Config_cache cc;
+  Hw::Pci::Config_cache cc;
   cc.fill(vendor, config);
 
-  Dev *d;
+  Hw::Pci::Dev *d;
   if (cc.base_class() == 0x6) // bridge
     {
       d = create_pci_bridge(this, config, cc, child);
@@ -537,7 +546,7 @@ Bridge_base::discover_func(Hw::Device *host_bus, Config_space *cfg,
   else
     {
       child->set_name_if_empty("PCI device");
-      d = new Dev(child, this, cc);
+      d = new Hw::Pci::Dev(child, this, cc);
     }
 
   child->add_feature(d);
@@ -549,7 +558,7 @@ Bridge_base::discover_func(Hw::Device *host_bus, Config_space *cfg,
   // that were not preset
   d->discover_resources(child);
 
-  Driver *drv = Driver::find(d);
+  Hw::Pci::Driver *drv = Hw::Pci::Driver::find(d);
   if (drv)
     drv->probe(d);
 
@@ -561,13 +570,13 @@ Bridge_base::discover_func(Hw::Device *host_bus, Config_space *cfg,
 }
 
 void
-Bridge_base::discover_bus(Hw::Device *host, Config_space *cfg)
+Hw::Pci::Bridge_base::discover_bus(Hw::Device *host, Hw::Pci::Config_space *cfg)
 {
   Resource *r = host->resources()->find_if(Resource::is_irq_provider_s);
 
   if (!r)
     {
-      r = new Pci::Irq_router_res<Pci::Pci_pci_bridge_irq_router_rs>();
+      r = new Hw::Pci::Irq_router_res<Hw::Pci::Pci_pci_bridge_irq_router_rs>();
       r->set_id("IRQR");
       host->add_resource_rq(r);
     }
@@ -576,14 +585,15 @@ Bridge_base::discover_bus(Hw::Device *host, Config_space *cfg)
 }
 
 void
-Bridge_base::discover_devices(Hw::Device *host, Config_space *cfg)
+Hw::Pci::Bridge_base::discover_devices(Hw::Device *host,
+                                       Hw::Pci::Config_space *cfg)
 {
   for (int device = 0; device <= 31; ++device)
     discover_device(host, cfg, device);
 }
 
 void
-Bridge_base::dump(int) const
+Hw::Pci::Bridge_base::dump(int) const
 {
 #if 0
   printf("PCI bus type: %d: ", bus_type);
@@ -598,6 +608,4 @@ Bridge_base::dump(int) const
     c->dump();
 #endif
 };
-
-} }
 

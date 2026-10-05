@@ -12,10 +12,9 @@
 
 #include "vpci.h"
 
-namespace Vi {
-
 int
-Pci_dev_feature::dispatch(l4_umword_t, l4_uint32_t func, L4::Ipc::Iostream& ios)
+Vi::Pci_dev_feature::dispatch(l4_umword_t, l4_uint32_t func,
+                              L4::Ipc::Iostream& ios)
 {
   if (l4vbus_subinterface(func) != L4VBUS_INTERFACE_PCIDEV)
     return -L4_ENOSYS;
@@ -23,7 +22,7 @@ Pci_dev_feature::dispatch(l4_umword_t, l4_uint32_t func, L4::Ipc::Iostream& ios)
   l4_uint32_t reg;
   l4_uint32_t value = 0;
   l4_uint32_t width;
-  Pci_dev::Irq_info info;
+  Vi::Pci_dev::Irq_info info;
   int res;
 
   switch (func)
@@ -46,6 +45,4 @@ Pci_dev_feature::dispatch(l4_umword_t, l4_uint32_t func, L4::Ipc::Iostream& ios)
       return L4_EOK;
     default: return -L4_ENOSYS;
     }
-}
-
 }

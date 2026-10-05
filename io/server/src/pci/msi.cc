@@ -12,14 +12,13 @@
 #include "hw_msi.h"
 #include "main.h"
 
-namespace Hw { namespace Pci {
-
 namespace {
 
-class Saved_msi_cap : public Saved_cap
+class Saved_msi_cap : public Hw::Pci::Saved_cap
 {
 public:
-  explicit Saved_msi_cap(unsigned pos) : Saved_cap(Cap::Msi, pos) {}
+  explicit Saved_msi_cap(unsigned pos)
+  : Hw::Pci::Saved_cap(Hw::Pci::Cap::Msi, pos) {}
 
 private:
   enum
@@ -35,7 +34,7 @@ private:
   l4_uint16_t data;
   l4_uint16_t control;
 
-  void _save(Config cap) override
+  void _save(Hw::Pci::Config cap) override
   {
     cap.read(Control, &control);
     cap.read(Addr_lo, &addr_lo);
@@ -48,7 +47,7 @@ private:
       cap.read(Data_32, &data);
   }
 
-  void _restore(Config cap) override
+  void _restore(Hw::Pci::Config cap) override
   {
     cap.write(Addr_lo, addr_lo);
     if (control & (1 << 7))
@@ -106,11 +105,11 @@ public:
   static unsigned data(int vector) { return vector & 0xff; }
 };
 
-class Msi_res : public Hw::Msi_resource, public Transparent_msi
+class Msi_res : public Hw::Msi_resource, public Hw::Pci::Transparent_msi
 {
 public:
-  Msi_res(unsigned msi, Dev *dev, l4_uint32_t cap_offset)
-  : Msi_resource(msi), _dev(dev), _cap(cap_offset)
+  Msi_res(unsigned msi, Hw::Pci::Dev *dev, l4_uint32_t cap_offset)
+  : Hw::Msi_resource(msi), _dev(dev), _cap(cap_offset)
   {}
 
   int bind(Triggerable const &irq, unsigned mode) override;
@@ -126,7 +125,7 @@ public:
 
 private:
   void setup_cap(l4_uint16_t ctl, l4_uint16_t cmd);
-  Dev *_dev;
+  Hw::Pci::Dev *_dev;
   l4_uint32_t _cap;
   l4_icu_msi_info_t _msg;
 };
@@ -141,8 +140,9 @@ Msi_res::setup_cap(l4_uint16_t ctl, l4_uint16_t cmd)
   auto c = _dev->config();
 
   // disable INTx if not already
-  if (!(cmd & Dev::CC_int_disable))
-    c.write<l4_uint16_t>(Config::Command, cmd | Dev::CC_int_disable);
+  if (!(cmd & Hw::Pci::Dev::CC_int_disable))
+    c.write<l4_uint16_t>(Hw::Pci::Config::Command,
+                         cmd | Hw::Pci::Dev::CC_int_disable);
 
   c.write<l4_uint32_t>(_cap + 4, _msg.msi_addr);
 
@@ -161,7 +161,7 @@ Msi_res::setup_cap(l4_uint16_t ctl, l4_uint16_t cmd)
 int
 Msi_res::bind(Triggerable const &irq, unsigned mode)
 {
-  int err = Msi_resource::bind(irq, mode);
+  int err = Hw::Msi_resource::bind(irq, mode);
   if (err < 0)
     return err;
 
@@ -171,7 +171,7 @@ Msi_res::bind(Triggerable const &irq, unsigned mode)
   if (err < 0)
     {
       d_printf(DBG_ERR, "ERROR: could not get MSI source id (pin=%x)\n", pin());
-      Msi_resource::unbind(false);
+      Hw::Msi_resource::unbind(false);
       return err;
     }
 
@@ -179,14 +179,14 @@ Msi_res::bind(Triggerable const &irq, unsigned mode)
   if (e2 < 0)
     {
       d_printf(DBG_ERR, "ERROR: could not get MSI message (pin=%x)\n", pin());
-      Msi_resource::unbind(false);
+      Hw::Msi_resource::unbind(false);
       return e2;
     }
 
   // MSI capability
   auto c = _dev->config();
   l4_uint16_t ctl = c.read<l4_uint16_t>(_cap + 2);
-  setup_cap(ctl, c.read<l4_uint16_t>(Config::Command));
+  setup_cap(ctl, c.read<l4_uint16_t>(Hw::Pci::Config::Command));
   return 0;
 }
 
@@ -199,7 +199,7 @@ Msi_res::unbind(bool deleted)
   ctl = c.read<l4_uint16_t>(2);
   c.write<l4_uint16_t>(2, ctl & ~1);
 
-  return Msi_resource::unbind(deleted);
+  return Hw::Msi_resource::unbind(deleted);
 }
 
 l4_uint32_t
@@ -209,15 +209,16 @@ Msi_res::filter_cmd_read(l4_uint32_t cmd)
   if (!this->irq())
     {
       // disable INTx if not already
-      if (!(cmd & Dev::CC_int_disable))
-        c.write<l4_uint16_t>(Config::Command, cmd | Dev::CC_int_disable);
+      if (!(cmd & Hw::Pci::Dev::CC_int_disable))
+        c.write<l4_uint16_t>(Hw::Pci::Config::Command,
+                             cmd | Hw::Pci::Dev::CC_int_disable);
 
       // no transparent MSI bound, nothing to check
       return cmd;
     }
 
   l4_uint16_t ctl = c.read<l4_uint16_t>(_cap + 2);
-  if (!(cmd & Dev::CC_int_disable) || !(ctl & 1))
+  if (!(cmd & Hw::Pci::Dev::CC_int_disable) || !(ctl & 1))
     // MSI was disabled, rewrite the MSI cap
     setup_cap(ctl, cmd);
 
@@ -229,16 +230,16 @@ Msi_res::filter_cmd_write(l4_uint16_t cmd, l4_uint16_t ocmd)
 {
   if (!this->irq())
     {
-      cmd |= Dev::CC_int_disable;
+      cmd |= Hw::Pci::Dev::CC_int_disable;
       return cmd;
     }
 
   l4_uint16_t ctl = _dev->config(_cap).read<l4_uint16_t>(2);
-  if (!(ocmd & Dev::CC_int_disable) || !(ctl & 1))
+  if (!(ocmd & Hw::Pci::Dev::CC_int_disable) || !(ctl & 1))
     // MSI was disabled, rewrite the MSI cap
     setup_cap(ctl, ocmd);
 
-  cmd |= Dev::CC_int_disable;
+  cmd |= Hw::Pci::Dev::CC_int_disable;
   return cmd;
 }
 
@@ -246,7 +247,7 @@ Msi_res::filter_cmd_write(l4_uint16_t cmd, l4_uint16_t ocmd)
 
 
 void
-Dev::parse_msi_cap(Cfg_addr cap_ptr)
+Hw::Pci::Dev::parse_msi_cap(Hw::Pci::Cfg_addr cap_ptr)
 {
   if (   !Io_config::cfg->transparent_msi(host())
       || !system_icu()->info.supports_msi())
@@ -273,5 +274,3 @@ Dev::parse_msi_cap(Cfg_addr cap_ptr)
   _transp_msi = res;
   _saved_state.add_cap(new Saved_msi_cap(cap_ptr.reg()));
 }
-
-}}

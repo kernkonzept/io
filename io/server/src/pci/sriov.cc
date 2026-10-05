@@ -13,17 +13,15 @@
 #include <cstdio>
 #include <unistd.h>
 
-namespace Hw { namespace Pci {
-
-Sr_iov_feature::Sr_iov_feature(Dev *dev, l4_uint16_t cap_ofs)
+Hw::Pci::Sr_iov_feature::Sr_iov_feature(Hw::Pci::Dev *dev, l4_uint16_t cap_ofs)
 : _dev(dev), _cap_ofs(cap_ofs)
 {
   auto cap = this->cap();
-  auto initial_vfs = cap.read<Sr_iov_cap::Initial_vfs>();
-  _total_vfs = cap.read<Sr_iov_cap::Total_vfs>();
-  _num_vfs   = cap.read<Sr_iov_cap::Num_vfs>();
-  _vf_offset = cap.read<Sr_iov_cap::Vf_offset>();
-  _vf_stride = cap.read<Sr_iov_cap::Vf_stride>();
+  auto initial_vfs = cap.read<Hw::Pci::Sr_iov_cap::Initial_vfs>();
+  _total_vfs = cap.read<Hw::Pci::Sr_iov_cap::Total_vfs>();
+  _num_vfs   = cap.read<Hw::Pci::Sr_iov_cap::Num_vfs>();
+  _vf_offset = cap.read<Hw::Pci::Sr_iov_cap::Vf_offset>();
+  _vf_stride = cap.read<Hw::Pci::Sr_iov_cap::Vf_stride>();
 
   d_printf(DBG_INFO, "== %04x:%02x:%02x.%x ================================\n",
            0, cap.addr().bus(), cap.addr().dev(), cap.addr().fn());
@@ -32,14 +30,14 @@ Sr_iov_feature::Sr_iov_feature(Dev *dev, l4_uint16_t cap_ofs)
            initial_vfs.v, _total_vfs.v, _num_vfs.v, _vf_offset.v, _vf_stride.v);
 
   // If VFs were already enabled, disable them before configuring the device.
-  if (cap.read<Sr_iov_cap::Ctrl>().vf_enable())
+  if (cap.read<Hw::Pci::Sr_iov_cap::Ctrl>().vf_enable())
     {
       d_printf(DBG_WARN, "SR-IOV: VFs were already enabled, disabling...\n");
 
-      auto ctrl = cap.read<Sr_iov_cap::Ctrl>();
+      auto ctrl = cap.read<Hw::Pci::Sr_iov_cap::Ctrl>();
       ctrl.vf_enable() = 0;
       ctrl.vf_memory_enable() = 0;
-      cap.write<Sr_iov_cap::Ctrl>(ctrl);
+      cap.write<Hw::Pci::Sr_iov_cap::Ctrl>(ctrl);
 
       // After VF Enable is cleared, no field in the SR-IOV capability may be
       // accessed until at least 1 s has elapsed.
@@ -47,17 +45,17 @@ Sr_iov_feature::Sr_iov_feature(Dev *dev, l4_uint16_t cap_ofs)
     }
 
   // Configure ARI.
-  Extended_cap ari = dev->find_ext_cap(Ari_cap::Id);
+  Hw::Pci::Extended_cap ari = dev->find_ext_cap(Hw::Pci::Ari_cap::Id);
   if (ari.is_valid() && dev->bridge()->ari_forwarding_enabled())
     {
-      auto ctrl = cap.read<Sr_iov_cap::Ctrl>();
+      auto ctrl = cap.read<Hw::Pci::Sr_iov_cap::Ctrl>();
       ctrl.ari_capable_hierarchy() = 1;
       cap.write(ctrl);
       _ari_capable = true;
     }
 
   // We do not support dependencies between PFs.
-  auto fn_dep = cap.read<Sr_iov_cap::Fn_dep>();
+  auto fn_dep = cap.read<Hw::Pci::Sr_iov_cap::Fn_dep>();
   if (fn_dep.v != cap.addr().devfn())
     {
       d_printf(DBG_WARN, "SR-IOV: PF 0x%02x depends on other PF 0x%02x: disable\n",
@@ -78,19 +76,19 @@ Sr_iov_feature::Sr_iov_feature(Dev *dev, l4_uint16_t cap_ofs)
 }
 
 void
-Sr_iov_feature::set_num_vfs(l4_uint16_t num_vfs)
+Hw::Pci::Sr_iov_feature::set_num_vfs(l4_uint16_t num_vfs)
 {
   // Configure desired number of VFs.
   _num_vfs.v = num_vfs;
   cap().write(_num_vfs);
 
   // VF offset and VF Stride may change if NumVFs is changed.
-  _vf_offset = cap().read<Sr_iov_cap::Vf_offset>();
-  _vf_stride = cap().read<Sr_iov_cap::Vf_stride>();
+  _vf_offset = cap().read<Hw::Pci::Sr_iov_cap::Vf_offset>();
+  _vf_stride = cap().read<Hw::Pci::Sr_iov_cap::Vf_stride>();
 }
 
 void
-Sr_iov_feature::init_system_page_size()
+Hw::Pci::Sr_iov_feature::init_system_page_size()
 {
   auto cap = this->cap();
 
@@ -99,7 +97,7 @@ Sr_iov_feature::init_system_page_size()
   // system (L4_PAGESIZE).
   constexpr unsigned min_ps = L4_PAGESIZE >> 12;
 
-  auto system_ps = cap.read<Sr_iov_cap::System_ps>();
+  auto system_ps = cap.read<Hw::Pci::Sr_iov_cap::System_ps>();
   if (min_ps > system_ps.v)
     {
       d_printf(DBG_WARN, "%04x:%02x:%02x.%x: "
@@ -107,7 +105,7 @@ Sr_iov_feature::init_system_page_size()
                0, cap.addr().bus(), cap.addr().dev(), cap.addr().fn(),
                system_ps.v, min_ps);
 
-      auto supported_ps = cap.read<Sr_iov_cap::Supported_ps>();
+      auto supported_ps = cap.read<Hw::Pci::Sr_iov_cap::Supported_ps>();
       while (system_ps.v < min_ps || !(system_ps.v & supported_ps.v))
         system_ps.v <<= 1;
 
@@ -120,12 +118,12 @@ Sr_iov_feature::init_system_page_size()
     }
 
   d_printf(DBG_INFO, "  supported_ps=%08x system_ps=%08x\n",
-           cap.read<Sr_iov_cap::Supported_ps>().v,
-           cap.read<Sr_iov_cap::System_ps>().v);
+           cap.read<Hw::Pci::Sr_iov_cap::Supported_ps>().v,
+           cap.read<Hw::Pci::Sr_iov_cap::System_ps>().v);
 }
 
 bool
-Sr_iov_feature::discover_num_vfs()
+Hw::Pci::Sr_iov_feature::discover_num_vfs()
 {
   l4_uint16_t max_vfs = _total_vfs.v;
   char const *limit_reason;
@@ -183,11 +181,12 @@ Sr_iov_feature::discover_num_vfs()
 }
 
 void
-Sr_iov_feature::discover_vbars()
+Hw::Pci::Sr_iov_feature::discover_vbars()
 {
   for (unsigned vbar_idx = 0; vbar_idx < 6; ++vbar_idx)
     {
-      Cfg_bar vbar_cfg = cap() + Sr_iov_cap::Vf_bar0::Ofs + vbar_idx * 4;
+      Hw::Pci::Cfg_bar vbar_cfg =
+        cap() + Hw::Pci::Sr_iov_cap::Vf_bar0::Ofs + vbar_idx * 4;
       if (!vbar_cfg.parse())
         {
           _vbar[vbar_idx] = nullptr;
@@ -225,7 +224,8 @@ Sr_iov_feature::discover_vbars()
 }
 
 void
-Sr_iov_feature::init_vf(unsigned vf_idx, Sr_iov_cap::Vf_device_id vf_dev_id)
+Hw::Pci::Sr_iov_feature::init_vf(unsigned vf_idx,
+                                 Hw::Pci::Sr_iov_cap::Vf_device_id vf_dev_id)
 {
   // Calculate address of given VF relative to PF.
   l4_uint32_t relative_vf_addr = _vf_offset.v + (vf_idx * _vf_stride.v);
@@ -239,7 +239,7 @@ Sr_iov_feature::init_vf(unsigned vf_idx, Sr_iov_cap::Vf_device_id vf_dev_id)
   // non-CRS status (see the "Configuration Request Retry Status" implementation
   // note in section "2.3.1 Request Handling Rules" of the "PCI Express Base
   // Specification Revision 5.0").
-  Config_cache cfg;
+  Hw::Pci::Config_cache cfg;
   cfg.fill(vendor_device, _dev->config() + (relative_vf_addr << 12));
 
   // This is kind of a special HACKY case:
@@ -248,7 +248,7 @@ Sr_iov_feature::init_vf(unsigned vf_idx, Sr_iov_cap::Vf_device_id vf_dev_id)
   // of the PF VBAR resources.
 
   Hw::Device *vf_dev = new Hw::Device(cfg.addr().devfn());
-  Sr_iov_vf *vf = new Sr_iov_vf(vf_dev, _dev->bridge(), cfg);
+  Hw::Pci::Sr_iov_vf *vf = new Hw::Pci::Sr_iov_vf(vf_dev, _dev->bridge(), cfg);
   vf_dev->add_feature(vf);
   _dev->host()->parent()->add_child(vf_dev);
 
@@ -284,7 +284,7 @@ Sr_iov_feature::init_vf(unsigned vf_idx, Sr_iov_cap::Vf_device_id vf_dev_id)
 }
 
 void
-Sr_iov_feature::setup(Hw::Device *)
+Hw::Pci::Sr_iov_feature::setup(Hw::Device *)
 {
   d_printf(DBG_INFO, "setup SR-IOV device\n");
   if (_total_vfs.v == 0)
@@ -296,7 +296,7 @@ Sr_iov_feature::setup(Hw::Device *)
   if (!setup_vbars())
     return;
 
-  auto ctrl = cap().read<Sr_iov_cap::Ctrl>();
+  auto ctrl = cap().read<Hw::Pci::Sr_iov_cap::Ctrl>();
   ctrl.vf_enable() = 1;
   ctrl.vf_memory_enable() = 1;
   cap().write(ctrl);
@@ -313,7 +313,7 @@ Sr_iov_feature::setup(Hw::Device *)
 
   // We can only initialize the VF devices now, after the PF set VF enable,
   // since only then the VF devices are realized by hardware.
-  auto vf_dev_id = cap().read<Sr_iov_cap::Vf_device_id>();
+  auto vf_dev_id = cap().read<Hw::Pci::Sr_iov_cap::Vf_device_id>();
   for (unsigned i = 0; i < _total_vfs.v; ++i)
     init_vf(i, vf_dev_id);
 
@@ -322,7 +322,7 @@ Sr_iov_feature::setup(Hw::Device *)
 }
 
 bool
-Sr_iov_feature::setup_vbars()
+Hw::Pci::Sr_iov_feature::setup_vbars()
 {
   for (unsigned vbar_idx = 0; vbar_idx < 6; ++vbar_idx)
     {
@@ -339,7 +339,8 @@ Sr_iov_feature::setup_vbars()
       if (vbar->empty())
         continue;
 
-      Config vbar_cfg = cap() + Sr_iov_cap::Vf_bar0::Ofs + vbar_idx * 4;
+      Hw::Pci::Config vbar_cfg =
+        cap() + Hw::Pci::Sr_iov_cap::Vf_bar0::Ofs + vbar_idx * 4;
       auto vbar_start = vbar->start();
       vbar_cfg.write<l4_uint32_t>(0, vbar_start);
       if (vbar->is_64bit())
@@ -350,7 +351,7 @@ Sr_iov_feature::setup_vbars()
 }
 
 void
-Sr_iov_feature::dump(int indent) const
+Hw::Pci::Sr_iov_feature::dump(int indent) const
 {
   printf("%*.sSR-IOV: (%s) vfs=%u ofs=%u stride=%u\n", indent, " ",
          _enabled ? "enabled" : "disabled",
@@ -358,11 +359,10 @@ Sr_iov_feature::dump(int indent) const
 }
 
 bool
-Dev::handle_sriov_cap(Dev *dev, Extended_cap cap)
+Hw::Pci::Dev::handle_sriov_cap(Hw::Pci::Dev *dev, Hw::Pci::Extended_cap cap)
 {
-  Sr_iov_feature *sriov = new Sr_iov_feature(dev, cap.addr().reg());
+  Hw::Pci::Sr_iov_feature *sriov =
+    new Hw::Pci::Sr_iov_feature(dev, cap.addr().reg());
   dev->host()->add_feature(sriov);
   return true;
 }
-
-} }

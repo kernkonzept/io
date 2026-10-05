@@ -15,7 +15,7 @@ Hw::Pci::Dev::check_pme_status()
     return false;
 
   auto pm = config(cfg.pm_cap);
-  Pm_cap::Pmcsr pmcsr = pm.read<Pm_cap::Pmcsr>();
+  Hw::Pci::Pm_cap::Pmcsr pmcsr = pm.read<Hw::Pci::Pm_cap::Pmcsr>();
 
   if (!pmcsr.pme_status())
     return false;

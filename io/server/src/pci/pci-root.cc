@@ -16,12 +16,11 @@
 
 #endif
 
-namespace Hw { namespace Pci {
-
 #if defined(ARCH_x86) || defined(ARCH_amd64)
 
 int
-Port_root_bridge::cfg_read(Cfg_addr addr, l4_uint32_t *value, Cfg_width w)
+Hw::Pci::Port_root_bridge::cfg_read(Hw::Pci::Cfg_addr addr, l4_uint32_t *value,
+                                    Hw::Pci::Cfg_width w)
 {
   if (addr.reg() >= 0x100)
     {
@@ -34,15 +33,16 @@ Port_root_bridge::cfg_read(Cfg_addr addr, l4_uint32_t *value, Cfg_width w)
 
   switch (w)
     {
-    case Cfg_byte:  *value = l4util_in8(0xcfc + addr.reg_offs(w)); break;
-    case Cfg_short: *value = l4util_in16(0xcfc + addr.reg_offs(w)); break;
-    case Cfg_long:  *value = l4util_in32(0xcfc); break;
+    case Hw::Pci::Cfg_byte:  *value = l4util_in8(0xcfc + addr.reg_offs(w)); break;
+    case Hw::Pci::Cfg_short: *value = l4util_in16(0xcfc + addr.reg_offs(w)); break;
+    case Hw::Pci::Cfg_long:  *value = l4util_in32(0xcfc); break;
     }
   return 0;
 }
 
 int
-Port_root_bridge::cfg_write(Cfg_addr addr, l4_uint32_t value, Cfg_width w)
+Hw::Pci::Port_root_bridge::cfg_write(Hw::Pci::Cfg_addr addr, l4_uint32_t value,
+                                     Hw::Pci::Cfg_width w)
 {
   if (addr.reg() >= 0x100)
     return 0;
@@ -51,9 +51,9 @@ Port_root_bridge::cfg_write(Cfg_addr addr, l4_uint32_t value, Cfg_width w)
   l4util_out32((addr.to_compat_addr() | 0x80000000) & ~3UL, 0xcf8);
   switch (w)
     {
-    case Cfg_byte:  l4util_out8(value, 0xcfc + addr.reg_offs(w)); break;
-    case Cfg_short: l4util_out16(value, 0xcfc + addr.reg_offs(w)); break;
-    case Cfg_long:  l4util_out32(value, 0xcfc); break;
+    case Hw::Pci::Cfg_byte:  l4util_out8(value, 0xcfc + addr.reg_offs(w)); break;
+    case Hw::Pci::Cfg_short: l4util_out16(value, 0xcfc + addr.reg_offs(w)); break;
+    case Hw::Pci::Cfg_long:  l4util_out32(value, 0xcfc); break;
     }
   return 0;
 }
@@ -61,38 +61,36 @@ Port_root_bridge::cfg_write(Cfg_addr addr, l4_uint32_t value, Cfg_width w)
 #endif
 
 int
-Mmio_root_bridge::cfg_read(Cfg_addr addr, l4_uint32_t *value, Cfg_width w)
+Hw::Pci::Mmio_root_bridge::cfg_read(Hw::Pci::Cfg_addr addr, l4_uint32_t *value,
+                                    Hw::Pci::Cfg_width w)
 {
   switch (w)
     {
-    case Cfg_byte:  *value = *(volatile l4_uint8_t  *)a(addr); break;
-    case Cfg_short: *value = *(volatile l4_uint16_t *)a(addr); break;
-    case Cfg_long:  *value = *(volatile l4_uint32_t *)a(addr); break;
+    case Hw::Pci::Cfg_byte:  *value = *(volatile l4_uint8_t  *)a(addr); break;
+    case Hw::Pci::Cfg_short: *value = *(volatile l4_uint16_t *)a(addr); break;
+    case Hw::Pci::Cfg_long:  *value = *(volatile l4_uint32_t *)a(addr); break;
     }
   return 0;
 }
 
 int
-Mmio_root_bridge::cfg_write(Cfg_addr addr, l4_uint32_t value, Cfg_width w)
+Hw::Pci::Mmio_root_bridge::cfg_write(Hw::Pci::Cfg_addr addr, l4_uint32_t value,
+                                     Hw::Pci::Cfg_width w)
 {
   switch (w)
     {
-    case Cfg_byte:  *(volatile l4_uint8_t  *)a(addr) = value; break;
-    case Cfg_short: *(volatile l4_uint16_t *)a(addr) = value; break;
-    case Cfg_long:  *(volatile l4_uint32_t *)a(addr) = value; break;
+    case Hw::Pci::Cfg_byte:  *(volatile l4_uint8_t  *)a(addr) = value; break;
+    case Hw::Pci::Cfg_short: *(volatile l4_uint16_t *)a(addr) = value; break;
+    case Hw::Pci::Cfg_long:  *(volatile l4_uint32_t *)a(addr) = value; break;
     }
 
   return 0;
 }
 
-}}
-
-namespace Hw { namespace Pci {
-
-static std::vector<Root_bridge *> __pci_root_bridge;
+static std::vector<Hw::Pci::Root_bridge *> __pci_root_bridge;
 
 void
-Root_bridge::setup(Hw::Device *host)
+Hw::Pci::Root_bridge::setup(Hw::Device *host)
 {
   for (Resource_list::const_iterator i = host->resources()->begin();
        i != host->resources()->end(); ++i)
@@ -102,10 +100,11 @@ Root_bridge::setup(Hw::Device *host)
         subordinate = (*i)->end();
       }
 
-  Bridge_base::discover_bus(host, this);
+  Hw::Pci::Bridge_base::discover_bus(host, this);
 }
 
-Root_bridge *root_bridge(unsigned segment)
+Hw::Pci::Root_bridge *
+Hw::Pci::root_bridge(unsigned segment)
 {
   for (auto b: __pci_root_bridge)
     if (b->segment() == segment)
@@ -115,7 +114,7 @@ Root_bridge *root_bridge(unsigned segment)
 }
 
 int
-register_root_bridge(Root_bridge *b)
+Hw::Pci::register_root_bridge(Hw::Pci::Root_bridge *b)
 {
   for (auto x: __pci_root_bridge)
     if (x->segment() == b->segment()
@@ -126,7 +125,8 @@ register_root_bridge(Root_bridge *b)
   return 0;
 }
 
-Root_bridge *find_root_bridge(unsigned segment, int bus)
+Hw::Pci::Root_bridge *
+Hw::Pci::find_root_bridge(unsigned segment, int bus)
 {
   for (auto b: __pci_root_bridge)
     if (b->segment() == segment
@@ -135,5 +135,3 @@ Root_bridge *find_root_bridge(unsigned segment, int bus)
 
   return 0;
 }
-
-} }

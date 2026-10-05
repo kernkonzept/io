@@ -9,10 +9,8 @@
 #include "cfg.h"
 #include "debug.h"
 
-namespace Hw {
-
 bool
-Device::setup()
+Hw::Device::setup()
 {
   // FIXME: check and initialize things we depend on
   for (Feature_list::const_iterator d = _features.begin();
@@ -23,7 +21,7 @@ Device::setup()
 }
 
 int
-Device::pm_suspend()
+Hw::Device::pm_suspend()
 {
   if (pm_power_state() != Pm_online)
     return 0;
@@ -38,7 +36,7 @@ Device::pm_suspend()
 }
 
 int
-Device::pm_resume()
+Hw::Device::pm_resume()
 {
   if (pm_power_state() != Pm_suspended)
     return 0;
@@ -53,7 +51,7 @@ Device::pm_resume()
 }
 
 void
-Device::setup_children()
+Hw::Device::setup_children()
 {
   for (Feature_list::const_iterator d = _features.begin();
        d != _features.end(); ++d)
@@ -61,7 +59,7 @@ Device::setup_children()
 }
 
 int
-Device::pm_init()
+Hw::Device::pm_init()
 {
 #if 0
   printf("Hw::Device::plug(this=%p, name='%s', hid='%s')\n",
@@ -83,7 +81,7 @@ Device::pm_init()
 }
 
 void
-Device::init()
+Hw::Device::init()
 {
   if (0)
     printf("Hw::Device::plug(this=%p, name='%s', hid='%s')\n",
@@ -105,20 +103,20 @@ Device::init()
 }
 
 void
-Device::plugin()
+Hw::Device::plugin()
 {
   init();
 }
 
 void
-Device_factory::dump()
+Hw::Device_factory::dump()
 {
   for (Name_map::const_iterator i = nm().begin(); i != nm().end(); ++i)
     printf("HW: '%s'\n", (*i).first.c_str());
 }
 
-Device *
-Device_factory::create(cxx::String const &name)
+Hw::Device *
+Hw::Device_factory::create(cxx::String const &name)
 {
   Name_map::const_iterator i = nm().find(std::string(name.start(), name.end()));
   if (i != nm().end())
@@ -128,44 +126,44 @@ Device_factory::create(cxx::String const &name)
 }
 
 bool
-Device::resource_allocated(Resource const *r) const
+Hw::Device::resource_allocated(Resource const *r) const
 {
   return r->parent();
 }
 
 
-Device *
-Device::get_child_dev_adr(l4_uint32_t adr, bool create)
+Hw::Device *
+Hw::Device::get_child_dev_adr(l4_uint32_t adr, bool create)
 {
-  for (Device *c = children(); c; c = c->next())
+  for (Hw::Device *c = children(); c; c = c->next())
     if (c->adr() == adr)
       return c;
 
   if (!create)
     return 0;
 
-  Device *c = new Device(adr);
+  Hw::Device *c = new Hw::Device(adr);
   add_child(c);
   return c;
 }
 
-Device *
-Device::get_child_dev_uid(l4_umword_t uid, l4_uint32_t adr, bool create)
+Hw::Device *
+Hw::Device::get_child_dev_uid(l4_umword_t uid, l4_uint32_t adr, bool create)
 {
-  for (Device *c = children(); c; c = c->next())
+  for (Hw::Device *c = children(); c; c = c->next())
     if (c->uid() == uid)
       return c;
 
   if (!create)
     return 0;
 
-  Device *c = new Device(uid, adr);
+  Hw::Device *c = new Hw::Device(uid, adr);
   add_child(c);
   return c;
 }
 
 bool
-Device::match_cid(cxx::String const &cid) const
+Hw::Device::match_cid(cxx::String const &cid) const
 {
   if (Generic_device::match_cid(cid))
     return true;
@@ -183,7 +181,7 @@ Device::match_cid(cxx::String const &cid) const
 }
 
 void
-Device::dump(int indent) const
+Hw::Device::dump(int indent) const
 {
   printf("%*.s%s: %s%s\n", indent, " ", name(),
          hid() && hid()[0] ? "hid=" : "", hid() ? hid() : "");
@@ -217,16 +215,16 @@ Device::dump(int indent) const
 }
 
 void
-Device::add_feature(Dev_feature *f)
+Hw::Device::add_feature(Hw::Dev_feature *f)
 {
   _features.push_back(f);
-  Feature_manager_base::match(this, f);
+  Hw::Feature_manager_base::match(this, f);
   if (!_clients.empty())
     f->enable_notifications(this);
 }
 
 void
-Device::check_conflicts() const
+Hw::Device::check_conflicts() const
 {
   for (auto i = _clients.begin(); i != _clients.end(); ++i)
     for (auto j = i; ++j != _clients.end();)
@@ -244,7 +242,7 @@ Device::check_conflicts() const
 }
 
 void
-Device::add_client(Device_client *client)
+Hw::Device::add_client(Hw::Device_client *client)
 {
   bool first = _clients.empty();
   _clients.push_front(client);
@@ -254,7 +252,7 @@ Device::add_client(Device_client *client)
 }
 
 void
-Device::notify(unsigned type, unsigned event, unsigned value)
+Hw::Device::notify(unsigned type, unsigned event, unsigned value)
 {
   for (auto i = _clients.begin(); i != _clients.end(); ++i)
     (*i)->notify(type, event, value);
@@ -266,6 +264,5 @@ Device::notify(unsigned type, unsigned event, unsigned value)
 }
 
 namespace {
-  static Device_factory_t<Device> __hw_pf_factory("Device");
-}
+  static Hw::Device_factory_t<Hw::Device> __hw_pf_factory("Device");
 }

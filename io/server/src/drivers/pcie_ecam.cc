@@ -505,7 +505,7 @@ Ecam_pcie_bridge::cfg_read(Cfg_addr addr, l4_uint32_t *value, Cfg_width width)
   d_printf(DBG_ALL,
            "%s: cfg_read  addr=%02x:%02x.%x reg=%03x width=%2d-bit  =>   %0*x\n",
            name(), addr.bus(), addr.dev(), addr.fn(), addr.reg(), 8 << width,
-           2 << width, *value & cfg_o_to_mask(width));
+           2 << width, *value & Hw::Pci::cfg_o_to_mask(width));
 
   return 0;
 }
@@ -516,7 +516,7 @@ Ecam_pcie_bridge::cfg_write(Cfg_addr addr, l4_uint32_t value, Cfg_width width)
   d_printf(DBG_ALL,
            "%s: cfg_write addr=%02x:%02x.%x reg=%03x width=%2d-bit value=%0*x\n",
            name(), addr.bus(), addr.dev(), addr.fn(), addr.reg(), 8 << width,
-           2 << width, value & cfg_o_to_mask(width));
+           2 << width, value & Hw::Pci::cfg_o_to_mask(width));
 
   switch (width)
     {

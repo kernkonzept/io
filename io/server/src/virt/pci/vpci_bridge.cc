@@ -9,15 +9,13 @@
 #include "vpci_bridge.h"
 #include "vpci_virtual_dev.h"
 
-namespace Vi {
-
-Pci_bridge::Dev::Dev()
+Vi::Pci_bridge::Dev::Dev()
 {
   memset(_fns, 0, sizeof(_fns));
 }
 
 void
-Pci_bridge::Dev::add_fn(Pci_dev *f)
+Vi::Pci_bridge::Dev::add_fn(Vi::Pci_dev *f)
 {
   for (unsigned i = 0; i < sizeof(_fns)/sizeof(_fns[0]); ++i)
     {
@@ -30,7 +28,7 @@ Pci_bridge::Dev::add_fn(Pci_dev *f)
 }
 
 void
-Pci_bridge::Dev::sort_fns()
+Vi::Pci_bridge::Dev::sort_fns()
 {
   // disabled sorting because the relation of two functions is questionable
 #if 0
@@ -63,7 +61,7 @@ Pci_bridge::Dev::sort_fns()
 }
 
 void
-Pci_bridge::Bus::add_fn(Pci_dev *pd, int slot)
+Vi::Pci_bridge::Bus::add_fn(Vi::Pci_dev *pd, int slot)
 {
   if (slot >= 0)
     {
@@ -89,29 +87,30 @@ Pci_bridge::Bus::add_fn(Pci_dev *pd, int slot)
 }
 
 void
-Pci_bridge::add_child(Device *d)
+Vi::Pci_bridge::add_child(Vi::Device *d)
 {
-  Pci_dev *vp = d->find_feature<Pci_dev>();
+  Vi::Pci_dev *vp = d->find_feature<Vi::Pci_dev>();
 
   // hm, we do currently not add non PCI devices.
   if (!vp)
     return;
 
   _bus.add_fn(vp);
-  Device::add_child(d);
+  Vi::Device::add_child(d);
 }
 
 
 void
-Pci_bridge::add_child_fixed(Device *d, Pci_dev *vp, unsigned dn, unsigned fn)
+Vi::Pci_bridge::add_child_fixed(Vi::Device *d, Vi::Pci_dev *vp, unsigned dn,
+                                unsigned fn)
 {
   _bus.dev(dn)->fn(fn, vp);
-  Device::add_child(d);
+  Vi::Device::add_child(d);
 }
 
 
-Pci_bridge *
-Pci_bridge::find_bridge(unsigned bus)
+Vi::Pci_bridge *
+Vi::Pci_bridge::find_bridge(unsigned bus)
 {
   if (0)
     printf("PCI[%p]: look for bridge for bus %x %02x %02x\n",
@@ -125,11 +124,11 @@ Pci_bridge::find_bridge(unsigned bus)
   for (unsigned d = 0; d < Bus::Devs; ++d)
     for (unsigned f = 0; f < Dev::Fns; ++f)
       {
-        Pci_dev *p = _bus.dev(d)->fn(f);
+        Vi::Pci_dev *p = _bus.dev(d)->fn(f);
         if (!p)
           break;
 
-        Pci_bridge *b = dynamic_cast<Pci_bridge*>(p);
+        Vi::Pci_bridge *b = dynamic_cast<Vi::Pci_bridge*>(p);
         if (b && (b = b->find_bridge(bus)))
           return b;
       }
@@ -138,10 +137,10 @@ Pci_bridge::find_bridge(unsigned bus)
 }
 
 
-Pci_dev *
-Pci_bridge::child_dev(unsigned bus, unsigned char dev, unsigned char fn)
+Vi::Pci_dev *
+Vi::Pci_bridge::child_dev(unsigned bus, unsigned char dev, unsigned char fn)
 {
-  Pci_bridge *b = find_bridge(bus);
+  Vi::Pci_bridge *b = find_bridge(bus);
   if (!b)
     return 0;
 
@@ -149,6 +148,4 @@ Pci_bridge::child_dev(unsigned bus, unsigned char dev, unsigned char fn)
     return 0;
 
   return b->_bus.dev(dev)->fn(fn);
-}
-
 }

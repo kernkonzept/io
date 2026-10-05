@@ -11,10 +11,8 @@
 #include "vpci_virtual_dev.h"
 #include "virt/vbus_factory.h"
 
-namespace Vi {
-
 int
-Pci_virtual_dev::cfg_read(l4_uint32_t reg, l4_uint32_t *v, Cfg_width order)
+Vi::Pci_virtual_dev::cfg_read(l4_uint32_t reg, l4_uint32_t *v, Cfg_width order)
 {
   reg >>= order;
   if ((unsigned)reg >= (_h_len >> order))
@@ -34,7 +32,7 @@ Pci_virtual_dev::cfg_read(l4_uint32_t reg, l4_uint32_t *v, Cfg_width order)
 }
 
 int
-Pci_virtual_dev::cfg_write(l4_uint32_t reg, l4_uint32_t v, Cfg_width order)
+Vi::Pci_virtual_dev::cfg_write(l4_uint32_t reg, l4_uint32_t v, Cfg_width order)
 {
   switch (reg & ~3)
     {
@@ -62,7 +60,7 @@ Pci_virtual_dev::cfg_write(l4_uint32_t reg, l4_uint32_t v, Cfg_width order)
 #undef RC
 }
 
-Pci_dummy::Pci_dummy()
+Vi::Pci_dummy::Pci_dummy()
 {
   add_feature(this);
   memset(_cfg_space, 0, sizeof(_cfg_space));
@@ -78,7 +76,6 @@ Pci_dummy::Pci_dummy()
 }
 
 namespace {
-  static Dev_factory_t<Pci_dummy> __pci_dummy_factory("PCI_dummy_device");
-}
-
+  static Vi::Dev_factory_t<Vi::Pci_dummy>
+    __pci_dummy_factory("PCI_dummy_device");
 }

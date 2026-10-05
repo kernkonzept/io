@@ -15,16 +15,14 @@
 #include <l4/vbus/vbus_types.h>
 #include <l4/re/error_helper>
 
-namespace Vi {
-
 void
-Device::dump(int indent) const
+Vi::Device::dump(int indent) const
 {
   printf("%*.s%s: [%s]\n", indent, " ", name(), type_name());
 }
 
 bool
-Device::resource_allocated(Resource const *r) const
+Vi::Device::resource_allocated(Resource const *r) const
 {
   if (!parent())
     return false;
@@ -33,7 +31,7 @@ Device::resource_allocated(Resource const *r) const
 }
 
 l4vbus_resource_t
-Device::get_resource_info(unsigned index) const
+Vi::Device::get_resource_info(unsigned index) const
 {
   auto *resources = this->resources();
 
@@ -53,7 +51,7 @@ Device::get_resource_info(unsigned index) const
 }
 
 l4vbus_device_t
-Device::get_device_info() const
+Vi::Device::get_device_info() const
 {
   l4vbus_device_t inf;
   inf.num_resources = resources()->size();
@@ -77,11 +75,10 @@ Device::get_device_info() const
 }
 
 Io_irq_pin::Msi_src *
-Device::find_msi_src(Msi_src_info si)
+Vi::Device::find_msi_src(Msi_src_info si)
 {
-  for (Device *d = children(); d; d = d->next())
+  for (Vi::Device *d = children(); d; d = d->next())
     if (Io_irq_pin::Msi_src *s = d->find_msi_src(si))
       return s;
   return nullptr;
-}
 }

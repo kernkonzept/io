@@ -313,7 +313,7 @@ Gpio_qcom_chip::get_irq(unsigned pin)
 void
 Gpio_qcom_chip::init()
 {
-  Gpio_device::init();
+  Hw::Gpio_device::init();
 
   if (   assert_property(&_ngpios, "ngpios", 0)
       || assert_property(&_target_proc, "target_proc", ~0)

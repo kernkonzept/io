@@ -391,7 +391,7 @@ Gpio_imx_chip::get_irq(unsigned pin)
 
 void Gpio_imx_chip::init()
 {
-  Gpio_device::init();
+  Hw::Gpio_device::init();
 
   d_printf(DBG_INFO, "%s: init() %p\n", name(), this);
 

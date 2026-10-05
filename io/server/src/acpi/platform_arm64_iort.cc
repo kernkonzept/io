@@ -648,13 +648,9 @@ private:
 
 }
 
-namespace Hw { namespace Acpi {
-
 Hw::Pci::Platform_adapter_if *
-setup_pci_platform()
+Hw::Acpi::setup_pci_platform()
 {
   static Iort iort_adapter;
   return &iort_adapter;
 }
-
-} }

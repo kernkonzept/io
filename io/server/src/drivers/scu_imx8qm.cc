@@ -7,9 +7,7 @@
 
 #include "scu_imx8qm.h"
 
-namespace Hw {
-
-void Scu_imx8qm::init()
+void Hw::Scu_imx8qm::init()
 {
   if (_initialized)
     return;
@@ -58,5 +56,4 @@ void Scu_imx8qm::init()
     }
 }
 
-static Hw::Device_factory_t<Scu_imx8qm> __hw_pf_factory("Scu_imx8qm");
-}
+static Hw::Device_factory_t<Hw::Scu_imx8qm> __hw_pf_factory("Scu_imx8qm");

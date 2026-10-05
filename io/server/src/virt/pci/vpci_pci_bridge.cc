@@ -8,9 +8,7 @@
 #include "vpci_pci_bridge.h"
 #include "virt/vbus_factory.h"
 
-namespace Vi {
-
-Pci_to_pci_bridge::Pci_to_pci_bridge()
+Vi::Pci_to_pci_bridge::Pci_to_pci_bridge()
 {
   add_feature(this);
   memset(_cfg_space, 0, sizeof(_cfg_space));
@@ -24,7 +22,7 @@ Pci_to_pci_bridge::Pci_to_pci_bridge()
   cfg_hdr()->class_rev = 0x06040000;
   cfg_hdr()->cmd = 0x3;
 
-  cfg_write(Pci::Config::Primary, 0x00010100, Hw::Pci::Cfg_long);
+  cfg_write(Vi::Pci::Config::Primary, 0x00010100, Hw::Pci::Cfg_long);
 
   Bridge_cfg *bc = bridge_cfg();
   bc->io_base = 0xc0;      bc->io_base_upper = 0;
@@ -37,7 +35,7 @@ Pci_to_pci_bridge::Pci_to_pci_bridge()
 
 
 int
-Pci_to_pci_bridge::cfg_read(l4_uint32_t reg, l4_uint32_t *v, Cfg_width o)
+Vi::Pci_to_pci_bridge::cfg_read(l4_uint32_t reg, l4_uint32_t *v, Cfg_width o)
 {
   unsigned mask = ~0U >> (32 - (1U << (o + 3)));
   switch (reg & ~3)
@@ -56,12 +54,12 @@ Pci_to_pci_bridge::cfg_read(l4_uint32_t reg, l4_uint32_t *v, Cfg_width o)
       break;
     }
 
-  return Pci_virtual_dev::cfg_read(reg, v, o);
+  return Vi::Pci_virtual_dev::cfg_read(reg, v, o);
 }
 
 
 int
-Pci_to_pci_bridge::cfg_write(l4_uint32_t reg, l4_uint32_t v, Cfg_width o)
+Vi::Pci_to_pci_bridge::cfg_write(l4_uint32_t reg, l4_uint32_t v, Cfg_width o)
 {
   unsigned mask = (~0U >> (32 - (1U << (o + 3)))) << ((reg & 3) * 8);
   switch (reg & ~3)
@@ -78,7 +76,7 @@ Pci_to_pci_bridge::cfg_write(l4_uint32_t reg, l4_uint32_t v, Cfg_width o)
     default:
       break;
     }
-  int r = Pci_virtual_dev::cfg_write(reg, v, o);
+  int r = Vi::Pci_virtual_dev::cfg_write(reg, v, o);
 
   switch (reg & ~3)
     {
@@ -98,6 +96,5 @@ Pci_to_pci_bridge::cfg_write(l4_uint32_t reg, l4_uint32_t v, Cfg_width o)
 }
 
 
-static Dev_factory_t<Pci_to_pci_bridge> __pci_to_pci_factory("PCI_PCI_bridge");
-
-}
+static Vi::Dev_factory_t<Vi::Pci_to_pci_bridge>
+  __pci_to_pci_factory("PCI_PCI_bridge");

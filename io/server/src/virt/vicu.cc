@@ -25,21 +25,19 @@
 #include <cassert>
 #include <map>
 
-namespace Vi {
-
-Sw_icu::Sw_icu()
+Vi::Sw_icu::Sw_icu()
 {
   add_feature(this);
   registry->register_obj(this);
 }
 
-Sw_icu::~Sw_icu()
+Vi::Sw_icu::~Sw_icu()
 {
   registry->unregister_obj(this);
 }
 
-Sw_icu::Sw_irq_pin *
-Sw_icu::get_msi_pin(unsigned msin)
+Vi::Sw_icu::Sw_irq_pin *
+Vi::Sw_icu::get_msi_pin(unsigned msin)
 {
   if (msin >= _num_msis)
     {
@@ -57,8 +55,8 @@ Sw_icu::get_msi_pin(unsigned msin)
 }
 
 int
-Sw_icu::op_msi_info(L4::Icu::Rights, l4_umword_t irqnum, l4_uint64_t source,
-                    l4_icu_msi_info_t &info)
+Vi::Sw_icu::op_msi_info(L4::Icu::Rights, l4_umword_t irqnum, l4_uint64_t source,
+                        l4_icu_msi_info_t &info)
 {
   d_printf(DBG_ALL, "%s: irqnum=%lx...\n", __func__, irqnum);
   if (!(irqnum & L4::Icu::F_msi))
@@ -71,7 +69,7 @@ Sw_icu::op_msi_info(L4::Icu::Rights, l4_umword_t irqnum, l4_uint64_t source,
   Io_irq_pin::Msi_src *src;
 
   // interpret source as the device handle and use that to lookup the device
-  Device::Msi_src_info si = source;
+  Vi::Device::Msi_src_info si = source;
 
   d_printf(DBG_ALL, "%s: irqnum=%lx: source=0x%05x\n",
            __func__, irqnum, (unsigned)source);
@@ -90,7 +88,7 @@ Sw_icu::op_msi_info(L4::Icu::Rights, l4_umword_t irqnum, l4_uint64_t source,
 }
 
 int
-Sw_icu::bind_irq(unsigned irqn, L4::Ipc::Snd_fpage const &irqc)
+Vi::Sw_icu::bind_irq(unsigned irqn, L4::Ipc::Snd_fpage const &irqc)
 {
   if (!irqc.cap_received())
     return -L4_EINVAL;
@@ -120,7 +118,7 @@ Sw_icu::bind_irq(unsigned irqn, L4::Ipc::Snd_fpage const &irqc)
 }
 
 int
-Sw_icu::unbind_irq(unsigned irqn, L4::Ipc::Snd_fpage const &/*irqc*/)
+Vi::Sw_icu::unbind_irq(unsigned irqn, L4::Ipc::Snd_fpage const &/*irqc*/)
 {
   d_printf(DBG_ALL, "%s[%p]: unbind_irq(%u, ...)\n", name(), this, irqn);
 
@@ -142,7 +140,7 @@ Sw_icu::unbind_irq(unsigned irqn, L4::Ipc::Snd_fpage const &/*irqc*/)
 }
 
 int
-Sw_icu::set_mode(unsigned irqn, l4_umword_t mode)
+Vi::Sw_icu::set_mode(unsigned irqn, l4_umword_t mode)
 {
   if (irqn & L4::Icu::F_msi)
     {
@@ -158,7 +156,7 @@ Sw_icu::set_mode(unsigned irqn, l4_umword_t mode)
 }
 
 int
-Sw_icu::unmask_irq(unsigned irqn)
+Vi::Sw_icu::unmask_irq(unsigned irqn)
 {
   Irq_set *interrupts;
 
@@ -183,7 +181,7 @@ Sw_icu::unmask_irq(unsigned irqn)
 
 
 bool
-Sw_icu::irqs_allocated(Resource const *r)
+Vi::Sw_icu::irqs_allocated(Resource const *r)
 {
   for (unsigned n = r->start(); n <= r->end(); ++n)
     {
@@ -195,7 +193,7 @@ Sw_icu::irqs_allocated(Resource const *r)
 }
 
 bool
-Sw_icu::add_irqs(Resource const *r)
+Vi::Sw_icu::add_irqs(Resource const *r)
 {
   for (unsigned n = r->start(); n <= r->end(); ++n)
     {
@@ -215,7 +213,7 @@ Sw_icu::add_irqs(Resource const *r)
 }
 
 bool
-Sw_icu::add_irq(unsigned n, unsigned flags, Io_irq_pin *be)
+Vi::Sw_icu::add_irq(unsigned n, unsigned flags, Io_irq_pin *be)
 {
   if (_irqs.find(n) == _irqs.end())
     return false;
@@ -226,7 +224,7 @@ Sw_icu::add_irq(unsigned n, unsigned flags, Io_irq_pin *be)
 }
 
 int
-Sw_icu::alloc_irq(unsigned flags, Io_irq_pin *be)
+Vi::Sw_icu::alloc_irq(unsigned flags, Io_irq_pin *be)
 {
   unsigned i;
   for (i = 1; i < 1000; ++i)
@@ -242,7 +240,7 @@ Sw_icu::alloc_irq(unsigned flags, Io_irq_pin *be)
 }
 
 int
-Sw_icu::dispatch(l4_umword_t, l4_uint32_t func, L4::Ipc::Iostream &ios)
+Vi::Sw_icu::dispatch(l4_umword_t, l4_uint32_t func, L4::Ipc::Iostream &ios)
 {
   if (func != L4vbus_vicu_get_cap)
     return -L4_ENOSYS;
@@ -254,20 +252,20 @@ Sw_icu::dispatch(l4_umword_t, l4_uint32_t func, L4::Ipc::Iostream &ios)
 //static VBus_factory<Sw_icu> __vicu_factory("Vicu");
 
 int
-Sw_icu::Sw_irq_pin::trigger() const
+Vi::Sw_icu::Sw_irq_pin::trigger() const
 {
   return l4_error(_irq->trigger());
 }
 
 
 unsigned
-Sw_icu::Sw_irq_pin::l4_type() const
+Vi::Sw_icu::Sw_irq_pin::l4_type() const
 {
   return (type() & S_irq_type_mask) / Resource::Irq_type_base;
 }
 
 int
-Sw_icu::Sw_irq_pin::set_mode(l4_umword_t mode)
+Vi::Sw_icu::Sw_irq_pin::set_mode(l4_umword_t mode)
 {
   if (!(_state & S_allow_set_mode))
     {
@@ -286,7 +284,7 @@ Sw_icu::Sw_irq_pin::set_mode(l4_umword_t mode)
 }
 
 bool
-Sw_icu::Sw_irq_pin::bound()
+Vi::Sw_icu::Sw_irq_pin::bound()
 {
   if (!_irq)
     return false;
@@ -301,7 +299,7 @@ Sw_icu::Sw_irq_pin::bound()
 }
 
 int
-Sw_icu::Sw_irq_pin::_direct_bind(Triggerable const &irq)
+Vi::Sw_icu::Sw_irq_pin::_direct_bind(Triggerable const &irq)
 {
   // the first irq shall be attached to a hw irq
   d_printf(DBG_DEBUG2, "IRQ %d -> client\nIRQ mode = %x -> %x\n",
@@ -320,7 +318,7 @@ Sw_icu::Sw_irq_pin::_direct_bind(Triggerable const &irq)
 }
 
 int
-Sw_icu::Sw_irq_pin::bind(L4::Cap<void> rc)
+Vi::Sw_icu::Sw_irq_pin::bind(L4::Cap<void> rc)
 {
   if (bound())
     return -L4_EPERM;
@@ -342,7 +340,7 @@ Sw_icu::Sw_irq_pin::bind(L4::Cap<void> rc)
 }
 
 int
-Sw_icu::Sw_irq_pin::_unbind(bool deleted)
+Vi::Sw_icu::Sw_irq_pin::_unbind(bool deleted)
 {
   int err = 0;
   _master->dec_sw_irqs();
@@ -355,7 +353,7 @@ Sw_icu::Sw_irq_pin::_unbind(bool deleted)
 }
 
 int
-Sw_icu::Sw_irq_pin::unbind()
+Vi::Sw_icu::Sw_irq_pin::unbind()
 {
   if (!_master)
     return -L4_EINVAL;
@@ -367,6 +365,4 @@ Sw_icu::Sw_irq_pin::unbind()
     return _unbind(false);
 
   return 0;
-}
-
 }

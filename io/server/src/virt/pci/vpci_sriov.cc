@@ -16,24 +16,25 @@
 #include <cassert>
 #include <cstdio>
 
-namespace Vi {
-
-Sr_iov_proxy_cap::Sr_iov_proxy_cap(Hw::Pci::If *hwf, l4_uint32_t header,
-                                   l4_uint16_t offset, l4_uint16_t phys_offset)
-: Pcie_proxy_cap(hwf, header, offset, phys_offset)
+Vi::Sr_iov_proxy_cap::Sr_iov_proxy_cap(Hw::Pci::If *hwf, l4_uint32_t header,
+                                       l4_uint16_t offset,
+                                       l4_uint16_t phys_offset)
+: Vi::Pcie_proxy_cap(hwf, header, offset, phys_offset)
 {
   d_printf(DBG_INFO, "SR-IOV proxy cap: created\n");
   set_size(0x40);
 }
 
-int Sr_iov_proxy_cap::cap_read(l4_uint32_t offs, l4_uint32_t *v, Cfg_width order)
+int
+Vi::Sr_iov_proxy_cap::cap_read(l4_uint32_t offs, l4_uint32_t *v,
+                               Cfg_width order)
 {
   d_printf(DBG_DEBUG2, "SR-IOV proxy cap: read %x, w=%d\n", offs, order);
 
   Reg_matcher m{offs, order};
   if (m.is_reg<Sr_iov_cap::Ctrl>())
     {
-      int r = Pcie_proxy_cap::cap_read(offs, v, order);
+      int r = Vi::Pcie_proxy_cap::cap_read(offs, v, order);
       if (!_mse)
         *v &= ~Sr_iov_cap::Ctrl::vf_memory_enable_bfm_t::Mask;
       return r;
@@ -59,10 +60,12 @@ int Sr_iov_proxy_cap::cap_read(l4_uint32_t offs, l4_uint32_t *v, Cfg_width order
       return 0;
     }
   else
-    return Pcie_proxy_cap::cap_read(offs, v, order);
+    return Vi::Pcie_proxy_cap::cap_read(offs, v, order);
 }
 
-int Sr_iov_proxy_cap::cap_write(l4_uint32_t offs, l4_uint32_t v, Cfg_width order)
+int
+Vi::Sr_iov_proxy_cap::cap_write(l4_uint32_t offs, l4_uint32_t v,
+                                Cfg_width order)
 {
   d_printf(DBG_DEBUG2, "SR-IOV proxy cap: write r=0x%x, v=0x%x, w=%d...\n", offs, v, order);
 
@@ -74,23 +77,25 @@ int Sr_iov_proxy_cap::cap_write(l4_uint32_t offs, l4_uint32_t v, Cfg_width order
       return 0;
     }
   else if (m.is_reg<Sr_iov_cap::Vf_migration_state>())
-    return Pcie_proxy_cap::cap_write(offs, v, order);
+    return Vi::Pcie_proxy_cap::cap_write(offs, v, order);
   else // Ignore invalid and non-matched writes.
     return 0;
 }
 
+namespace Vi {
 
-class Sr_iov_proxy_dev : public Pci_proxy_dev
+class Sr_iov_proxy_dev : public Vi::Pci_proxy_dev
 {
 public:
-  explicit Sr_iov_proxy_dev(Hw::Pci::Sr_iov_vf *hwf) : Pci_proxy_dev(hwf)
+  explicit Sr_iov_proxy_dev(Hw::Pci::Sr_iov_vf *hwf) : Vi::Pci_proxy_dev(hwf)
   {
     d_printf(DBG_INFO, "Create Vi::Sr_iov_proxy_dev[%p] for %p %s\n", this, hwf, typeid(*hwf).name());
   }
 };
 
-namespace {
-  static Feature_factory_t<Sr_iov_proxy_dev, Hw::Pci::Sr_iov_vf> __sriov_f_f;
 }
 
+namespace {
+  static Vi::Feature_factory_t<Vi::Sr_iov_proxy_dev, Hw::Pci::Sr_iov_vf>
+    __sriov_f_f;
 }

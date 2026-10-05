@@ -130,7 +130,7 @@ public:
 
 };
 
-class Gpio : public Device, public Dev_feature, public Hw::Device_client
+class Gpio : public Vi::Device, public Vi::Dev_feature, public Hw::Device_client
 {
 private:
   typedef std::vector<int> Irqs;
@@ -182,8 +182,8 @@ public:
   }
 
   char const *hid() const override { return "GPIO"; }
-  void set_host(Device *d) override { _host = d; }
-  Device *host() const override { return _host; }
+  void set_host(Vi::Device *d) override { _host = d; }
+  Vi::Device *host() const override { return _host; }
   l4_uint32_t interface_type() const override
   { return 1 << L4VBUS_INTERFACE_GPIO; }
 
@@ -206,12 +206,12 @@ public:
   std::string get_full_name() const override { return get_full_path(); }
 
   void notify(unsigned type, unsigned event, unsigned value) override
-  { Device::notify(type, event, value, true); }
+  { Vi::Device::notify(type, event, value, true); }
 
   unsigned nr_pins() const { return _pins.size(); }
 
 private:
-  Device *_host;
+  Vi::Device *_host;
   Hw::Gpio_chip *_hwd;
 
   Bitmap _pins;
@@ -382,9 +382,9 @@ Gpio::to_irq(L4::Ipc::Iostream &ios)
       if (!irq)
         return -L4_ENOENT;
 
-      if (System_bus *sb = dynamic_cast<System_bus *>(get_root()))
+      if (Vi::System_bus *sb = dynamic_cast<Vi::System_bus *>(get_root()))
         {
-          int virq = sb->sw_icu()->alloc_irq(Sw_icu::S_allow_set_mode, irq);
+          int virq = sb->sw_icu()->alloc_irq(Vi::Sw_icu::S_allow_set_mode, irq);
 	  if (virq < 0)
 	    return virq;
 
@@ -427,7 +427,7 @@ Gpio::dispatch(l4_umword_t, l4_uint32_t func, L4::Ipc::Iostream &ios)
 }
 
 
-static Dev_factory_t<Gpio, Hw::Gpio_device> __gpio_factory;
+static Vi::Dev_factory_t<Gpio, Hw::Gpio_device> __gpio_factory;
 
 class Gpio_resource : public Resource
 {
@@ -455,7 +455,7 @@ public:
   char const *res_type_name() const override
   { return "Root GPIO"; }
 
-  explicit Root_gpio_rs(System_bus *bus) : _bus(bus)
+  explicit Root_gpio_rs(Vi::System_bus *bus) : _bus(bus)
   {}
 
   bool request(Resource *parent, ::Device *pdev,
@@ -550,11 +550,12 @@ private:
   Root_gpio_rs(Root_gpio_rs const &);
   void operator = (Root_gpio_rs const &);
 
-  System_bus *_bus;
+  Vi::System_bus *_bus;
 };
 
 static Vi::Resource_factory_t<Vi::Gpio_resource, ::Gpio_resource> __gpio_res_factory;
-static System_bus::Root_resource_factory_t<Resource::Gpio_res, Root_gpio_rs> __rf;
+static Vi::System_bus::Root_resource_factory_t<Resource::Gpio_res,
+                                               Root_gpio_rs> __rf;
 
 }
 }

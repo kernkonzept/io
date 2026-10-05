@@ -493,7 +493,7 @@ Gpio_bcm2835_chip::get_irq(unsigned pin)
 void
 Gpio_bcm2835_chip::init()
 {
-  Gpio_device::init();
+  Hw::Gpio_device::init();
 
   Resource *regs = resources()->find("regs");
   if (!regs || regs->type() != Resource::Mmio_res)

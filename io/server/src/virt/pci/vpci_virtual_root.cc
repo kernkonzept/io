@@ -17,7 +17,7 @@ namespace Vi {
 /**
  * \brief A virtual Host-to-PCI bridge.
  */
-class Pci_vroot : public Pci_bridge, public Dev_feature
+class Pci_vroot : public Vi::Pci_bridge, public Vi::Dev_feature
 {
 public:
 
@@ -33,10 +33,10 @@ public:
   char const *hid() const override
   { return "PNP0A03"; }
 
-  void set_host(Device *d) override
+  void set_host(Vi::Device *d) override
   { _host = d; }
 
-  Device *host() const override
+  Vi::Device *host() const override
   { return _host; }
 
   l4_uint32_t interface_type() const override
@@ -45,7 +45,7 @@ public:
   Io_irq_pin::Msi_src *find_msi_src(Msi_src_info si) override;
 
 private:
-  Device *_host;
+  Vi::Device *_host;
 
 public:
   int cfg_read(L4::Ipc::Iostream &ios);
@@ -60,12 +60,14 @@ public:
 // -----------------------------------------------------------------------
 
 
-class Pci_vroot_id : public Pci_vroot
+class Pci_vroot_id : public Vi::Pci_vroot
 {
 public:
-  void add_child(Device *d) override;
+  void add_child(Vi::Device *d) override;
 
 };
+
+}
 
 
 
@@ -73,18 +75,18 @@ public:
 // Virtual PCI Root bridge
 // -------------------------------------------------------------------
 
-Pci_vroot::Pci_vroot() : Pci_bridge()
+Vi::Pci_vroot::Pci_vroot() : Vi::Pci_bridge()
 {
   add_feature(this);
   _subordinate = 100;
 }
 
 Io_irq_pin::Msi_src *
-Pci_vroot::find_msi_src(Msi_src_info si)
+Vi::Pci_vroot::find_msi_src(Msi_src_info si)
 {
   if (si.query() == Msi_src_info::Query_requester_id) // exact match
     {
-      Pci_dev *d = child_dev(si.bus(), si.dev(), si.fn());
+      Vi::Pci_dev *d = child_dev(si.bus(), si.dev(), si.fn());
       if (!d)
         return 0;
       return d->msi_src();
@@ -93,7 +95,7 @@ Pci_vroot::find_msi_src(Msi_src_info si)
 }
 
 int
-Pci_vroot::cfg_read(L4::Ipc::Iostream &ios)
+Vi::Pci_vroot::cfg_read(L4::Ipc::Iostream &ios)
 {
   l4_uint32_t bus;
   l4_uint32_t devfn;
@@ -114,7 +116,7 @@ Pci_vroot::cfg_read(L4::Ipc::Iostream &ios)
       return L4_EOK;
     }
 
-  Pci_dev *d = child_dev(bus, (devfn >> 16), (devfn & 0xffff));
+  Vi::Pci_dev *d = child_dev(bus, (devfn >> 16), (devfn & 0xffff));
 
   if (!d)
     {
@@ -138,7 +140,7 @@ Pci_vroot::cfg_read(L4::Ipc::Iostream &ios)
 }
 
 int
-Pci_vroot::irq_enable(L4::Ipc::Iostream &ios)
+Vi::Pci_vroot::irq_enable(L4::Ipc::Iostream &ios)
 {
   l4_uint32_t bus;
   l4_uint32_t devfn;
@@ -154,7 +156,7 @@ Pci_vroot::irq_enable(L4::Ipc::Iostream &ios)
       return L4_EOK;
     }
 
-  Pci_dev *d = child_dev(bus, devfn >> 16, devfn & 0xffff);
+  Vi::Pci_dev *d = child_dev(bus, devfn >> 16, devfn & 0xffff);
   if (0)
     printf("dev = %p\n", d);
   if (!d)
@@ -163,7 +165,7 @@ Pci_vroot::irq_enable(L4::Ipc::Iostream &ios)
       return L4_EOK;
     }
 
-  Pci_dev::Irq_info info;
+  Vi::Pci_dev::Irq_info info;
   int res = d->irq_enable(&info);
   if (res < 0)
     {
@@ -178,7 +180,7 @@ Pci_vroot::irq_enable(L4::Ipc::Iostream &ios)
 }
 
 int
-Pci_vroot::cfg_write(L4::Ipc::Iostream &ios)
+Vi::Pci_vroot::cfg_write(L4::Ipc::Iostream &ios)
 {
   l4_uint32_t bus;
   l4_uint32_t devfn;
@@ -194,7 +196,7 @@ Pci_vroot::cfg_write(L4::Ipc::Iostream &ios)
   if ((devfn >> 16) >= 32 || (devfn & 0xffff) >= 8)
     return L4_EOK;
 
-  Pci_dev *d = child_dev(bus, (devfn >> 16), (devfn & 0xffff));
+  Vi::Pci_dev *d = child_dev(bus, (devfn >> 16), (devfn & 0xffff));
 
   if (!d)
     return L4_EOK;
@@ -203,7 +205,7 @@ Pci_vroot::cfg_write(L4::Ipc::Iostream &ios)
 }
 
 int
-Pci_vroot::dispatch(l4_umword_t, l4_uint32_t func, L4::Ipc::Iostream &ios)
+Vi::Pci_vroot::dispatch(l4_umword_t, l4_uint32_t func, L4::Ipc::Iostream &ios)
 {
   if (l4vbus_subinterface(func) != L4VBUS_INTERFACE_PCI)
     return -L4_ENOSYS;
@@ -219,15 +221,15 @@ Pci_vroot::dispatch(l4_umword_t, l4_uint32_t func, L4::Ipc::Iostream &ios)
 
 
 void
-Pci_vroot_id::add_child(Device *d)
+Vi::Pci_vroot_id::add_child(Vi::Device *d)
 {
-  Pci_dev *vp = d->find_feature<Pci_dev>();
+  Vi::Pci_dev *vp = d->find_feature<Vi::Pci_dev>();
 
   // hm, also here, drop non PCI devices
   if (!vp)
     return;
 
-  if (Pci_proxy_dev *proxy = dynamic_cast<Pci_proxy_dev*>(vp))
+  if (Vi::Pci_proxy_dev *proxy = dynamic_cast<Vi::Pci_proxy_dev*>(vp))
     {
       unsigned dn = proxy->hwf()->device_nr() & (Bus::Devs-1);
       unsigned fn = proxy->hwf()->function_nr() & (Dev::Fns-1);
@@ -237,14 +239,14 @@ Pci_vroot_id::add_child(Device *d)
 	{
 	  // MUST be a device on the root PCI bus
 	  _bus.dev(dn)->fn(fn, vp);
-	  Device::add_child(d);
+	  Vi::Device::add_child(d);
 	  return;
 	}
 
-      Pci_bridge *sw_br = find_bridge(bus_num);
+      Vi::Pci_bridge *sw_br = find_bridge(bus_num);
       if (!sw_br)
 	{
-	  Pci_to_pci_bridge *b = new Pci_to_pci_bridge();
+	  Vi::Pci_to_pci_bridge *b = new Vi::Pci_to_pci_bridge();
 	  sw_br = b;
 
 	  b->primary(0);
@@ -252,7 +254,7 @@ Pci_vroot_id::add_child(Device *d)
 	  b->subordinate(bus_num);
 
 	  _bus.dev(31)->fn(0, b);
-	  Device::add_child(b);
+	  Vi::Device::add_child(b);
 	}
 
       sw_br->add_child_fixed(d, vp, dn, fn);
@@ -261,13 +263,12 @@ Pci_vroot_id::add_child(Device *d)
   else
     {
       _bus.add_fn(vp);
-      Device::add_child(d);
+      Vi::Device::add_child(d);
     }
 }
 
 
 
-static Dev_factory_t<Pci_vroot> __pci_root_factory("PCI_bus");
-static Dev_factory_t<Pci_vroot_id> __pci_root_id_factory("PCI_bus_ident");
-
-}
+static Vi::Dev_factory_t<Vi::Pci_vroot> __pci_root_factory("PCI_bus");
+static Vi::Dev_factory_t<Vi::Pci_vroot_id>
+  __pci_root_id_factory("PCI_bus_ident");

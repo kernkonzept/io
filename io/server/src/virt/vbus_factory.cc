@@ -7,10 +7,8 @@
 #include "debug.h"
 #include "vbus_factory.h"
 
-namespace Vi {
-
-Device *
-Dev_factory::create(std::string const &_class)
+Vi::Device *
+Vi::Dev_factory::create(std::string const &_class)
 {
   Name_map &m = name_map();
   Name_map::iterator i = m.find(_class);
@@ -22,6 +20,4 @@ Dev_factory::create(std::string const &_class)
     }
 
   return i->second->vcreate();
-}
-
 }

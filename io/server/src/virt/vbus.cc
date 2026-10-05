@@ -208,9 +208,7 @@ public:
 
 
 
-namespace Vi {
-
-System_bus::System_bus(Inhibitor_mux *mux)
+Vi::System_bus::System_bus(Inhibitor_mux *mux)
 : Inhibitor_provider(mux), _sw_icu(0)
 {
   _handle = 0; // the vBUS root device always has handle 0
@@ -231,7 +229,7 @@ System_bus::System_bus(Inhibitor_mux *mux)
     add_resource(i->create(this));
 }
 
-System_bus::~System_bus() noexcept
+Vi::System_bus::~System_bus() noexcept
 {
   registry->unregister_obj(this);
   // FIXME: must delete all devices
@@ -244,7 +242,7 @@ System_bus::~System_bus() noexcept
  * This also supports overlapping resources by merging them together.
  */
 bool
-System_bus::add_resource_to_bus(Resource *r)
+Vi::System_bus::add_resource_to_bus(Resource *r)
 {
   if (_resources.count(r) == 0)
     {
@@ -295,7 +293,7 @@ System_bus::add_resource_to_bus(Resource *r)
 }
 
 bool
-System_bus::resource_allocated(Resource const *r) const
+Vi::System_bus::resource_allocated(Resource const *r) const
 {
   if (r->disabled())
     return false;
@@ -308,7 +306,7 @@ System_bus::resource_allocated(Resource const *r) const
 }
 
 int
-System_bus::pm_suspend()
+Vi::System_bus::pm_suspend()
 {
   inhibitor_release(L4VBUS_INHIBITOR_SUSPEND);
 
@@ -316,7 +314,7 @@ System_bus::pm_suspend()
 }
 
 int
-System_bus::pm_resume()
+Vi::System_bus::pm_resume()
 {
   inhibitor_acquire(L4VBUS_INHIBITOR_SUSPEND, "vbus active");
 
@@ -324,7 +322,7 @@ System_bus::pm_resume()
 }
 
 void
-System_bus::dump_resources() const
+Vi::System_bus::dump_resources() const
 {
   for (auto i = _resources.begin();
        i != _resources.end(); ++i)
@@ -332,7 +330,7 @@ System_bus::dump_resources() const
 }
 
 int
-System_bus::request_resource(L4::Ipc::Iostream &ios)
+Vi::System_bus::request_resource(L4::Ipc::Iostream &ios)
 {
   l4vbus_resource_t res;
   if (!ios.get(res))
@@ -385,7 +383,7 @@ System_bus::request_resource(L4::Ipc::Iostream &ios)
 }
 
 int
-System_bus::assign_dma_domain(L4::Ipc::Iostream &ios)
+Vi::System_bus::assign_dma_domain(L4::Ipc::Iostream &ios)
 {
   L4Re::Util::Unique_cap<L4Re::Dma_space> dma_space;
 
@@ -454,7 +452,7 @@ System_bus::assign_dma_domain(L4::Ipc::Iostream &ios)
 }
 
 void
-System_bus::reset_dma_domains()
+Vi::System_bus::reset_dma_domains()
 {
   Dma_domain_if *d = 0;
   d = _dma_domain_group.get();
@@ -471,11 +469,11 @@ System_bus::reset_dma_domains()
 }
 
 int
-System_bus::op_map(L4Re::Dataspace::Rights,
-                   L4Re::Dataspace::Offset offset,
-                   L4Re::Dataspace::Map_addr spot,
-                   L4Re::Dataspace::Flags flags,
-                   L4::Ipc::Snd_fpage &fp)
+Vi::System_bus::op_map(L4Re::Dataspace::Rights,
+                       L4Re::Dataspace::Offset offset,
+                       L4Re::Dataspace::Map_addr spot,
+                       L4Re::Dataspace::Flags flags,
+                       L4::Ipc::Snd_fpage &fp)
 {
 
   Resource pivot(L4VBUS_RESOURCE_MEM, offset, offset);
@@ -546,9 +544,9 @@ System_bus::op_map(L4Re::Dataspace::Rights,
 };
 
 long
-System_bus::op_map_info(L4Re::Dataspace::Rights,
-                        [[maybe_unused]] l4_addr_t &start_addr,
-                        [[maybe_unused]] l4_addr_t &end_addr)
+Vi::System_bus::op_map_info(L4Re::Dataspace::Rights,
+                            [[maybe_unused]] l4_addr_t &start_addr,
+                            [[maybe_unused]] l4_addr_t &end_addr)
 {
 #ifdef CONFIG_MMU
   // No constraints on MMU systems.
@@ -563,7 +561,8 @@ System_bus::op_map_info(L4Re::Dataspace::Rights,
 }
 
 long
-System_bus::op_acquire(L4Re::Inhibitor::Rights, l4_umword_t id, L4::Ipc::String<> reason)
+Vi::System_bus::op_acquire(L4Re::Inhibitor::Rights, l4_umword_t id,
+                           L4::Ipc::String<> reason)
 {
   // The RPC framework guarantees that reason.length >= 1 holds and that the
   // string is 0-terminated.
@@ -572,15 +571,15 @@ System_bus::op_acquire(L4Re::Inhibitor::Rights, l4_umword_t id, L4::Ipc::String<
 }
 
 long
-System_bus::op_release(L4Re::Inhibitor::Rights, l4_umword_t id)
+Vi::System_bus::op_release(L4Re::Inhibitor::Rights, l4_umword_t id)
 {
   inhibitor_release(id);
   return L4_EOK;
 }
 
 long
-System_bus::op_next_lock_info(L4Re::Inhibitor::Rights, l4_mword_t &id,
-                              L4::Ipc::String<char> &name)
+Vi::System_bus::op_next_lock_info(L4Re::Inhibitor::Rights, l4_mword_t &id,
+                                  L4::Ipc::String<char> &name)
 {
   ++id;
   if (id >= L4VBUS_INHIBITOR_MAX)
@@ -614,7 +613,7 @@ rpc_get(S &ios)
 
 // get the HID of a device
 static inline int
-rpc_get_dev_hid(Device *dev, L4::Ipc::Iostream &ios)
+rpc_get_dev_hid(Vi::Device *dev, L4::Ipc::Iostream &ios)
 {
   if (char const *h = dev->hid())
     ios << h;
@@ -626,7 +625,7 @@ rpc_get_dev_hid(Device *dev, L4::Ipc::Iostream &ios)
 
 // get the ADR record of a device
 static inline int
-rpc_get_dev_adr(Device *dev, L4::Ipc::Iostream &ios)
+rpc_get_dev_adr(Vi::Device *dev, L4::Ipc::Iostream &ios)
 {
   l4_uint32_t a = dev->adr();
   if (a == l4_uint32_t(~0))
@@ -638,18 +637,19 @@ rpc_get_dev_adr(Device *dev, L4::Ipc::Iostream &ios)
 
 }
 
-Device *
-System_bus::dev_from_id(l4vbus_device_handle_t dev, int err) const
+Vi::Device *
+Vi::System_bus::dev_from_id(l4vbus_device_handle_t dev, int err) const
 {
   if (dev >= 0 && dev < static_cast<int>(_devices_by_id.size()))
-    if (Device *d = _devices_by_id[dev])
+    if (Vi::Device *d = _devices_by_id[dev])
       return d;
 
   L4Re::throw_error(err);
 }
 
-Device::iterator
-System_bus::rpc_get_dev_next_iterator(Device *dev, L4::Ipc::Iostream &ios, int err) const
+Vi::Device::iterator
+Vi::System_bus::rpc_get_dev_next_iterator(Vi::Device *dev,
+                                          L4::Ipc::Iostream &ios, int err) const
 {
   auto current = rpc_get<l4vbus_device_handle_t>(ios);
   int depth  = rpc_get<int>(ios);
@@ -674,7 +674,7 @@ System_bus::rpc_get_dev_next_iterator(Device *dev, L4::Ipc::Iostream &ios, int e
 }
 
 inline int
-System_bus::rpc_device_get(Device *dev, L4::Ipc::Iostream &ios) const
+Vi::System_bus::rpc_device_get(Vi::Device *dev, L4::Ipc::Iostream &ios) const
 {
   ios.put(dev->handle());
   ios.put(dev->get_device_info());
@@ -682,14 +682,16 @@ System_bus::rpc_device_get(Device *dev, L4::Ipc::Iostream &ios) const
 }
 
 inline int
-System_bus::rpc_get_next_dev(Device *dev, L4::Ipc::Iostream &ios, int err) const
+Vi::System_bus::rpc_get_next_dev(Vi::Device *dev, L4::Ipc::Iostream &ios,
+                                 int err) const
 {
-  Device::iterator it = rpc_get_dev_next_iterator(dev, ios, err);
+  Vi::Device::iterator it = rpc_get_dev_next_iterator(dev, ios, err);
   return rpc_device_get(*it, ios);
 }
 
 int
-System_bus::rpc_get_dev_by_hid(Device *dev, L4::Ipc::Iostream &ios) const
+Vi::System_bus::rpc_get_dev_by_hid(Vi::Device *dev,
+                                   L4::Ipc::Iostream &ios) const
 {
   auto c = rpc_get_dev_next_iterator(dev, ios, -L4_ENOENT);
 
@@ -717,8 +719,8 @@ System_bus::rpc_get_dev_by_hid(Device *dev, L4::Ipc::Iostream &ios) const
 }
 
 int
-System_bus::dispatch_generic(L4vbus::Vbus::Rights obj, Device *dev,
-                             l4_uint32_t func, L4::Ipc::Iostream &ios)
+Vi::System_bus::dispatch_generic(L4vbus::Vbus::Rights obj, Vi::Device *dev,
+                                 l4_uint32_t func, L4::Ipc::Iostream &ios)
 {
   switch (l4vbus_subinterface(func))
     {
@@ -781,18 +783,20 @@ System_bus::dispatch_generic(L4vbus::Vbus::Rights obj, Device *dev,
 }
 
 l4_msgtag_t
-System_bus::op_dispatch(l4_utcb_t *utcb, l4_msgtag_t tag, L4vbus::Vbus::Rights obj)
+Vi::System_bus::op_dispatch(l4_utcb_t *utcb, l4_msgtag_t tag,
+                            L4vbus::Vbus::Rights obj)
 {
   L4::Ipc::Iostream ios(utcb);
   ios.Istream::tag() = tag;
 
-  Device *dev = dev_from_id(rpc_get<l4vbus_device_handle_t>(ios), -L4_ENODEV);
+  Vi::Device *dev = dev_from_id(rpc_get<l4vbus_device_handle_t>(ios),
+                                -L4_ENODEV);
   l4_uint32_t func = rpc_get<l4_uint32_t>(ios);
   return ios.prepare_ipc(dispatch_generic(obj, dev, func, ios));
 }
 
 int
-System_bus::dispatch(l4_umword_t, l4_uint32_t func, L4::Ipc::Iostream &ios)
+Vi::System_bus::dispatch(l4_umword_t, l4_uint32_t func, L4::Ipc::Iostream &ios)
 {
   switch (func)
     {
@@ -805,7 +809,7 @@ System_bus::dispatch(l4_umword_t, l4_uint32_t func, L4::Ipc::Iostream &ios)
     }
 }
 
-Vbus_event_source::Vbus_event_source()
+Vi::Vbus_event_source::Vbus_event_source()
 {
   using L4Re::Util::Unique_cap;
   using L4Re::chkcap;
@@ -824,16 +828,16 @@ Vbus_event_source::Vbus_event_source()
 }
 
 Io_irq_pin::Msi_src *
-System_bus::find_msi_src(Msi_src_info si)
+Vi::System_bus::find_msi_src(Msi_src_info si)
 {
   if (si.is_dev_handle())
     {
-      Device *dev = dev_from_id(si.dev_handle(), -L4_EINVAL);
-      if (Msi_src_feature *msi = dev->find_feature<Msi_src_feature>())
+      Vi::Device *dev = dev_from_id(si.dev_handle(), -L4_EINVAL);
+      if (Vi::Msi_src_feature *msi = dev->find_feature<Vi::Msi_src_feature>())
         return msi->msi_src();
     }
   else if (si.query() != Msi_src_info::Query_none)
-    return Device::find_msi_src(si);
+    return Vi::Device::find_msi_src(si);
 
   d_printf(DBG_ALL, "%s: device has no MSI support\n", __func__);
   return nullptr;
@@ -849,23 +853,24 @@ System_bus::find_msi_src(Msi_src_info si)
  * \param syn trigger an IRQ for the event if true.
  */
 bool
-System_bus::dev_notify(Device const *dev, unsigned type,
-                       unsigned event, unsigned value, bool syn)
+Vi::System_bus::dev_notify(Vi::Device const *dev, unsigned type,
+                           unsigned event, unsigned value, bool syn)
 {
-  Vbus_event_source::Event ev;
+  Vi::Vbus_event_source::Event ev;
   ev.time = l4_kip_clock(l4re_kip());
   ev.payload.type = type;
   ev.payload.code = event;
   ev.payload.value = value;
   ev.payload.stream_id = dev->handle();
 
-  return Vbus_event_source::put(ev, syn);
+  return Vi::Vbus_event_source::put(ev, syn);
 }
 
 int
-System_bus::get_stream_info_for_id(l4_umword_t dev_id, L4Re::Event_stream_info *info)
+Vi::System_bus::get_stream_info_for_id(l4_umword_t dev_id,
+                                       L4Re::Event_stream_info *info)
 {
-  Device *dev = dev_from_id(dev_id, -L4_ENOSYS);
+  Vi::Device *dev = dev_from_id(dev_id, -L4_ENOSYS);
   Io::Event_source_infos const *_info = dev->get_event_infos();
   if (!_info)
     return -L4_ENOSYS;
@@ -875,9 +880,10 @@ System_bus::get_stream_info_for_id(l4_umword_t dev_id, L4Re::Event_stream_info *
 }
 
 int
-System_bus::get_stream_state_for_id(l4_umword_t dev_id, L4Re::Event_stream_state *state)
+Vi::System_bus::get_stream_state_for_id(l4_umword_t dev_id,
+                                        L4Re::Event_stream_state *state)
 {
-  Device *dev = dev_from_id(dev_id, -L4_ENOSYS);
+  Vi::Device *dev = dev_from_id(dev_id, -L4_ENOSYS);
   Io::Event_source_infos const *_info = dev->get_event_infos();
   if (!_info)
     return -L4_ENOSYS;
@@ -887,14 +893,14 @@ System_bus::get_stream_state_for_id(l4_umword_t dev_id, L4Re::Event_stream_state
 }
 
 void
-System_bus::inhibitor_signal(l4_umword_t id)
+Vi::System_bus::inhibitor_signal(l4_umword_t id)
 {
   // FIXME: need a subscribed flag!
   // only signal if this inhibitor is actually acquired
   if (!inhibitor_acquired(id))
     return;
 
-  Vbus_event_source::Event ev;
+  Vi::Vbus_event_source::Event ev;
   ev.time = l4_kip_clock(l4re_kip());
   ev.payload.type = L4RE_EV_PM;
   ev.payload.code = id;
@@ -905,7 +911,7 @@ System_bus::inhibitor_signal(l4_umword_t id)
 }
 
 void
-System_bus::finalize()
+Vi::System_bus::finalize()
 {
   request_child_resources();
   allocate_pending_child_resources();
@@ -916,6 +922,4 @@ System_bus::finalize()
         d->set_handle(_devices_by_id.size());
         _devices_by_id.push_back(*d);
       }
-}
-
 }

@@ -20,10 +20,8 @@
 # include "pciids.h"
 #endif
 
-namespace Hw { namespace Pci {
-
 void
-Config_cache::_discover_pci_caps(Config const &c)
+Hw::Pci::Config_cache::_discover_pci_caps(Hw::Pci::Config const &c)
 {
   if (!cap_list)
     return;
@@ -55,18 +53,19 @@ Config_cache::_discover_pci_caps(Config const &c)
 
 
 void
-Config_cache::fill(l4_uint32_t _vendor_device, Config const &c)
+Hw::Pci::Config_cache::fill(l4_uint32_t _vendor_device,
+                            Hw::Pci::Config const &c)
 {
-  *static_cast<Config *>(this) = c;
+  *static_cast<Hw::Pci::Config *>(this) = c;
   vendor_device = _vendor_device;
 
-  cls_rev    = c.read<l4_uint32_t>(Config::Class_rev);
-  hdr_type   = c.read<l4_uint8_t>(Config::Header_type);
+  cls_rev    = c.read<l4_uint32_t>(Hw::Pci::Config::Class_rev);
+  hdr_type   = c.read<l4_uint8_t>(Hw::Pci::Config::Header_type);
 
   switch (type())
     {
     case 0:
-      subsys_ids = c.read<l4_uint32_t>(Config::Subsys_vendor);
+      subsys_ids = c.read<l4_uint32_t>(Hw::Pci::Config::Subsys_vendor);
       cap_list = 0x34;
       break;
 
@@ -80,41 +79,41 @@ Config_cache::fill(l4_uint32_t _vendor_device, Config const &c)
       break;
     }
 
-  l4_uint16_t status = c.read<l4_uint16_t>(Config::Status);
+  l4_uint16_t status = c.read<l4_uint16_t>(Hw::Pci::Config::Status);
 
   if (!(status & 0x10))
     cap_list = 0; // no PCI caps if this bit is zero...
 
-  irq_pin    = c.read<l4_uint8_t>(Config::Irq_pin);
+  irq_pin    = c.read<l4_uint8_t>(Hw::Pci::Config::Irq_pin);
   _discover_pci_caps(c);
 }
 
 
 l4_uint32_t
-Dev::vendor_device_ids() const
+Hw::Pci::Dev::vendor_device_ids() const
 { return cfg.vendor_device; }
 
 l4_uint32_t
-Dev::class_rev() const
+Hw::Pci::Dev::class_rev() const
 { return cfg.cls_rev; }
 
 l4_uint32_t
-Dev::subsys_vendor_ids() const
+Hw::Pci::Dev::subsys_vendor_ids() const
 { return cfg.subsys_ids; }
 
 unsigned
-Dev::bus_nr() const
+Hw::Pci::Dev::bus_nr() const
 { return cfg.addr().bus(); }
 
 int
-Dev::enumerate_dma_src_ids(Dma_src_feature::Dma_src_id_cb cb) const
+Hw::Pci::Dev::enumerate_dma_src_ids(Hw::Dma_src_feature::Dma_src_id_cb cb) const
 {
   if (!_bridge)
     return 0;
 
   // Look at upstream bridges first. Failures (ret < 0) or rewrites (ret > 0)
   // will stop iteration.
-  if (auto *parent_dma = dynamic_cast<Dev*>(_bridge))
+  if (auto *parent_dma = dynamic_cast<Hw::Pci::Dev*>(_bridge))
     if (int ret = parent_dma->enumerate_dma_src_ids(cb))
       return ret;
 
@@ -122,8 +121,8 @@ Dev::enumerate_dma_src_ids(Dma_src_feature::Dma_src_id_cb cb) const
     {
       l4_uint64_t si = 0;
       int ret = _bridge->translate_dma_src(
-        Dma_requester_id::source(segment_nr(), bus_nr(),
-                                 devfn() | (i << (3 - _phantomfn_bits))),
+        Hw::Pci::Dma_requester_id::source(
+          segment_nr(), bus_nr(), devfn() | (i << (3 - _phantomfn_bits))),
         &si);
       if (ret < 0)
         return ret;
@@ -137,7 +136,8 @@ Dev::enumerate_dma_src_ids(Dma_src_feature::Dma_src_id_cb cb) const
 }
 
 int
-Dev::enumerate_dma_reservations(Dev *dev, Dma_domain_if::Resv_cb cb) const
+Hw::Pci::Dev::enumerate_dma_reservations(Hw::Pci::Dev *dev,
+                                         Dma_domain_if::Resv_cb cb) const
 {
   // There are no constraints related to devices themselves. They all come from
   // the PCI(e) topology (to prevent peer-to-peer traffic), the IOMMU itself
@@ -150,7 +150,7 @@ Dev::enumerate_dma_reservations(Dev *dev, Dma_domain_if::Resv_cb cb) const
     return err;
 
   // Pass upwards for additional memory windows or RMRRs in root bridge.
-  auto src = Dma_requester_id::source(segment_nr(), bus_nr(), devfn());
+  auto src = Hw::Pci::Dma_requester_id::source(segment_nr(), bus_nr(), devfn());
   return _bridge->pci_enum_dma_reservations(dev, src, cb);
 }
 
@@ -178,7 +178,7 @@ Dev::enumerate_dma_reservations(Dev *dev, Dma_domain_if::Resv_cb cb) const
  * reserve their resources.
  */
 int
-Dev::enumerate_peer_dma_reservations(Dma_domain_if::Resv_cb cb) const
+Hw::Pci::Dev::enumerate_peer_dma_reservations(Dma_domain_if::Resv_cb cb) const
 {
   if (acs_p2p_redirect())
     return 0;
@@ -219,7 +219,7 @@ Dev::enumerate_peer_dma_reservations(Dma_domain_if::Resv_cb cb) const
 }
 
 int
-Dev::reserve_dma_resources(Dma_domain_if::Resv_cb const &cb) const
+Hw::Pci::Dev::reserve_dma_resources(Dma_domain_if::Resv_cb const &cb) const
 {
   // Report all MMIO resources of the device. This includes all BARs and
   // potentially the expansion ROM.
@@ -234,9 +234,9 @@ Dev::reserve_dma_resources(Dma_domain_if::Resv_cb const &cb) const
 }
 
 l4_uint32_t
-Dev::checked_cmd_read()
+Hw::Pci::Dev::checked_cmd_read()
 {
-  l4_uint32_t cs = config().read<l4_uint32_t>(Config::Command);
+  l4_uint32_t cs = config().read<l4_uint32_t>(Hw::Pci::Config::Command);
   if (_transp_msi)
     return _transp_msi->filter_cmd_read(cs);
 
@@ -244,9 +244,9 @@ Dev::checked_cmd_read()
 }
 
 l4_uint16_t
-Dev::checked_cmd_write(l4_uint16_t mask, l4_uint16_t cmd)
+Hw::Pci::Dev::checked_cmd_write(l4_uint16_t mask, l4_uint16_t cmd)
 {
-  l4_uint16_t ocmd = config().read<l4_uint16_t>(Config::Command);
+  l4_uint16_t ocmd = config().read<l4_uint16_t>(Hw::Pci::Config::Command);
   l4_uint16_t ncmd = (ocmd & ~mask) | (cmd & mask);
 
   if (_transp_msi)
@@ -262,12 +262,12 @@ Dev::checked_cmd_write(l4_uint16_t mask, l4_uint16_t cmd)
       ncmd &= (~3U | enable_decoders);
     }
 
-  config().write<l4_uint16_t>(Pci::Config::Command, ncmd);
+  config().write<l4_uint16_t>(Hw::Pci::Config::Command, ncmd);
   return ncmd;
 }
 
 l4_uint32_t
-Dev::recheck_bars(unsigned enable_decoders)
+Hw::Pci::Dev::recheck_bars(unsigned enable_decoders)
 {
   if (!enable_decoders)
     return 0;
@@ -277,7 +277,7 @@ Dev::recheck_bars(unsigned enable_decoders)
   unsigned next_bar;
   for (unsigned i = 0; i < 6; i += next_bar)
     {
-      l4_uint32_t const bar_addr = Pci::Config::Bar_0 + i * 4;
+      l4_uint32_t const bar_addr = Hw::Pci::Config::Bar_0 + i * 4;
       l4_uint32_t bar = c.read<l4_uint32_t>(bar_addr);
       bool const is_io_bar = bar & 1;
       bool const is_64bit  = (bar & 0x7) == 0x4;
@@ -353,14 +353,14 @@ Dev::recheck_bars(unsigned enable_decoders)
 }
 
 bool
-Dev::enable_rom()
+Hw::Pci::Dev::enable_rom()
 {
   if (!_rom)
     return false;
 
   auto c = config();
 
-  l4_uint32_t r = c.read<l4_uint32_t>(Config::Rom_address);
+  l4_uint32_t r = c.read<l4_uint32_t>(Hw::Pci::Config::Rom_address);
 
   // ROM always enabled
   if (r & 1)
@@ -375,28 +375,28 @@ Dev::enable_rom()
     return true;
 
   r = rom | 1;
-  c.write(Config::Rom_address, r);
-  return c.read<l4_uint32_t>(Config::Rom_address) == r;
+  c.write(Hw::Pci::Config::Rom_address, r);
+  return c.read<l4_uint32_t>(Hw::Pci::Config::Rom_address) == r;
 }
 
 unsigned
-Dev::disable_decoders()
+Hw::Pci::Dev::disable_decoders()
 {
   auto c = config();
   // disable decoders, and mask IRQs
-  l4_uint16_t v = c.read<l4_uint16_t>(Config::Command);
-  c.write<l4_uint16_t>(Config::Command, (v & ~3) | (1<<10));
+  l4_uint16_t v = c.read<l4_uint16_t>(Hw::Pci::Config::Command);
+  c.write<l4_uint16_t>(Hw::Pci::Config::Command, (v & ~3) | (1<<10));
   return v & 0xff;
 }
 
 void
-Dev::restore_decoders(l4_uint16_t cmd)
+Hw::Pci::Dev::restore_decoders(l4_uint16_t cmd)
 {
-  config().write(Config::Command, cmd);
+  config().write(Hw::Pci::Config::Command, cmd);
 }
 
-Cap
-Dev::find_pci_cap(unsigned char id)
+Hw::Pci::Cap
+Hw::Pci::Dev::find_pci_cap(unsigned char id)
 {
   l4_uint32_t cap_ptr;
 
@@ -404,33 +404,33 @@ Dev::find_pci_cap(unsigned char id)
     {
     case 0:
     case 1:
-      cap_ptr = Config::Capability_ptr;
+      cap_ptr = Hw::Pci::Config::Capability_ptr;
       break;
     case 2:
-      cap_ptr = Config::Cb_capability_ptr;
+      cap_ptr = Hw::Pci::Config::Cb_capability_ptr;
       break;
     default:
       d_printf(DBG_WARN, "warning: %s: unknown hdr_type: %u\n",
                          __func__, cfg.type());
-      return Cap();
+      return Hw::Pci::Cap();
     }
 
   l4_uint8_t o = config().read<l4_uint8_t>(cap_ptr);
   if (o == 0)
-    return Cap();
+    return Hw::Pci::Cap();
 
-  for (Cap c = config(o); c.is_valid(); c = c.next())
+  for (Hw::Pci::Cap c = config(o); c.is_valid(); c = c.next())
     if (c.id() == id)
       return c;
 
-  return Cap();
+  return Hw::Pci::Cap();
 }
 
-Extended_cap
-Dev::find_ext_cap(unsigned id)
+Hw::Pci::Extended_cap
+Hw::Pci::Dev::find_ext_cap(unsigned id)
 {
   if (!is_pcie())
-    return Extended_cap();
+    return Hw::Pci::Extended_cap();
 
   l4_uint16_t offset = 0x100;
   for (;;)
@@ -438,21 +438,21 @@ Dev::find_ext_cap(unsigned id)
       Hw::Pci::Extended_cap cap = config(offset);
 
       if (!cap.is_valid())
-        return Extended_cap();
+        return Hw::Pci::Extended_cap();
 
       if (cap.id() == id)
         return cap;
 
       offset = cap.next();
       if (!offset)
-        return Extended_cap();
+        return Hw::Pci::Extended_cap();
     }
 }
 
 int
-Dev::discover_bar(int bar)
+Hw::Pci::Dev::discover_bar(int bar)
 {
-  Cfg_bar c = config(Config::Bar_0 + bar * 4);
+  Hw::Pci::Cfg_bar c = config(Hw::Pci::Config::Bar_0 + bar * 4);
 
   _bars[bar] = 0;
   l4_uint16_t cmd = disable_decoders();
@@ -476,7 +476,7 @@ Dev::discover_bar(int bar)
   Resource *res = 0;
   switch (c.type())
     {
-    case Cfg_bar::T_mmio:
+    case Hw::Pci::Cfg_bar::T_mmio:
       res = new Resource(mem_flags);
       // set ID to 'BARx', x == bar
       res->set_id(0x00524142 + (((l4_uint32_t)('0' + bar)) << 24));
@@ -493,7 +493,7 @@ Dev::discover_bar(int bar)
 
       res->start_size(c.base(), c.size());
       break;
-    case Cfg_bar::T_io:
+    case Hw::Pci::Cfg_bar::T_io:
       res = new Resource(io_flags);
       // set ID to 'BARx', x == bar
       res->set_id(0x00524142 + (((l4_uint32_t)('0' + bar)) << 24));
@@ -508,7 +508,7 @@ Dev::discover_bar(int bar)
 }
 
 void
-Dev::discover_expansion_rom()
+Hw::Pci::Dev::discover_expansion_rom()
 {
   l4_uint32_t v, x;
   unsigned rom_register = (cfg.type() == 0) ? 12 * 4 : 14 * 4;
@@ -557,7 +557,7 @@ Dev::discover_expansion_rom()
 }
 
 void
-Dev::handle_ext_cap(unsigned char id, Ext_cap_handler handler)
+Hw::Pci::Dev::handle_ext_cap(unsigned char id, Ext_cap_handler handler)
 {
   auto cap = find_ext_cap(id);
   if (cap.is_valid())
@@ -565,28 +565,28 @@ Dev::handle_ext_cap(unsigned char id, Ext_cap_handler handler)
 }
 
 void
-Dev::discover_pcie_caps()
+Hw::Pci::Dev::discover_pcie_caps()
 {
-  handle_ext_cap(Ari_cap::Id, Dev::handle_ari_cap);
+  handle_ext_cap(Hw::Pci::Ari_cap::Id, Hw::Pci::Dev::handle_ari_cap);
 #ifdef CONFIG_L4IO_PCI_SRIOV
   // Before handling SR-IOV, first the ARI cap must have been handled, as SR-IOV
   // depends on ARI forwarding being configured.
-  handle_ext_cap(Sr_iov_cap::Id, Dev::handle_sriov_cap);
+  handle_ext_cap(Hw::Pci::Sr_iov_cap::Id, Hw::Pci::Dev::handle_sriov_cap);
 #endif
-  handle_ext_cap(Acs_cap::Id, Dev::handle_acs_cap);
+  handle_ext_cap(Hw::Pci::Acs_cap::Id, Hw::Pci::Dev::handle_acs_cap);
 }
 
 void
-Dev::discover_pci_caps()
+Hw::Pci::Dev::discover_pci_caps()
 {
   auto c = config();
     {
-      l4_uint16_t status = c.read<l4_uint16_t>(Config::Status);
+      l4_uint16_t status = c.read<l4_uint16_t>(Hw::Pci::Config::Status);
       if (!(status & CS_cap_list))
         return;
     }
 
-  l4_uint32_t cap_ptr = c.read<l4_uint8_t>(Config::Capability_ptr);
+  l4_uint32_t cap_ptr = c.read<l4_uint8_t>(Hw::Pci::Config::Capability_ptr);
   cap_ptr &= ~0x3;
   for (; cap_ptr; cap_ptr = c.read<l4_uint8_t>(cap_ptr + 1) & ~0x3)
     {
@@ -613,7 +613,7 @@ Dev::discover_pci_caps()
 }
 
 void
-Dev::discover_resources(Hw::Device *host)
+Hw::Pci::Dev::discover_resources(Hw::Device *host)
 {
   if (flags.discovered())
     return;
@@ -638,7 +638,7 @@ Dev::discover_resources(Hw::Device *host)
   discover_expansion_rom();
   discover_pci_caps();
 
-  Cap pcie = find_pci_cap(Cap::Pcie);
+  Hw::Pci::Cap pcie = find_pci_cap(Hw::Pci::Cap::Pcie);
   if (pcie.is_valid())
       discover_pcie_caps();
 
@@ -649,7 +649,7 @@ Dev::discover_resources(Hw::Device *host)
 }
 
 void
-Dev::setup(Hw::Device *)
+Hw::Pci::Dev::setup(Hw::Device *)
 {
   auto c = config();
   unsigned decoders_to_enable = 0;
@@ -691,24 +691,24 @@ Dev::setup(Hw::Device *)
 
   if (decoders_to_enable)
     {
-      l4_uint16_t v = c.read<l4_uint16_t>(Config::Command);
+      l4_uint16_t v = c.read<l4_uint16_t>(Hw::Pci::Config::Command);
       if ((v & decoders_to_enable) != decoders_to_enable)
         {
           v = (v & ~3) | decoders_to_enable;
-          c.write<l4_uint16_t>(Config::Command, v);
+          c.write<l4_uint16_t>(Hw::Pci::Config::Command, v);
         }
     }
 }
 
 void
-Dev::pm_save_state(Hw::Device *)
+Hw::Pci::Dev::pm_save_state(Hw::Device *)
 {
   _saved_state.save(this);
   flags.state_saved() = true;
 }
 
 void
-Dev::pm_restore_state(Hw::Device *)
+Hw::Pci::Dev::pm_restore_state(Hw::Device *)
 {
   if (flags.state_saved())
     {
@@ -718,7 +718,7 @@ Dev::pm_restore_state(Hw::Device *)
 }
 
 bool
-Dev::match_cid(cxx::String const &_cid) const
+Hw::Pci::Dev::match_cid(cxx::String const &_cid) const
 {
   cxx::String const prefix("PCI/");
   cxx::String cid(_cid);
@@ -887,7 +887,7 @@ dump_res_rec(Resource_list const *r, int indent)
 #endif
 
 void
-Dev::dump(int indent) const
+Hw::Pci::Dev::dump(int indent) const
 {
   char const *classname = "";
 
@@ -918,9 +918,9 @@ Dev::dump(int indent) const
 #endif
 }
 
-Dev *
-find_pci_device(l4_uint16_t seg, l4_uint8_t bus, l4_uint8_t devnr,
-                l4_uint8_t fn)
+Hw::Pci::Dev *
+Hw::Pci::find_pci_device(l4_uint16_t seg, l4_uint8_t bus, l4_uint8_t devnr,
+                         l4_uint8_t fn)
 {
   // start iterating at the root of the device tree to find the device with
   // the Pci::Dev feature that matches the PCI address.
@@ -987,5 +987,3 @@ find_pci_device(l4_uint16_t seg, l4_uint8_t bus, l4_uint8_t devnr,
 
   return nullptr;
 }
-
-} }

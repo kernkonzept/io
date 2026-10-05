@@ -8,16 +8,14 @@
 #include "vproxy_dev.h"
 #include "vbus_factory.h"
 
-namespace Vi {
-
-Proxy_dev::Proxy_dev(Hw::Device *d)
+Vi::Proxy_dev::Proxy_dev(Hw::Device *d)
 : _hwd(d)
 {
   d->add_client(this);
   // suck features from real dev
   for (auto i: *d->features())
     {
-      Dev_feature *vf = Feature_factory::match(i);
+      Vi::Dev_feature *vf = Vi::Feature_factory::match(i);
       if (vf)
         add_feature(vf);
     }
@@ -31,7 +29,7 @@ Proxy_dev::Proxy_dev(Hw::Device *d)
       if (i->disabled() || i->internal())
         continue;
 
-      Resource *vr = Resource_factory::match(i);
+      Resource *vr = Vi::Resource_factory::match(i);
       if (!vr)
         vr = i;
 
@@ -40,7 +38,5 @@ Proxy_dev::Proxy_dev(Hw::Device *d)
 }
 
 namespace {
-  static Dev_factory_t<Proxy_dev, Hw::Device> __ghwdf;
-}
-
+  static Vi::Dev_factory_t<Vi::Proxy_dev, Hw::Device> __ghwdf;
 }

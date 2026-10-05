@@ -638,7 +638,7 @@ public:
 
   void init() override
   {
-    Gpio_device::init();
+    Hw::Gpio_device::init();
 
     Resource *regs = resources()->find("regs");
     if (!regs || regs->type() != Resource::Mmio_res)
