@@ -8,9 +8,7 @@
 #include <functional>
 #include <map>
 #include <memory>
-
-class Dma_domain_set;
-class Dma_domain_group;
+#include <vector>
 
 /**
  * A Dma_space and its associated kernel DMA task.
@@ -96,19 +94,8 @@ private:
 
 class Dma_domain : public Resource, public Dma_domain_if
 {
-  friend class Dma_domain_group;
 private:
   static unsigned _next_free_domain;
-  /**
-   * Virtual DMA domain that domain belongs to.
-   *
-   * Usually there is one virtual DMA domain per virtual bus, and all physical
-   * DMA domains that are assigned to that virtual bus belong to the same
-   * virtual DMA domain. If a physical DMA domain is shared among multiple
-   * virtual buses these buses also share their virtual DMA domain.
-   */
-  std::shared_ptr<Dma_domain_set> _v_domain;
-  void add_to_set(std::shared_ptr<Dma_domain_set> const &s);
 
 public:
   Dma_domain(Dma_domain const &) = delete;
@@ -117,130 +104,35 @@ public:
   Dma_domain()
   : Resource("DMAD", Dma_domain_res, _next_free_domain, _next_free_domain)
   { ++_next_free_domain; }
-
-  void add_to_group(Dma_domain_group *g);
 };
 
 /**
- * Gather Dma_domain's of devices on a Vbus.
+ * Several Dma_domain's that are bound to a common DMA space.
  *
- * Used to assign the magic ~0U DMA domain identifier. See
- * System_bus::assign_dma_domain(). Because a device might be present on more
- * than one Vbus, there is an additional indirection through the
- * Dma_domain_group.
+ * Used for the magic ~0U DMA domain identifier of a Vbus, which stands for
+ * all DMA domains on that Vbus. See System_bus::assign_dma_domain(). The
+ * derived class provides the domains.
+ *
+ * A Dma_domain can only be bound to one DMA space. If it is already bound
+ * to another one, e.g. because its device is also on another Vbus, binding
+ * the set fails.
  */
 class Dma_domain_set : public Dma_domain_if
 {
-  friend class Dma_domain;
-  friend class Dma_domain_group;
-private:
-  typedef std::vector<Dma_domain *> Domains;
-  typedef std::vector<Dma_domain_group *> Groups;
-  Domains _domains;
-  Groups _groups;
-
-  void add_group(Dma_domain_group *g)
-  { _groups.push_back(g); }
-
-  bool rm_group(Dma_domain_group *g)
-  {
-    for (auto i = _groups.begin(); i != _groups.end(); ++i)
-      if (*i == g)
-        {
-          _groups.erase(i);
-          return true;
-        }
-
-    return false;
-  }
-
-  void add_domain(Dma_domain *d)
-  { _domains.push_back(d); }
-
-  bool rm_domain(Dma_domain *d)
-  {
-    for (auto i = _domains.begin(); i != _domains.end(); ++i)
-      if (*i == d)
-        {
-          _domains.erase(i);
-          return true;
-        }
-
-    return false;
-  }
-
 public:
+  typedef std::vector<Dma_domain *> Domains;
+
+  /**
+   * Get the domains of the set.
+   *
+   * The domains are queried on each operation, so the set may change between
+   * binding and unbinding. Unbinding only affects domains that are bound to
+   * the DMA space of the set.
+   */
+  virtual Domains domains() const = 0;
+
   int set_managed_dma_space(std::shared_ptr<Managed_dma_space> space) override;
   void clear_managed_dma_space() override;
   int enumerate_dma_reservations(Resv_cb cb) const override;
   int get_dma_limits(l4_uint64_t *min_addr, l4_uint64_t *max_addr) const override;
 };
-
-class Dma_domain_group
-{
-  friend class Dma_domain;
-
-private:
-  std::shared_ptr<Dma_domain_set> _set;
-  void assign(Dma_domain_group const &g)
-  {
-    if (_set == g._set)
-      return;
-
-    if (_set)
-      _set->rm_group(this);
-
-    _set = g._set;
-
-    if (_set)
-      _set->add_group(this);
-  }
-
-  void assign_set(std::shared_ptr<Dma_domain_set> const &s)
-  {
-    s->add_group(this);
-    _set = s;
-  }
-
-public:
-  Dma_domain_group() = default;
-  Dma_domain_group(Dma_domain_group const &) = delete;
-  Dma_domain_group &operator = (Dma_domain_group const &) = delete;
-
-  ~Dma_domain_group()
-  {
-    if (!_set)
-      return;
-    _set->rm_group(this);
-  }
-
-  Dma_domain_if *operator -> () const { return _set.get(); }
-  Dma_domain_if *get() const { return _set.get(); }
-
-private:
-  void merge(std::shared_ptr<Dma_domain_set> s);
-};
-
-inline void
-Dma_domain::add_to_set(std::shared_ptr<Dma_domain_set> const &s)
-{
-  s->add_domain(this);
-  _v_domain = s;
-}
-
-/**
- * Move all groups and domains of `s` into the set of this group.
- *
- * `s` is taken by value: moving its members drops their references to it, so
- * this keeps it alive until the end. Afterwards nothing refers to it anymore
- * and it is freed.
- */
-inline void
-Dma_domain_group::merge(std::shared_ptr<Dma_domain_set> s)
-{
-  for (auto g: s->_groups)
-    g->assign_set(_set);
-
-  for (auto d: s->_domains)
-    d->add_to_set(_set);
-}

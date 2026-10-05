@@ -180,11 +180,9 @@ class Root_dma_domain_rs : public Resource_space
 {
 private:
   Vi::System_bus *_bus;
-  Dma_domain_group *_domain_group;
 
 public:
-  Root_dma_domain_rs(Vi::System_bus *bus, Dma_domain_group *g)
-  : Resource_space(), _bus(bus), _domain_group(g)
+  Root_dma_domain_rs(Vi::System_bus *bus) : Resource_space(), _bus(bus)
   {}
 
   char const *res_type_name() const override
@@ -192,11 +190,7 @@ public:
 
   bool request(Resource *, Device *, std::shared_ptr<Resource> const &child,
                Device *) override
-  {
-    Dma_domain *d = dynamic_cast<Dma_domain *>(child.get());
-    d->add_to_group(_domain_group);
-    return _bus->add_resource_to_bus(child);
-  }
+  { return _bus->add_resource_to_bus(child); }
 
   bool alloc(Resource *, Device *, std::shared_ptr<Resource> const &, Device *,
              bool) override
@@ -236,7 +230,7 @@ Vi::System_bus::System_bus(Inhibitor_mux *mux)
   add_resource(std::make_shared<Root_resource>(Resource::Clock_res, x));
   add_resource(std::make_shared<Root_resource>(
     Resource::Dma_domain_res,
-    std::make_shared<Root_dma_domain_rs>(this, &_dma_domain_group)));
+    std::make_shared<Root_dma_domain_rs>(this)));
 
   for (auto const *i: Root_resource_factory::_factories)
     add_resource(i->create(this));
@@ -441,8 +435,8 @@ Vi::System_bus::assign_dma_domain(L4::Ipc::Iostream &ios)
   Dma_domain_if *d = 0;
   if (id == ~0U)
     {
-      d = _dma_domain_group.get();
-      if (!d)
+      d = &_dma_domains;
+      if (_dma_domains.domains().empty())
         {
           d_printf(DBG_WARN, "vbus %s does not support a global DMA domain\n",
                    name());
@@ -473,18 +467,22 @@ Vi::System_bus::assign_dma_domain(L4::Ipc::Iostream &ios)
 void
 Vi::System_bus::reset_dma_domains()
 {
-  Dma_domain_if *d = 0;
-  d = _dma_domain_group.get();
-  if (d)
-    {
-      // The Dma_domain_if::clear_dma_space() method currently does
-      // not handle Dma_domain_sets correctly. So we explicitly invoke
-      // clear_managed_dma_space() if d is a Dma_domain_set.
-      if (dynamic_cast<Dma_domain_set *>(d))
-        d->clear_managed_dma_space();
-      else
-        d->clear_dma_space();
-    }
+  _dma_domains.clear_dma_space();
+}
+
+Vi::System_bus::Dma_domains::Domains
+Vi::System_bus::Dma_domains::domains() const
+{
+  Domains doms;
+  Resource pivot(Resource::Dma_domain_res, 0, 0);
+  for (auto i = _bus->_resources.lower_bound(&pivot);
+       i != _bus->_resources.end()
+       && (*i)->type() == Resource::Dma_domain_res;
+       ++i)
+    if (auto *d = dynamic_cast<Dma_domain *>(i->get()))
+      doms.push_back(d);
+
+  return doms;
 }
 
 int

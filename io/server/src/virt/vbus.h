@@ -236,6 +236,18 @@ private:
     System_bus *_bus;
   };
 
+  /// All DMA domains on the vBUS, used for the ~0U DMA domain id.
+  class Dma_domains : public Dma_domain_set
+  {
+  public:
+    explicit Dma_domains(System_bus const *bus) : _bus(bus) {}
+
+    Domains domains() const override;
+
+  private:
+    System_bus const *_bus;
+  };
+
   int request_resource(L4::Ipc::Iostream &ios);
   int assign_dma_domain(L4::Ipc::Iostream &ios);
 
@@ -253,7 +265,7 @@ private:
   Resource_set _resources;
   Sw_icu *_sw_icu;
   Int_property _num_msis;
-  Dma_domain_group _dma_domain_group;
+  Dma_domains _dma_domains{this};
   std::vector<Device *> _devices_by_id;
 };
 

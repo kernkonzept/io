@@ -11,37 +11,6 @@
 unsigned Dma_domain::_next_free_domain;
 bool Dma_domain_if::_supports_remapping;
 
-void
-Dma_domain::add_to_group(Dma_domain_group *g)
-{
-  if (!_v_domain && !g->_set)
-    {
-      auto n = std::make_shared<Dma_domain_set>();
-      g->assign_set(n);
-      add_to_set(n);
-      return;
-    }
-
-  if (_v_domain == g->_set)
-    return;
-
-  if (_v_domain && g->_set)
-    {
-      // domain is already in a group and the target group already contains
-      // other domains
-      g->merge(_v_domain);
-      return;
-    }
-
-  if (_v_domain)
-    {
-      g->assign_set(_v_domain);
-      return;
-    }
-
-  add_to_set(g->_set);
-}
-
 l4_ret_t
 Dma_domain_if::identity_map(std::shared_ptr<Managed_dma_space> mds,
                             l4_uint64_t first, l4_uint64_t last)
@@ -287,26 +256,34 @@ Dma_domain_if::clear_managed_dma_space()
 int
 Dma_domain_set::set_managed_dma_space(std::shared_ptr<Managed_dma_space> space)
 {
-  int i, ret = 0;
+  if (_managed_dma_space)
+    return -L4_EBUSY;
 
-  for (i = 0; i < static_cast<int>(_domains.size()); i++)
-    if ((ret = _domains[i]->set_managed_dma_space(space)) < 0)
-      break;
+  Domains doms = domains();
+  for (auto i = doms.begin(); i != doms.end(); ++i)
+    if (int err = (*i)->set_managed_dma_space(space); err < 0)
+      {
+        // Domain i did not take the space. Only roll back the ones before it.
+        while (i != doms.begin())
+          (*--i)->clear_managed_dma_space();
+        return err;
+      }
 
-  // Domain i failed and did not take the space. Only roll back the ones
-  // before it.
-  if (ret < 0)
-    while (--i >= 0)
-      _domains[i]->clear_managed_dma_space();
-
-  return ret;
+  return Dma_domain_if::set_managed_dma_space(space);
 }
 
 void
 Dma_domain_set::clear_managed_dma_space()
 {
-  for (auto d : _domains)
-    d->clear_managed_dma_space();
+  if (!_managed_dma_space)
+    return;
+
+  // Leave domains alone that are bound to some other space, e.g. by their id.
+  for (auto d : domains())
+    if (d->managed_dma_space() == _managed_dma_space)
+      d->clear_managed_dma_space();
+
+  Dma_domain_if::clear_managed_dma_space();
 }
 
 int
@@ -340,7 +317,7 @@ Dma_domain_set::enumerate_dma_reservations(Resv_cb cb) const
       return 0;
     };
 
-  for (Dma_domain const *d : _domains)
+  for (Dma_domain const *d : domains())
     {
       int err = d->enumerate_dma_reservations(gather);
       if (err < 0)
@@ -359,7 +336,7 @@ Dma_domain_set::get_dma_limits(l4_uint64_t *min_addr, l4_uint64_t *max_addr) con
 {
   l4_uint64_t all_min = 0;
   l4_uint64_t all_max = -1;
-  for (auto d : _domains)
+  for (auto d : domains())
     {
       l4_uint64_t dom_min, dom_max;
       if (int err = d->get_dma_limits(&dom_min, &dom_max); err < 0)
