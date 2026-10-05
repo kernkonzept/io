@@ -437,8 +437,11 @@ void Gpio_imx_chip::init()
   Resource *irq = resources()->find("irq0");
   // TODO: look for two IRQs independent of some name
   if (!irq || irq->type() != Resource::Irq_res)
-    d_printf(DBG_WARN, "warning: %s: no 'irq0' configured\n"
-                       "         no IRQs available for pins 0-15\n", name());
+    {
+      d_printf(DBG_ERR, "error: %s: no 'irq0' configured\n"
+                        "         no IRQs available for pins 0-15\n", name());
+      throw "gpio-imx init error";
+    }
 
   _irq_svr = std::make_unique<Irq_server>(irq->start(), irq->flags(), _regs);
 
