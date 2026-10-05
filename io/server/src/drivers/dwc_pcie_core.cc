@@ -9,7 +9,6 @@
 #include <l4/util/util.h>
 
 #include "dwc_pcie_core.h"
-#include "utils.h"
 #include "resource_provider.h"
 
 #include <errno.h>

@@ -24,7 +24,6 @@
 #include "device.h"
 #include "inhibitor_mux.h"
 #include "dma_domain.h"
-#include "../utils.h"
 
 namespace Vi {
 class Sw_icu;

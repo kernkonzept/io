@@ -12,7 +12,6 @@
 #if defined(ARCH_x86) || defined(ARCH_amd64)
 
 #include <l4/util/port_io.h>
-#include <utils.h>
 
 #endif
 
