@@ -244,8 +244,10 @@ Vi::System_bus::System_bus(Inhibitor_mux *mux)
 
 Vi::System_bus::~System_bus() noexcept
 {
+  // Destroy the devices of the bus first, while the bus is still intact.
+  destroy_children();
   registry->unregister_obj(this);
-  // FIXME: must delete all devices
+  reset_dma_domains();
 }
 
 /**

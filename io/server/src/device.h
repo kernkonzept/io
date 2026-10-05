@@ -104,6 +104,24 @@ private:
 
   void set_depth(int d) { _depth = d; }
 
+  /**
+   * Destroy all descendants of this node.
+   *
+   * Descendants are destroyed deepest first, siblings in reverse order of
+   * their addition. So every device is destroyed while all its ancestors are
+   * still intact.
+   */
+  void destroy_children()
+  {
+    while (!_children.empty())
+      {
+        _children.back()->_dt.destroy_children();
+        _children.pop_back();
+        if (!_children.empty())
+          _children.back()->add_sibling(nullptr);
+      }
+  }
+
 public:
   class iterator
   {
@@ -202,6 +220,9 @@ class Device_tree_mixin
 
 protected:
   Device_tree<D> _dt;
+
+  /// Destroy all descendant devices, see Device_tree::destroy_children().
+  void destroy_children() { _dt.destroy_children(); }
 
 public:
   typedef typename Device_tree<D>::iterator iterator;
