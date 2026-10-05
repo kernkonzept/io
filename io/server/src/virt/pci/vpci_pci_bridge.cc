@@ -10,7 +10,12 @@
 
 Vi::Pci_to_pci_bridge::Pci_to_pci_bridge()
 {
-  add_feature(this);
+  add_feature(&_function);
+}
+
+Vi::Pci_to_pci_bridge::Function::Function(Pci_to_pci_bridge *bridge)
+: _bridge(bridge)
+{
   memset(_cfg_space, 0, sizeof(_cfg_space));
 
   _h = &_cfg_space[0];
@@ -35,13 +40,14 @@ Vi::Pci_to_pci_bridge::Pci_to_pci_bridge()
 
 
 int
-Vi::Pci_to_pci_bridge::cfg_read(l4_uint32_t reg, l4_uint32_t *v, Cfg_width o)
+Vi::Pci_to_pci_bridge::Function::cfg_read(l4_uint32_t reg, l4_uint32_t *v,
+                                          Cfg_width o)
 {
   unsigned mask = ~0U >> (32 - (1U << (o + 3)));
   switch (reg & ~3)
     {
     case 0x18: // bus config stuff
-      *v = (_bus_config >> ((reg & 3)*8)) & mask;
+      *v = (_bridge->_bus_config >> ((reg & 3)*8)) & mask;
       return L4_EOK;
 
     case 0x10: // We have no BARs
@@ -59,13 +65,15 @@ Vi::Pci_to_pci_bridge::cfg_read(l4_uint32_t reg, l4_uint32_t *v, Cfg_width o)
 
 
 int
-Vi::Pci_to_pci_bridge::cfg_write(l4_uint32_t reg, l4_uint32_t v, Cfg_width o)
+Vi::Pci_to_pci_bridge::Function::cfg_write(l4_uint32_t reg, l4_uint32_t v,
+                                           Cfg_width o)
 {
   unsigned mask = (~0U >> (32 - (1U << (o + 3)))) << ((reg & 3) * 8);
   switch (reg & ~3)
     {
     case 0x18:
-      _bus_config = (_bus_config & ~mask) | ((v << ((reg & 3)*8)) & mask);
+      _bridge->_bus_config = (_bridge->_bus_config & ~mask)
+                             | ((v << ((reg & 3)*8)) & mask);
       return L4_EOK;
 
     case 0x10: // We have no BARs

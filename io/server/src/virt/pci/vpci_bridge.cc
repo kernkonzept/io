@@ -128,7 +128,7 @@ Vi::Pci_bridge::find_bridge(unsigned bus)
         if (!p)
           break;
 
-        Vi::Pci_bridge *b = dynamic_cast<Vi::Pci_bridge*>(p);
+        Vi::Pci_bridge *b = p->bridge();
         if (b && (b = b->find_bridge(bus)))
           return b;
       }

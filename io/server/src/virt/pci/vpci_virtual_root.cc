@@ -264,7 +264,7 @@ Vi::Pci_vroot_id::add_child(Vi::Device *d)
 	  b->secondary(bus_num);
 	  b->subordinate(bus_num);
 
-	  _bus.dev(31)->fn(0, b);
+	  _bus.dev(31)->fn(0, b->function());
 	  Vi::Device::add_child(b);
 	}
 

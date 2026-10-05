@@ -470,6 +470,8 @@ public:
   virtual int cap_write(l4_uint32_t offs, l4_uint32_t v, Cfg_width) = 0;
 };
 
+class Pci_bridge;
+
 /**
  * \brief Generic virtual PCI device.
  * This class provides the basic functionality for a device on a
@@ -499,6 +501,15 @@ public:
   virtual int irq_enable(Irq_info *irq) = 0;
   virtual bool is_same_device(Pci_dev const *o) const = 0;
   virtual Msi_src *msi_src() const = 0;
+
+  /**
+   * Get the virtual PCI bridge behind this PCI function.
+   *
+   * \return The bridge if this function is a virtual PCI-to-PCI bridge,
+   *         nullptr otherwise.
+   */
+  virtual Pci_bridge *bridge() const { return nullptr; }
+
   virtual ~Pci_dev() = 0;
 };
 
