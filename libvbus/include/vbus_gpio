@@ -138,15 +138,30 @@ public:
   {}
 
   /**
-   * \brief A slice of the pins provided by this module.
+   * \brief Selection of GPIO pins for operations on multiple pins.
    *
-   * Data type to specify a selection of pins for the 'multi'
-   * methods.
+   * Bit i of `mask` selects GPIO pin `offset + i`. A set bit selects the pin
+   * and a cleared bit leaves the pin unchanged. Selected pins need not to be
+   * consecutive. Pin numbers refer to this GPIO module, not to physical
+   * connector positions.
+   *
+   * \note A slice can select at most 32 pins. The supported offsets,
+   *       number of pins, and operations depend on the hardware and driver.
+   *       All selected pins must be accessible through the GPIO module.
+   *       Constructing a slice does not validate it or configure any pins.
    */
   struct Pin_slice
   {
+    /**
+     * \brief Construct a GPIO pin selection
+     *
+     * \param offset  GPIO pin number corresponding to bit 0 of mask.
+     * \param mask    Bitmap selecting pins relative to offset.
+     */
     Pin_slice(unsigned offset, unsigned mask) : offset(offset), mask(mask) {}
-    unsigned offset, mask;
+
+    unsigned offset; ///< GPIO pin number corresponding to mask bit 0.
+    unsigned mask;   ///< Bit i selects GPIO pin offset + i.
   };
 
   /**
