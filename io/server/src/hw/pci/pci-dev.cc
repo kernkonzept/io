@@ -135,6 +135,10 @@ Hw::Pci::Dev::enumerate_dma_src_ids(Hw::Dma_src_feature::Dma_src_id_cb cb) const
   return 0;
 }
 
+bool
+Hw::Pci::Dev::has_iommu() const
+{ return _bridge != nullptr; }
+
 int
 Hw::Pci::Dev::enumerate_dma_reservations(Hw::Pci::Dev *dev,
                                          Dma_domain_if::Resv_cb cb) const

@@ -12,15 +12,20 @@
 
 /**
  * A Dma_space and its associated kernel DMA task.
+ *
+ * In an identity mapped DMA space every buffer and the MSI controller are at
+ * their physical addresses.
  */
 class Managed_dma_space
 {
 public:
-  Managed_dma_space(L4Re::Util::Unique_cap<L4Re::Dma_space> dma_space);
+  Managed_dma_space(L4Re::Util::Unique_cap<L4Re::Dma_space> dma_space,
+                    bool identity_mapped);
   ~Managed_dma_space();
 
   L4::Cap<L4Re::Dma_space> dma_space() const { return _dma_space.get(); }
   L4::Cap<L4::Task> dma_task() const { return _dma_task.get(); }
+  bool identity_mapped() const { return _identity_mapped; }
 
   /**
    * Get (or create) mapping of MSI controller in this Dma_space.
@@ -34,6 +39,7 @@ private:
   L4Re::Util::Unique_cap<L4Re::Dma_space> _dma_space;
   L4Re::Util::Unique_cap<L4::Task> _dma_task;
   std::map<l4_uint64_t, l4_uint64_t> _msi_mappings;
+  bool _identity_mapped;
 };
 
 /**
@@ -91,6 +97,18 @@ public:
 
   virtual int enumerate_dma_reservations(Resv_cb cb) const = 0;
   virtual int get_dma_limits(l4_uint64_t *min_addr, l4_uint64_t *max_addr) const = 0;
+
+  /**
+   * Does a device of the domain need physical DMA addresses because it is
+   * not behind an IOMMU?
+   */
+  virtual bool needs_phys_dma() const = 0;
+
+  /// Is a device of the domain bound to an IOMMU?
+  virtual bool has_iommu_dma() const = 0;
+
+  /// Warn about each device of the domain that is not behind an IOMMU.
+  virtual void warn_phys_dma() const {}
 
   virtual ~Dma_domain_if() = default;
 
@@ -161,4 +179,7 @@ public:
 
   int enumerate_dma_reservations(Resv_cb cb) const override;
   int get_dma_limits(l4_uint64_t *min_addr, l4_uint64_t *max_addr) const override;
+  bool needs_phys_dma() const override;
+  bool has_iommu_dma() const override;
+  void warn_phys_dma() const override;
 };

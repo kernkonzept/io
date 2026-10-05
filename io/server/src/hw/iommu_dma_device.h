@@ -73,6 +73,10 @@ public:
     return 0;
   }
 
+  /// Does the property list any IOMMU?
+  bool empty() const
+  { return _interfaces.empty(); }
+
 private:
   static constexpr unsigned Num_cells = 2;
 
@@ -135,6 +139,9 @@ private:
     {
       return hw_dev->_iommus.enumerate_dma_src_ids(cb);
     }
+
+    bool has_iommu() const override
+    { return !hw_dev->_iommus.empty(); }
 
     int enumerate_dma_reservations(Dma_domain_if::Resv_cb) const override
     {

@@ -298,14 +298,40 @@ public:
 
   int get_dma_limits(l4_uint64_t *, l4_uint64_t *) const override
   { return -L4_EPERM; }
+
+  bool needs_phys_dma() const override
+  { return true; }
+
+  bool has_iommu_dma() const override
+  { return false; }
 };
 
+/**
+ * DMA domain of a DMA capable device on a system with an IOMMU.
+ *
+ * A device not behind the IOMMU uses physical addresses. This is queried when
+ * the DMA space is set: the IOMMU scopes may only be known after the device
+ * enumeration.
+ */
 class Iommu_dma_domain : public Dma_domain
 {
 public:
-  Iommu_dma_domain(Hw::Dma_src_feature *src)
-  : _src(src)
+  Iommu_dma_domain(Hw::Device *dev, Hw::Dma_src_feature *src)
+  : _dev(dev), _src(src)
   {}
+
+  bool needs_phys_dma() const override
+  { return !has_iommu(); }
+
+  bool has_iommu_dma() const override
+  { return has_iommu(); }
+
+  void warn_phys_dma() const override
+  {
+    if (!has_iommu())
+      d_printf(DBG_WARN, "%s: DMA not behind the IOMMU, uses CPU-phys "
+                         "addresses\n", _dev->name());
+  }
 
   static void init()
   {
@@ -317,6 +343,9 @@ public:
   {
     if (int err = Dma_domain::set_managed_dma_space(space, owner); err < 0)
       return err;
+
+    if (!has_iommu())
+      return 0;
 
     L4::Cap<L4::Iommu> iommu = L4Re::Env::env()->get_cap<L4::Iommu>("iommu");
     if (int err = _src->enumerate_dma_src_ids([this, iommu](l4_uint64_t src) -> int
@@ -341,7 +370,7 @@ public:
       return false;
 
     // set_managed_dma_space may not have been called in the first place
-    if (!mds)
+    if (!mds || !has_iommu())
       return true;
 
     L4::Cap<L4::Iommu> iommu = L4Re::Env::env()->get_cap<L4::Iommu>("iommu");
@@ -355,7 +384,12 @@ public:
   }
 
   int enumerate_dma_reservations(Dma_domain::Resv_cb cb) const override
-  { return _src->enumerate_dma_reservations(cb); }
+  {
+    if (!has_iommu())
+      return 0;
+
+    return _src->enumerate_dma_reservations(cb);
+  }
 
   int get_dma_limits(l4_uint64_t *min_addr, l4_uint64_t *max_addr) const override
   {
@@ -365,6 +399,9 @@ public:
   }
 
 private:
+  bool has_iommu() const
+  { return _src && _src->has_iommu(); }
+
   int iommu_bind(L4::Cap<L4::Iommu> iommu, l4_uint64_t src)
   {
     l4_uint64_t min_addr;
@@ -390,7 +427,8 @@ private:
       d_printf(DBG_ERR, "error: unbinding DMA for device: %d\n", r);
   }
 
-  Hw::Dma_src_feature *_src = nullptr;
+  Hw::Device *_dev;
+  Hw::Dma_src_feature *_src;
   l4_uint64_t _min_addr = 0;
   l4_uint64_t _max_addr = -1;
 };
@@ -403,11 +441,8 @@ public:
     if (!dev)
       return nullptr;
 
-    Hw::Dma_src_feature *s = dev->find_feature<Hw::Dma_src_feature>();
-    if (!s)
-      return nullptr;
-
-    return std::make_shared<Iommu_dma_domain>(s);
+    return std::make_shared<Iommu_dma_domain>(
+      dev, dev->find_feature<Hw::Dma_src_feature>());
   }
 };
 

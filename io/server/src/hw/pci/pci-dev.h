@@ -110,6 +110,7 @@ public:
   }
 
   virtual int enumerate_dma_src_ids(Dma_src_feature::Dma_src_id_cb cb) const;
+  bool has_iommu() const;
   virtual int enumerate_dma_reservations(Dev *dev, Dma_domain_if::Resv_cb cb) const;
   virtual int reserve_dma_resources(Dma_domain_if::Resv_cb const &cb) const;
 
@@ -135,6 +136,9 @@ protected:
     {
       return parent->enumerate_dma_src_ids(cb);
     }
+
+    bool has_iommu() const override
+    { return parent->has_iommu(); }
 
     int enumerate_dma_reservations(Dma_domain_if::Resv_cb cb) const override
     {

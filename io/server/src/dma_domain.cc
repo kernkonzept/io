@@ -51,9 +51,11 @@ Dma_domain_if::identity_map(std::shared_ptr<Managed_dma_space> mds,
   return L4_EOK;
 }
 
-Managed_dma_space::Managed_dma_space(L4Re::Util::Unique_cap<L4Re::Dma_space> dma_space)
+Managed_dma_space::Managed_dma_space(L4Re::Util::Unique_cap<L4Re::Dma_space> dma_space,
+                                     bool identity_mapped)
 : _dma_space(std::move(dma_space)),
-  _dma_task(L4Re::chkcap(L4Re::Util::make_unique_cap<L4::Task>()))
+  _dma_task(L4Re::chkcap(L4Re::Util::make_unique_cap<L4::Task>())),
+  _identity_mapped(identity_mapped)
 {
   L4Re::chksys(L4Re::Env::env()->factory()
                   ->create(_dma_task.get(), L4_PROTO_DMA_SPACE));
@@ -87,21 +89,27 @@ Managed_dma_space::get_msi_mapping(l4_uint64_t phys, l4_uint64_t *iova)
   if (!virt)
     return -L4_ENOMEM;
 
-  auto dma_mgr = L4Re::Env::env()->get_cap<L4Re::Dma_space_mgr>("dma_mgr");
-  if (!dma_mgr)
-    return -L4_ENOSYS;
+  // An identity mapped DMA space has no blockings
+  L4Re::Dma_space::Dma_addr dma_addr = aligned_phys;
+  if (!_identity_mapped)
+    {
+      auto dma_mgr = L4Re::Env::env()->get_cap<L4Re::Dma_space_mgr>("dma_mgr");
+      if (!dma_mgr)
+        return -L4_ENOSYS;
 
-  L4Re::Dma_space::Dma_addr dma_addr = L4_PAGESIZE; // avoid 0
-  l4_ret_t res = dma_mgr->block_area(L4::Ipc::make_cap_rws(_dma_space.get()),
-                                     &dma_addr, L4_PAGESIZE, -1,
-                                     L4Re::Dma_space_mgr::Search_addr,
-                                     L4_PAGESHIFT);
-  if (res < 0)
-    return res;
+      dma_addr = L4_PAGESIZE; // avoid 0
+      l4_ret_t res =
+        dma_mgr->block_area(L4::Ipc::make_cap_rws(_dma_space.get()),
+                            &dma_addr, L4_PAGESIZE, -1,
+                            L4Re::Dma_space_mgr::Search_addr, L4_PAGESHIFT);
+      if (res < 0)
+        return res;
+    }
 
-  res = l4_error(_dma_task->map(L4Re::This_task,
-                                l4_fpage(virt, L4_PAGESHIFT, L4_FPAGE_RW),
-                                dma_addr));
+  l4_ret_t res = l4_error(_dma_task->map(L4Re::This_task,
+                                         l4_fpage(virt, L4_PAGESHIFT,
+                                                  L4_FPAGE_RW),
+                                         dma_addr));
   if (res < 0)
     return res;
 
@@ -135,15 +143,28 @@ Dma_domain_if::set_dma_space(L4Re::Util::Unique_cap<L4Re::Dma_space> dma_space,
     L4Re::chkcap(L4Re::Env::env()->get_cap<L4Re::Dma_space_mgr>("dma_mgr"),
                  "Get DMA space manager cap from env", -L4_ENOSYS);
 
-  if (!_supports_remapping)
+  bool phys = needs_phys_dma();
+  if (_supports_remapping && phys)
+    warn_phys_dma();
+
+  if (!_supports_remapping || (phys && !has_iommu_dma()))
     {
       d_printf(DBG_DEBUG2, "DMA: use CPU-phys addresses for DMA\n");
       return dma_mgr->associate_phys(L4::Ipc::make_cap_rws(dma_space.get()),
                                      L4Re::Dma_space_mgr::Space_attribs::None);
     }
 
-  d_printf(DBG_DEBUG2, "DMA: create kern DMA space for managed DMA\n");
-  auto mds = std::make_shared<Managed_dma_space>(std::move(dma_space));
+  /*
+   * Devices not behind the IOMMU use physical DMA addresses. The devices bound
+   * to the IOMMU then use the same addresses: every buffer is mapped at its
+   * physical address into the DMA task (identity mapping).
+   */
+  if (phys)
+    d_printf(DBG_DEBUG2, "DMA: devices without IOMMU: use CPU-phys addresses "
+                         "for DMA, identity mapped for the IOMMU\n");
+  else
+    d_printf(DBG_DEBUG2, "DMA: create kern DMA space for managed DMA\n");
+  auto mds = std::make_shared<Managed_dma_space>(std::move(dma_space), phys);
 
   // Bind the device / all devices to the Managed_dma_space. This gathers the
   // DMA address limits.
@@ -160,6 +181,17 @@ Dma_domain_if::set_dma_space(L4Re::Util::Unique_cap<L4Re::Dma_space> dma_space,
       first = L4::trunc_page(first); // block_area requires page alignment
       d_printf(DBG_DEBUG2, "DMA: reserve 0x%llx-0x%llx, %s\n", first, last,
                resv_type_to_str(type));
+
+      // An identity mapped DMA space has no blockings: every region is at its
+      // physical address anyway.
+      if (mds->identity_mapped())
+        {
+          if (type == Resv_type::Identity_fixed
+              || type == Resv_type::Identity_remappable)
+            return identity_map(mds, first, last);
+          return static_cast<l4_ret_t>(L4_EOK);
+        }
+
       switch (type)
         {
         case Resv_type::Identity_remappable:
@@ -204,20 +236,31 @@ Dma_domain_if::set_dma_space(L4Re::Util::Unique_cap<L4Re::Dma_space> dma_space,
       return err;
     }
 
-  err = dma_mgr->set_limits(L4::Ipc::make_cap_rws(mds->dma_space()),
-                            min_addr, max_addr);
-  if (err < 0)
+  if (phys)
     {
-      d_printf(DBG_DEBUG2, "DMA: set_dma_limits failed: %d\n", err);
-      clear_managed_dma_space(owner);
-      return err;
+      // The physical addresses of the buffers decide, no limits possible
+      d_printf(DBG_DEBUG2, "DMA: limits 0x%llx-0x%llx not enforced for "
+                           "CPU-phys addresses\n", min_addr, max_addr);
+    }
+  else
+    {
+      err = dma_mgr->set_limits(L4::Ipc::make_cap_rws(mds->dma_space()),
+                                min_addr, max_addr);
+      if (err < 0)
+        {
+          d_printf(DBG_DEBUG2, "DMA: set_dma_limits failed: %d\n", err);
+          clear_managed_dma_space(owner);
+          return err;
+        }
     }
 
   d_printf(DBG_DEBUG2, "DMA: associate managed DMA space (cap=%lx)\n",
            mds->dma_task().cap());
+  L4Re::Dma_space_mgr::Space_attribs attribs;
+  if (phys)
+    attribs = L4Re::Dma_space_mgr::Identity_map;
   err = dma_mgr->associate(L4::Ipc::make_cap_rws(mds->dma_space()),
-                           L4::Ipc::make_cap_rws(mds->dma_task()),
-                           L4Re::Dma_space_mgr::Space_attribs::None);
+                           L4::Ipc::make_cap_rws(mds->dma_task()), attribs);
   if (err < 0)
     {
       d_printf(DBG_DEBUG2, "DMA: associate failed: %d\n", err);
@@ -357,4 +400,31 @@ Dma_domain_set::get_dma_limits(l4_uint64_t *min_addr, l4_uint64_t *max_addr) con
   *min_addr = all_min;
   *max_addr = all_max;
   return 0;
+}
+
+bool
+Dma_domain_set::needs_phys_dma() const
+{
+  for (auto d : domains())
+    if (d->needs_phys_dma())
+      return true;
+
+  return false;
+}
+
+bool
+Dma_domain_set::has_iommu_dma() const
+{
+  for (auto d : domains())
+    if (d->has_iommu_dma())
+      return true;
+
+  return false;
+}
+
+void
+Dma_domain_set::warn_phys_dma() const
+{
+  for (auto d : domains())
+    d->warn_phys_dma();
 }

@@ -46,6 +46,9 @@ namespace Hw {
         return cb(src_id);
       }
 
+      bool has_iommu() const override
+      { return true; }
+
       int enumerate_dma_reservations(Dma_domain_if::Resv_cb) const override
       { return 0; }
 

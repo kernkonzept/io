@@ -330,6 +330,13 @@ public:
   virtual int enumerate_dma_src_ids(Dma_src_id_cb cb) const = 0;
 
   /**
+   * Is the device behind an IOMMU?
+   *
+   * A device not behind an IOMMU uses physical DMA addresses.
+   */
+  virtual bool has_iommu() const = 0;
+
+  /**
    * Enumerate reserved DMA regions.
    *
    * Calls `cb` for each reserved DMA region of the device.
