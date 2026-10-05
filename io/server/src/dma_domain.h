@@ -107,8 +107,8 @@ private:
    * virtual DMA domain. If a physical DMA domain is shared among multiple
    * virtual buses these buses also share their virtual DMA domain.
    */
-  Dma_domain_set *_v_domain = 0;
-  void add_to_set(Dma_domain_set *s);
+  std::shared_ptr<Dma_domain_set> _v_domain;
+  void add_to_set(std::shared_ptr<Dma_domain_set> const &s);
 
 public:
   Dma_domain(Dma_domain const &) = delete;
@@ -181,7 +181,7 @@ class Dma_domain_group
   friend class Dma_domain;
 
 private:
-  Dma_domain_set *_set = 0;
+  std::shared_ptr<Dma_domain_set> _set;
   void assign(Dma_domain_group const &g)
   {
     if (_set == g._set)
@@ -196,7 +196,7 @@ private:
       _set->add_group(this);
   }
 
-  void assign_set(Dma_domain_set *s)
+  void assign_set(std::shared_ptr<Dma_domain_set> const &s)
   {
     s->add_group(this);
     _set = s;
@@ -214,28 +214,33 @@ public:
     _set->rm_group(this);
   }
 
-  Dma_domain_if *operator -> () const { return _set; }
-  Dma_domain_if *get() const { return _set; }
+  Dma_domain_if *operator -> () const { return _set.get(); }
+  Dma_domain_if *get() const { return _set.get(); }
 
 private:
-  void merge(Dma_domain_set *s);
+  void merge(std::shared_ptr<Dma_domain_set> s);
 };
 
 inline void
-Dma_domain::add_to_set(Dma_domain_set *s)
+Dma_domain::add_to_set(std::shared_ptr<Dma_domain_set> const &s)
 {
   s->add_domain(this);
   _v_domain = s;
 }
 
+/**
+ * Move all groups and domains of `s` into the set of this group.
+ *
+ * `s` is taken by value: moving its members drops their references to it, so
+ * this keeps it alive until the end. Afterwards nothing refers to it anymore
+ * and it is freed.
+ */
 inline void
-Dma_domain_group::merge(Dma_domain_set *s)
+Dma_domain_group::merge(std::shared_ptr<Dma_domain_set> s)
 {
   for (auto g: s->_groups)
     g->assign_set(_set);
 
   for (auto d: s->_domains)
     d->add_to_set(_set);
-
-  delete s;
 }

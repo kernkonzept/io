@@ -16,7 +16,7 @@ Dma_domain::add_to_group(Dma_domain_group *g)
 {
   if (!_v_domain && !g->_set)
     {
-      Dma_domain_set *n = new Dma_domain_set();
+      auto n = std::make_shared<Dma_domain_set>();
       g->assign_set(n);
       add_to_set(n);
       return;
