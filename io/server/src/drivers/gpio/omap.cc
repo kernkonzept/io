@@ -130,7 +130,7 @@ struct Omap5_gpio : Omap_gpio_base
 
 class Scm_omap : public Hw::Device
 {
-  L4drivers::Register_block<16> _regs;
+  L4drivers::Mmio_register_block<16> _regs;
 
 public:
   Scm_omap() { add_cid("scm-omap"); }
@@ -170,7 +170,7 @@ public:
     d_printf(DBG_DEBUG2, "%s: Scm_omap: mapped registers to %08lx\n",
              name(), vbase);
 
-    _regs = new L4drivers::Mmio_register_block<16>(vbase);
+    _regs.set_base(vbase);
   }
 
   void set_mode(l4_int32_t offset, unsigned mode)
@@ -258,9 +258,9 @@ template<typename IMPL>
 class Omap_irq_base : public Gpio_irq_base_t<IMPL>
 {
 protected:
-  L4drivers::Register_block<32> _regs;
+  L4drivers::Mmio_register_block<32> _regs;
 
-  Omap_irq_base(unsigned pin, L4drivers::Register_block<32> const &regs)
+  Omap_irq_base(unsigned pin, L4drivers::Mmio_register_block<32> const &regs)
   : Gpio_irq_base_t<IMPL>(pin), _regs(regs)
   {}
 
@@ -277,7 +277,7 @@ template<class REGS>
 class Gpio_irq_pin_t : public Omap_irq_base<Gpio_irq_pin_t<REGS>>
 {
 public:
-  Gpio_irq_pin_t(unsigned pin, L4drivers::Register_block<32> const &regs)
+  Gpio_irq_pin_t(unsigned pin, L4drivers::Mmio_register_block<32> const &regs)
   : Omap_irq_base<Gpio_irq_pin_t<REGS>>(pin, regs)
   {}
 
@@ -355,11 +355,11 @@ class Gpio_irq_server_t : public Irq_demux_t<Gpio_irq_server_t<REGS>>
   typedef Gpio_irq_pin_t<REGS> Gpio_irq_pin;
   typedef Irq_demux_t<Gpio_irq_server_t<REGS>> Base;
 
-  L4drivers::Register_block<32> _regs;
+  L4drivers::Mmio_register_block<32> _regs;
 
 public:
   Gpio_irq_server_t(int irq, unsigned pins,
-                    L4drivers::Register_block<32> const &regs)
+                    L4drivers::Mmio_register_block<32> const &regs)
   : Base(irq, 0, pins), _regs(regs)
   {
     this->enable();
@@ -414,7 +414,7 @@ class Gpio_omap_chip : public Hw::Gpio_device
 {
 private:
   typedef Gpio_irq_server_t<REGS> Gpio_irq_server;
-  L4drivers::Register_block<32> _regs;
+  L4drivers::Mmio_register_block<32> _regs;
   unsigned _nr_pins;
   Gpio_irq_server *_irq_svr;
   Scm_property _scm;
@@ -672,7 +672,7 @@ public:
     d_printf(DBG_DEBUG2, "%s: Gpio_omap_chip: mapped registers to %08lx\n",
              name(), vbase);
 
-    _regs = new L4drivers::Mmio_register_block<32>(vbase);
+    _regs.set_base(vbase);
 
     Resource *irq = resources()->find("irq");
     if (irq && irq->type() == Resource::Irq_res)

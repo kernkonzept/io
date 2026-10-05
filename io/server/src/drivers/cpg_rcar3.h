@@ -33,7 +33,7 @@ public:
         d_printf(DBG_ERR, "error: rcar3_cpg: could not map CPG memory.\n");
         throw -L4_ENOMEM;
       }
-    _regs = new L4drivers::Mmio_register_block<32>(_base);
+    _regs.set_base(_base);
   }
 
   ~Rcar3_cpg()
@@ -158,5 +158,5 @@ private:
   };
 
   l4_addr_t _base;
-  L4drivers::Register_block<32> _regs;
+  L4drivers::Mmio_register_block<32> _regs;
 };

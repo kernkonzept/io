@@ -153,7 +153,7 @@ struct Tegra_gpio_aon
   {
     if (l4_addr_t va = res_map_iomem(base, size))
       {
-        regs = new L4drivers::Mmio_register_block<32>(va);
+        regs.set_base(va);
         d_printf(DBG_INFO, "Initialize gpio-aon@%llx.\n", base);
 
         unsigned offs = offset(0, 4, 5);
@@ -204,7 +204,7 @@ struct Tegra_gpio_aon
              offs + Enable_config, r2, regs[offs + Enable_config].read());
   }
 
-  L4drivers::Register_block<32> regs;
+  L4drivers::Mmio_register_block<32> regs;
   L4Re::Util::Dbg log{4, "tegra", "gpio-aon"}; // only for LOG_DWC_MMIO_ACCESS
 };
 
@@ -214,7 +214,7 @@ struct Tegra_pinmux_aon
   {
     if (l4_addr_t va = res_map_iomem(base, size))
       {
-        regs = new L4drivers::Mmio_register_block<32>(va);
+        regs.set_base(va);
         d_printf(DBG_INFO, "Initialize pinmux-aon@%llx.\n", base);
         return L4_EOK;
       }
@@ -229,7 +229,7 @@ struct Tegra_pinmux_aon
     regs[reg].clear(1 << bit);
   }
 
-  L4drivers::Register_block<32> regs;
+  L4drivers::Mmio_register_block<32> regs;
   L4Re::Util::Dbg log{4, "tegra", "pixmux-aon"}; // only for LOG_DWC_MMIO_ACCESS
 };
 
@@ -242,7 +242,8 @@ public:
   {
     if (l4_addr_t va = res_map_iomem(base, size))
       {
-        _regs = new L4drivers::Mmio_register_block<32>(va);
+        _mmio_regs.set_base(va);
+        _regs = &_mmio_regs;
         return Tegra_hsp_base::init(va);
       }
 
@@ -250,6 +251,10 @@ public:
   }
 
   L4Re::Util::Dbg log{4, "tegra", "hsp"}; // only for LOG_DWC_MMIO_ACCESS
+
+private:
+  // _regs of Tegra_hsp_base is a view on this block
+  L4drivers::Mmio_register_block<32> _mmio_regs;
 };
 
 class Tegra_bpmp : public Tegra_bpmp_base<Tegra_bpmp, Tegra_hsp>
@@ -284,7 +289,8 @@ public:
   {
     if (l4_addr_t va = res_map_iomem(mmio_base, mmio_size))
       {
-        _regs = new L4drivers::Mmio_register_block<32>(va);
+        _mmio_regs.set_base(va);
+        _regs = &_mmio_regs;
         return L4_EOK;
       }
 
@@ -293,6 +299,10 @@ public:
 
   // logging in libpwm, disabled by default
   L4Re::Util::Dbg log{4, "tegra", "pwm"};
+
+private:
+  // _regs of Tegra_pwm_base is a view on this block
+  L4drivers::Mmio_register_block<32> _mmio_regs;
 };
 
 class Pcie_tegra194_bridge : public Dwc_pcie
@@ -303,7 +313,7 @@ class Pcie_tegra194_bridge : public Dwc_pcie
 public:
   explicit Pcie_tegra194_bridge(int segment = 0, unsigned bus_nr = 0);
   void init() override;
-  void enable_phy(L4drivers::Register_block<32> &phy);
+  void enable_phy(L4drivers::Mmio_register_block<32> &phy);
 
   // Root port application registers (_appl)
   enum Appl : unsigned
@@ -371,9 +381,9 @@ private:
   void dbg_dump_appl();
   void dbg_dump_dbi();
 
-  L4drivers::Register_block<32> _appl;    ///< APB: application registers
-  L4drivers::Register_block<32> _phy0;    ///< PHY0 registers
-  L4drivers::Register_block<32> _phy1;    ///< PHY1 registers
+  L4drivers::Mmio_register_block<32> _appl;    ///< APB: application registers
+  L4drivers::Mmio_register_block<32> _phy0;    ///< PHY0 registers
+  L4drivers::Mmio_register_block<32> _phy1;    ///< PHY1 registers
 
   Tegra_hsp hsp;
   Tegra_bpmp bpmp{&hsp};
@@ -671,7 +681,7 @@ bool Pcie_tegra194_bridge::do_init()
     }
 
   if (l4_addr_t va = res_map_iomem(_appl_base, _appl_size))
-    _appl = new L4drivers::Mmio_register_block<32>(va);
+    _appl.set_base(va);
   else
     {
       error("could not map IP core memory.");
@@ -679,7 +689,7 @@ bool Pcie_tegra194_bridge::do_init()
     }
 
   if (l4_addr_t va = res_map_iomem(_phy0_base, _phy0_size))
-    _phy0 = new L4drivers::Mmio_register_block<32>(va);
+    _phy0.set_base(va);
   else
     {
       error("could not map PHY 0 memory.");
@@ -687,7 +697,7 @@ bool Pcie_tegra194_bridge::do_init()
     }
 
   if (l4_addr_t va = res_map_iomem(_phy1_base, _phy1_size))
-    _phy1 = new L4drivers::Mmio_register_block<32>(va);
+    _phy1.set_base(va);
   else
     {
       error("could not map PHY 1 memory.");
@@ -953,7 +963,7 @@ bool Pcie_tegra194_bridge::controller_host_init()
   return true;
 }
 
-void Pcie_tegra194_bridge::enable_phy(L4drivers::Register_block<32> &phy)
+void Pcie_tegra194_bridge::enable_phy(L4drivers::Mmio_register_block<32> &phy)
 {
   // tegra234: eios_override = false
   phy[Control_gen1].set(1 << 2);

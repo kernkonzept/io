@@ -32,7 +32,7 @@ Dwc_pcie::host_init()
     }
 
   if (l4_addr_t va = res_map_iomem(_regs_base, _regs_size))
-    _regs = new L4drivers::Mmio_register_block<32>(va);
+    _regs.set_base(va);
   else
     {
       error("could not map IP core memory.");
@@ -40,7 +40,7 @@ Dwc_pcie::host_init()
     }
 
   if (l4_addr_t va = res_map_iomem(_cfg_base, _cfg_size))
-    _cfg = new L4drivers::Mmio_register_block<32>(va);
+    _cfg.set_base(va);
   else
     {
       error("could not map config space memory.");
@@ -71,7 +71,7 @@ Dwc_pcie::host_init()
         }
 
       if (l4_addr_t va = res_map_iomem(_atu_base, _atu_size))
-        _atu = new L4drivers::Mmio_register_block(va);
+        _atu.set_base(va);
       else
         {
           error("could not map 'atu' memory.");
@@ -329,7 +329,7 @@ Dwc_pcie::setup_rc()
   return true;
 }
 
-inline L4drivers::Register_block<32>
+inline L4drivers::Mmio_register_block<32>
 Dwc_pcie::cfg_regs(Cfg_addr addr)
 {
   if (addr.bus() == secondary)

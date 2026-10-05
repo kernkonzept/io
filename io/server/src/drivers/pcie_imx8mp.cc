@@ -132,11 +132,11 @@ class Pcie_imx8mp : public Dwc_pcie
     Hsio_base_default = 0x32f10000,
   };
 
-  L4drivers::Register_block<32> _ccm;
-  L4drivers::Register_block<32> _src;
-  L4drivers::Register_block<32> _gpr;
-  L4drivers::Register_block<32> _hsio;
-  L4drivers::Register_block<32> _phy;
+  L4drivers::Mmio_register_block<32> _ccm;
+  L4drivers::Mmio_register_block<32> _src;
+  L4drivers::Mmio_register_block<32> _gpr;
+  L4drivers::Mmio_register_block<32> _hsio;
+  L4drivers::Mmio_register_block<32> _phy;
 
   /**
    * CCM clock gates and clock roots.
@@ -382,7 +382,7 @@ bool Pcie_imx8mp::map_blocks()
     char const *name;
     l4_addr_t base;
     l4_size_t size;
-    L4drivers::Register_block<32> *block;
+    L4drivers::Mmio_register_block<32> *block;
   } const blocks[] =
   {
     { "ccm",  (l4_addr_t)_ccm_base.val(),  0x10000, &_ccm  },
@@ -400,7 +400,7 @@ bool Pcie_imx8mp::map_blocks()
           error("could not map '%s' memory at %08lx.", b.name, b.base);
           return false;
         }
-      *b.block = new L4drivers::Mmio_register_block<32>(va);
+      b.block->set_base(va);
     }
 
   return true;

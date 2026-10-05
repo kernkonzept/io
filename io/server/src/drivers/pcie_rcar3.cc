@@ -135,7 +135,7 @@ private:
   Int_property _interrupt{~0};          // mandatory
 
   // PCI root bridge core memory.
-  L4drivers::Register_block<32> _regs;
+  L4drivers::Mmio_register_block<32> _regs;
 
   L4Re::Util::Unique_cap<L4Re::Dataspace> _ds_msi;
 };
@@ -223,7 +223,7 @@ Rcar3_pcie_bridge::host_init()
       d_printf(DBG_ERR, "error: %s: could not map core memory.\n", name());
       return -L4_ENOMEM;
     }
-  _regs = new L4drivers::Mmio_register_block<32>(va);
+  _regs.set_base(va);
 
   Rcar3_cpg cpg(_cpg_base);
   if (_cpg_reg_num == ~0 && _cpg_reg_bit == ~0)

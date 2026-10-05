@@ -59,7 +59,7 @@ private:
     INTR_TARGET_PROC_MASK  = 0b111,
   };
 
-  L4drivers::Register_block<32> _regs;
+  L4drivers::Mmio_register_block<32> _regs;
   unsigned int _base;
   unsigned int _target_proc;
 
@@ -73,7 +73,7 @@ private:
   }
 
 public:
-  Gpio_irq_pin(unsigned pin, L4drivers::Register_block<32> const &regs,
+  Gpio_irq_pin(unsigned pin, L4drivers::Mmio_register_block<32> const &regs,
                unsigned base, unsigned target_proc)
   : Gpio_irq_base_t<Gpio_irq_pin>(pin), _regs(regs), _base(base),
     _target_proc((target_proc & INTR_TARGET_PROC_MASK) << INTR_TARGET_PROC_SHIFT)
@@ -180,7 +180,7 @@ private:
     GPIO_OUT = 1 << 1,
   };
 
-  L4drivers::Register_block<32> _regs;
+  L4drivers::Mmio_register_block<32> _regs;
   Gpio_irq_server *_irq_svr;
 
   Int_property _ngpios;
@@ -352,7 +352,7 @@ Gpio_qcom_chip::init()
   d_printf(DBG_DEBUG2, "%s: Gpio_qcom_chip: mapped registers to %08lx\n",
            name(), vbase);
 
-  _regs = new L4drivers::Mmio_register_block<32>(vbase);
+  _regs.set_base(vbase);
 
   Resource *irq = resources()->find("irq0");
   if (irq && irq->type() == Resource::Irq_res)

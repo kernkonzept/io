@@ -194,22 +194,22 @@ public:
 class Pcie_imx8_bridge : public Dwc_pcie
 {
   // _regs_base + 0x050000: LPCG_PCIEX2_0
-  L4drivers::Register_block<32> _hsio_lpcg_pciea;
+  L4drivers::Mmio_register_block<32> _hsio_lpcg_pciea;
 
   // _regs_base + 0x080000: LPCG_PHYX2_0
-  L4drivers::Register_block<32> _hsio_lpcg_phyx2;
+  L4drivers::Mmio_register_block<32> _hsio_lpcg_phyx2;
 
   // _regs_base + 0x0a0000: LPCG_PHYX2_CRR0_0
-  L4drivers::Register_block<32> _hsio_lpcg_crr_0;
+  L4drivers::Mmio_register_block<32> _hsio_lpcg_crr_0;
 
   // _regs_base + 0x0c0000: LPCG_PCIEX2_CRR2_0
-  L4drivers::Register_block<32> _hsio_lpcg_crr_2;
+  L4drivers::Mmio_register_block<32> _hsio_lpcg_crr_2;
 
   // _regs_base + 0x0f0000: LPCG_MISC_CRR5_0
-  L4drivers::Register_block<32> _hsio_lpcg_crr_5;
+  L4drivers::Mmio_register_block<32> _hsio_lpcg_crr_5;
 
   // _regs_base + 0x110000: HSIO CRR PHYx2
-  L4drivers::Register_block<32> _hsio_csr_phyx2;
+  L4drivers::Mmio_register_block<32> _hsio_csr_phyx2;
   enum Hsio_csr_phyx2_regs
   {
     Phyx2_ctrl0 = 0x0,
@@ -226,7 +226,7 @@ class Pcie_imx8_bridge : public Dwc_pcie
   };
 
   // _regs_base + 0x130000: HSIO CRR for PCIex1
-  L4drivers::Register_block<32> _hsio_csr_pciea;
+  L4drivers::Mmio_register_block<32> _hsio_csr_pciea;
   enum Hsio_csr_pciea_regs
   {
     Pciex1_ctrl0 = 0x0,
@@ -259,7 +259,7 @@ class Pcie_imx8_bridge : public Dwc_pcie
   };
 
   // _regs_base + 0x160000: HSIO CRR MISC
-  L4drivers::Register_block<32> _hsio_csr_misc;
+  L4drivers::Mmio_register_block<32> _hsio_csr_misc;
   enum Hsio_csr_misc_regs
   {
     Misc_ctrl0 = 0x0,
@@ -453,21 +453,21 @@ Pcie_imx8_bridge::controller_host_init()
     }
 
   l4_addr_t va = res_map_iomem(_regs_base + Hsio_lpcg_pciea, 0x10000);
-  _hsio_lpcg_pciea = new L4drivers::Mmio_register_block<32>(va);
+  _hsio_lpcg_pciea.set_base(va);
   va = res_map_iomem(_regs_base + Hsio_lpcg_phyx2, 0x10000);
-  _hsio_lpcg_phyx2 = new L4drivers::Mmio_register_block<32>(va);
+  _hsio_lpcg_phyx2.set_base(va);
   va = res_map_iomem(_regs_base + Hsio_lpcg_crr_0, 0x10000);
-  _hsio_lpcg_crr_0 = new L4drivers::Mmio_register_block<32>(va);
+  _hsio_lpcg_crr_0.set_base(va);
   va = res_map_iomem(_regs_base + Hsio_lpcg_crr_2, 0x10000);
-  _hsio_lpcg_crr_2 = new L4drivers::Mmio_register_block<32>(va);
+  _hsio_lpcg_crr_2.set_base(va);
   va = res_map_iomem(_regs_base + Hsio_lpcg_crr_5, 0x10000);
-  _hsio_lpcg_crr_5 = new L4drivers::Mmio_register_block<32>(va);
+  _hsio_lpcg_crr_5.set_base(va);
   va = res_map_iomem(_regs_base + Hsio_csr_phyx2, 0x10000);
-  _hsio_csr_phyx2 = new L4drivers::Mmio_register_block<32>(va);
+  _hsio_csr_phyx2.set_base(va);
   va = res_map_iomem(_regs_base + Hsio_csr_pciea, 0x10000);
-  _hsio_csr_pciea = new L4drivers::Mmio_register_block<32>(va);
+  _hsio_csr_pciea.set_base(va);
   va = res_map_iomem(_regs_base + Hsio_csr_misc, 0x10000);
-  _hsio_csr_misc = new L4drivers::Mmio_register_block<32>(va);
+  _hsio_csr_misc.set_base(va);
 
   assert_core_reset();
 

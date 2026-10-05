@@ -23,7 +23,7 @@
 
 namespace {
 
-typedef L4drivers::Register_block<32> Chipregs;
+typedef L4drivers::Mmio_register_block<32> Chipregs;
 
 enum
 {
@@ -429,7 +429,7 @@ void Gpio_imx_chip::init()
   d_printf(DBG_ERR, "%s: mapped %lx registers to %08lx\n",
            name(), phys_base, vbase);
 
-  _regs = new L4drivers::Mmio_register_block<32>(vbase);
+  _regs.set_base(vbase);
 
   _regs[GPIO_IMR] = 0;
   _regs[GPIO_ISR] = ~0;

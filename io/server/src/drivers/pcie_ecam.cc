@@ -377,10 +377,10 @@ private:
   Int_property _msi_map_mask = 0xffffU;
 
   // PCI root bridge core memory. (Currently) not used.
-  L4drivers::Register_block<32> _regs;
+  L4drivers::Mmio_register_block<32> _regs;
 
   // PCI root bridge config space.
-  L4drivers::Register_block<32> _cfg;
+  L4drivers::Mmio_register_block<32> _cfg;
 };
 
 class Irq_router_rs : public Resource_space
@@ -455,7 +455,7 @@ Ecam_pcie_bridge::host_init()
       d_printf(DBG_ERR, "error: %s: could not map core memory.\n", name());
       return -L4_ENOMEM;
     }
-  _regs = new L4drivers::Mmio_register_block<32>(va);
+  _regs.set_base(va);
 
   va = res_map_iomem(_cfg_base, _cfg_size);
   if (!va)
@@ -463,7 +463,7 @@ Ecam_pcie_bridge::host_init()
       d_printf(DBG_ERR, "error: %s: could not map cfg memory.\n", name());
       return -L4_ENOMEM;
     }
-  _cfg = new L4drivers::Mmio_register_block<32>(va);
+  _cfg.set_base(va);
 
   // Port I/O is not performed using dedicated instructions like in/out on
   // non-x86 hosts. Instead, port I/O is emulated using an MMIO region. The

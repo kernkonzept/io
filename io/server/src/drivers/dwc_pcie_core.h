@@ -222,7 +222,7 @@ public:
    *
    * \return  The config space register set for the given config address.
    */
-  L4drivers::Register_block<32> cfg_regs(Cfg_addr addr);
+  L4drivers::Mmio_register_block<32> cfg_regs(Cfg_addr addr);
 
   /**
    * Perform a PCI config space read.
@@ -302,9 +302,9 @@ protected:
    */
   l4_uint16_t get_pci_ext_cap_offs(l4_uint8_t cap_id) const;
 
-  L4drivers::Register_block<32> _regs; ///< The PCIe IP core registers
-  L4drivers::Register_block<32> _cfg;  ///< The PCI config space region
-  L4drivers::Register_block<32> _atu;  ///< iATU registers (_pci_version >= 0x480a)
+  L4drivers::Mmio_register_block<32> _regs; ///< The PCIe IP core registers
+  L4drivers::Mmio_register_block<32> _cfg;  ///< The PCI config space region
+  L4drivers::Mmio_register_block<32> _atu;  ///< iATU registers (_pci_version >= 0x480a)
 
   Int_property _regs_base{~0}; ///< Base address of the PCIe core registers
   Int_property _regs_size{~0}; ///< Size of the PCIe core register space
