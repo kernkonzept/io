@@ -10,7 +10,7 @@
 
 #include "hw/hw_device.h"
 #include "irqs.h"
-#include <pci-root.h>
+#include <hw/pci/pci-root.h>
 #include <functional>
 
 L4_BEGIN_DECLS

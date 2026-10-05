@@ -11,7 +11,7 @@
 #include "reg_matcher.h"
 #include "virt/vbus_factory.h"
 
-#include <pci-sriov.h>
+#include <hw/pci/pci-sriov.h>
 
 #include <cassert>
 #include <cstdio>

@@ -7,7 +7,7 @@
  */
 #pragma once
 
-#include <pci-cfg.h>
+#include "pci-cfg.h"
 #include <hw/hw_device.h>
 #include <irqs.h>
 

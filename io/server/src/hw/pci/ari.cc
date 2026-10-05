@@ -5,8 +5,8 @@
  * License: see LICENSE.spdx (in this directory or the directories above)
  */
 
-#include <pci-dev.h>
-#include <pci-caps.h>
+#include "pci-dev.h"
+#include "pci-caps.h"
 
 bool
 Hw::Pci::Dev::handle_ari_cap(Hw::Pci::Dev *dev, Hw::Pci::Extended_cap)

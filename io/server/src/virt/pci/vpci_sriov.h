@@ -9,7 +9,7 @@
 
 #include "vpci_proxy_dev.h"
 
-#include <pci-caps.h>
+#include <hw/pci/pci-caps.h>
 
 namespace Vi {
 

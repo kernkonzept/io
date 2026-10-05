@@ -9,8 +9,8 @@
 #include <cassert>
 
 #include <debug.h>
-#include <pci-caps.h>
-#include <pci-dev.h>
+#include <hw/pci/pci-caps.h>
+#include <hw/pci/pci-dev.h>
 
 #ifdef CONFIG_L4IO_PCIID_DB
 # include <pciids.h>

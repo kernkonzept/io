@@ -6,11 +6,11 @@
  * License: see LICENSE.spdx (in this directory or the directories above)
  */
 
-#include <pci-dev.h>
+#include "pci-dev.h"
 
 #include "main.h"
 #include "cfg.h"
-#include <pci-caps.h>
+#include "pci-caps.h"
 // -----
 
 // for the printf in discover_pci_caps

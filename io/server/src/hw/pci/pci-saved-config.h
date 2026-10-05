@@ -7,8 +7,8 @@
  */
 #pragma once
 
-#include <pci-cfg.h>
-#include <pci-if.h>
+#include "pci-cfg.h"
+#include "pci-if.h"
 
 #include <l4/cxx/hlist>
 

@@ -7,8 +7,8 @@
  */
 #pragma once
 
-#include <pci-dev.h>
-#include <pci-caps.h>
+#include "pci-dev.h"
+#include "pci-caps.h"
 #include <resource_provider.h>
 
 namespace Hw { namespace Pci {

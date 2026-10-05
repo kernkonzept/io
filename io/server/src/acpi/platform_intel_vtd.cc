@@ -7,9 +7,9 @@
  */
 
 #include "io_acpi.h"
-#include "pci-if.h"
-#include "pci-dev.h"
-#include "pci-bridge.h"
+#include "hw/pci/pci-if.h"
+#include "hw/pci/pci-dev.h"
+#include "hw/pci/pci-bridge.h"
 #include "acpi_dmar.h"
 
 #include <l4/cxx/minmax>

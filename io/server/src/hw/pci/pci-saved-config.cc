@@ -6,7 +6,7 @@
  * License: see LICENSE.spdx (in this directory or the directories above)
  */
 
-#include <pci-saved-config.h>
+#include "pci-saved-config.h"
 
 // there is some stray l4_sleep in the code used during config space restore
 #include <l4/util/util.h>

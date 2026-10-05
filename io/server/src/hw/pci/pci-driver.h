@@ -7,7 +7,7 @@
  */
 #pragma once
 
-#include <pci-dev.h>
+#include "pci-dev.h"
 
 namespace Hw { namespace Pci {
 

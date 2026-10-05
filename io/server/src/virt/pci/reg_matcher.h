@@ -6,7 +6,7 @@
  */
 #pragma once
 
-#include <pci-if.h>
+#include <hw/pci/pci-if.h>
 
 /**
  * Matcher for emulating accesses to PCI registers.

@@ -12,7 +12,7 @@
 #include "dma_domain.h"
 #include "io_acpi.h"
 #include "debug.h"
-#include <pci-root.h>
+#include <hw/pci/pci-root.h>
 #include "acpi_l4.h"
 #include "__acpi.h"
 #include "cfg.h"

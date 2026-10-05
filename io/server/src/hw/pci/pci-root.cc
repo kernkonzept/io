@@ -6,7 +6,7 @@
  * License: see LICENSE.spdx (in this directory or the directories above)
  */
 
-#include <pci-root.h>
+#include "pci-root.h"
 #include <vector>
 
 #if defined(ARCH_x86) || defined(ARCH_amd64)

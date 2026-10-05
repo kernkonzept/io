@@ -9,7 +9,7 @@
 #include "__acpi.h"
 #include "debug.h"
 
-#include <pci-root.h>
+#include <hw/pci/pci-root.h>
 #include <l4/cxx/list>
 
 

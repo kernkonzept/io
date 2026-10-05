@@ -10,7 +10,7 @@
 #include <l4/vbus/vbus_interfaces.h>
 
 #include "virt/vdevice.h"
-#include <pci-if.h>
+#include <hw/pci/pci-if.h>
 
 namespace Vi {
 namespace Pci {

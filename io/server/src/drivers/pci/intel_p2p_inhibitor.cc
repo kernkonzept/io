@@ -32,7 +32,7 @@
 #include "cfg.h"
 #include "res.h"
 #include "debug.h"
-#include <pci-driver.h>
+#include <hw/pci/pci-driver.h>
 
 namespace {
 

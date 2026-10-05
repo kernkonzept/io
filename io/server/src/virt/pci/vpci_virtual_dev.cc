@@ -6,7 +6,7 @@
  * License: see LICENSE.spdx (in this directory or the directories above)
  */
 
-#include <pci-dev.h>
+#include <hw/pci/pci-dev.h>
 
 #include "vpci_virtual_dev.h"
 #include "virt/vbus_factory.h"

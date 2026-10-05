@@ -2,8 +2,8 @@
 #include "io_acpi.h"
 #include "__acpi.h"
 
-#include <pci-dev.h>
-#include <pci-bridge.h>
+#include <hw/pci/pci-dev.h>
+#include <hw/pci/pci-bridge.h>
 
 #include <l4/cxx/list>
 #include <l4/cxx/unique_ptr>

@@ -6,8 +6,8 @@
  * License: see LICENSE.spdx (in this directory or the directories above)
  */
 
-#include <pci-dev.h>
-#include <pci-sriov.h>
+#include "pci-dev.h"
+#include "pci-sriov.h"
 #include <resource_provider.h>
 
 #include <cstdio>

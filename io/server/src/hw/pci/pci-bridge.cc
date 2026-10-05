@@ -5,9 +5,9 @@
  *
  * License: see LICENSE.spdx (in this directory or the directories above)
  */
-#include <pci-bridge.h>
-#include <pci-caps.h>
-#include <pci-driver.h>
+#include "pci-bridge.h"
+#include "pci-caps.h"
+#include "pci-driver.h"
 #include <resource_provider.h>
 
 namespace {

@@ -13,7 +13,7 @@
 #include "debug.h"
 #include "acpi_lib.h"
 
-#include <pci-root.h>
+#include <hw/pci/pci-root.h>
 #include "res.h"
 
 ACPI_STATUS

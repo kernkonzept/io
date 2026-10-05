@@ -7,9 +7,9 @@
  */
 #pragma once
 
-#include <pci-if.h>
-#include <pci-cfg.h>
-#include <pci-saved-config.h>
+#include "pci-if.h"
+#include "pci-cfg.h"
+#include "pci-saved-config.h"
 
 #include <cassert>
 

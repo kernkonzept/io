@@ -11,7 +11,7 @@
 
 #include <l4/drivers/hw_mmio_register_block>
 #include "hw/hw_device.h"
-#include <pci-root.h>
+#include <hw/pci/pci-root.h>
 
 /**
  * Designware PCIe core driver

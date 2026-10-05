@@ -7,7 +7,7 @@
  */
 #pragma once
 
-#include <pci-bridge.h>
+#include "pci-bridge.h"
 
 #include <pthread.h>
 

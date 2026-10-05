@@ -6,7 +6,7 @@
  * License: see LICENSE.spdx (in this directory or the directories above)
  */
 
-#include <pci-driver.h>
+#include "pci-driver.h"
 
 namespace {
 

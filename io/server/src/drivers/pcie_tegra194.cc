@@ -123,7 +123,7 @@
 #include <l4/drv/tegra/bpmp/bpmp_base.h>
 #include <l4/drv/tegra/pwm/pwm_base.h>
 
-#include <pci-cfg.h>
+#include <hw/pci/pci-cfg.h>
 
 namespace {
 
