@@ -272,5 +272,5 @@ Hw::Pci::Dev::parse_msi_cap(Hw::Pci::Cfg_addr cap_ptr)
   flags.msi() = true;
   _host->add_resource_rq(res);
   _transp_msi = res;
-  _saved_state.add_cap(new Saved_msi_cap(cap_ptr.reg()));
+  _saved_state.add_cap(std::make_unique<Saved_msi_cap>(cap_ptr.reg()));
 }

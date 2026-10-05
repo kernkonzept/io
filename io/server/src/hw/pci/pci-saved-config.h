@@ -10,11 +10,12 @@
 #include "pci-cfg.h"
 #include "pci-if.h"
 
-#include <l4/cxx/hlist>
+#include <forward_list>
+#include <memory>
 
 namespace Hw { namespace Pci {
 
-class Saved_cap : public cxx::H_list_item_t<Saved_cap>
+class Saved_cap
 {
 public:
   Saved_cap(l4_uint8_t type, unsigned pos) : _type(type), _reg(pos) {}
@@ -51,11 +52,11 @@ public:
   void restore(If *dev);
 
   Saved_cap *find_cap(l4_uint8_t type);
-  void add_cap(Saved_cap *cap)
-  { _caps.push_front(cap); }
+  void add_cap(std::unique_ptr<Saved_cap> cap)
+  { _caps.push_front(std::move(cap)); }
 
 private:
-  typedef cxx::H_list_t<Saved_cap> Cap_list;
+  typedef std::forward_list<std::unique_ptr<Saved_cap>> Cap_list;
   union
   {
     l4_uint32_t w[16];

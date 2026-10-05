@@ -113,7 +113,8 @@ public:
   virtual int enumerate_dma_reservations(Dev *dev, Dma_domain_if::Resv_cb cb) const;
   virtual int reserve_dma_resources(Dma_domain_if::Resv_cb const &cb) const;
 
-  void add_saved_cap(Saved_cap *cap) { _saved_state.add_cap(cap); }
+  void add_saved_cap(std::unique_ptr<Saved_cap> cap)
+  { _saved_state.add_cap(std::move(cap)); }
 
   void enable_bus_master() override
   {

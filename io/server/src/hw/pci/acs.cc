@@ -84,7 +84,7 @@ Hw::Pci::Dev::handle_acs_cap(Hw::Pci::Dev *dev, Hw::Pci::Extended_cap acs_cap)
   if (c.p2p_request_redirect_enable() && c.p2p_completion_redirect_enable())
     dev->_acs_p2p_redirect = true;
 
-  dev->add_saved_cap(new Saved_acs_cap(acs_cap.reg()));
+  dev->add_saved_cap(std::make_unique<Saved_acs_cap>(acs_cap.reg()));
 
   return true;
 }

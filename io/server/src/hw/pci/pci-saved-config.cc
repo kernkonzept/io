@@ -14,9 +14,9 @@
 Hw::Pci::Saved_cap *
 Hw::Pci::Saved_config::find_cap(l4_uint8_t type)
 {
-  for (auto c = _caps.begin(); c != _caps.end(); ++c)
+  for (auto const &c : _caps)
     if (c->type() == type)
-      return *c;
+      return c.get();
 
   return 0;
 }
@@ -28,7 +28,7 @@ Hw::Pci::Saved_config::save(Hw::Pci::If *dev)
   for (unsigned i = 0; i < 16; ++i)
     cfg.read(i * 4, &_regs.w[i]);
 
-  for (auto c = _caps.begin(); c != _caps.end(); ++c)
+  for (auto const &c : _caps)
     c->save(cfg);
 }
 
@@ -84,7 +84,7 @@ Hw::Pci::Saved_config::restore(Hw::Pci::If *dev)
     // we do a dumb restore for bridges
     restore_cfg_range(cfg, _regs.w, 0, 15);
 
-  for (auto c = _caps.begin(); c != _caps.end(); ++c)
+  for (auto const &c : _caps)
     // skip the PCI express state (already restored)
     if (c->type() != Hw::Pci::Cap::Pcie)
       c->restore(cfg);
