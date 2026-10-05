@@ -10,10 +10,7 @@
 
 namespace {
 
-using namespace Hw;
-using Hw::Device;
-
-struct Acpi_ec : Acpi_dev
+struct Acpi_ec : Hw::Acpi_dev
 {
   struct Flags
   {
@@ -53,7 +50,7 @@ struct Acpi_ec : Acpi_dev
     Ec_query         = 0x84
   };
 
-  Acpi_ec(ACPI_HANDLE hdl) : Acpi_dev(hdl), _flags(0), _data(0) {}
+  Acpi_ec(ACPI_HANDLE hdl) : Hw::Acpi_dev(hdl), _flags(0), _data(0) {}
 
 
   static bool discover_ecdt()
@@ -328,10 +325,10 @@ private:
 Acpi_ec *Acpi_ec::_ecdt_ec;
 
 
-struct Acpi_ec_drv : Acpi_device_driver
+struct Acpi_ec_drv : Hw::Acpi_device_driver
 {
-  Acpi_dev *probe(Device *device, ACPI_HANDLE acpi_hdl,
-                  ACPI_DEVICE_INFO const *) override
+  Hw::Acpi_dev *probe(Hw::Device *device, ACPI_HANDLE acpi_hdl,
+                      ACPI_DEVICE_INFO const *) override
   {
     d_printf(DBG_DEBUG, "Found ACPI EC\n");
     Acpi_ec *ec = 0;
@@ -360,7 +357,7 @@ struct Init
 {
   Init()
   {
-    Acpi_device_driver::register_driver("PNP0C09", &_acpi_ec_drv);
+    Hw::Acpi_device_driver::register_driver("PNP0C09", &_acpi_ec_drv);
   }
 };
 

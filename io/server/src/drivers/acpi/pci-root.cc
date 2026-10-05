@@ -15,9 +15,6 @@
 
 namespace {
 
-using namespace Hw;
-using Hw::Device;
-
 static ACPI_STATUS
 acpi_eval_int(ACPI_HANDLE hdl, ACPI_STRING path,
               ACPI_OBJECT_LIST *args, unsigned long long *res)
@@ -87,14 +84,14 @@ get_bbn(ACPI_HANDLE hdl, int *bbn)
 }
 
 
-struct Acpi_pci_root_drv : Acpi_device_driver
+struct Acpi_pci_root_drv : Hw::Acpi_device_driver
 {
-  Acpi_dev *probe(Device *device, ACPI_HANDLE acpi_hdl,
-                  ACPI_DEVICE_INFO const *info) override
+  Hw::Acpi_dev *probe(Hw::Device *device, ACPI_HANDLE acpi_hdl,
+                      ACPI_DEVICE_INFO const *info) override
   {
     d_printf(DBG_DEBUG, "Found PCI root bridge...\n");
     // do this first so we have an Acpi_dev feature installed for 'device'
-    Acpi_dev *adev = Acpi_device_driver::probe(device, acpi_hdl, info);
+    Hw::Acpi_dev *adev = Hw::Acpi_device_driver::probe(device, acpi_hdl, info);
 
     unsigned long long seg = 0;
     ACPI_STATUS s = acpi_eval_int(acpi_hdl, ACPI_STRING("_SEG"), NULL, &seg);
@@ -173,8 +170,9 @@ struct Init
 {
   Init()
   {
-    Acpi_device_driver::register_driver(PCI_ROOT_HID_STRING, &pci_root_drv);
-    Acpi_device_driver::register_driver(PCI_EXPRESS_ROOT_HID_STRING, &pci_root_drv);
+    Hw::Acpi_device_driver::register_driver(PCI_ROOT_HID_STRING, &pci_root_drv);
+    Hw::Acpi_device_driver::register_driver(PCI_EXPRESS_ROOT_HID_STRING,
+                                            &pci_root_drv);
   }
 };
 

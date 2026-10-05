@@ -11,18 +11,16 @@
 
 namespace {
 
-using namespace Hw::Pci;
-
-struct Pci_intel_gma500_drv : Driver
+struct Pci_intel_gma500_drv : Hw::Pci::Driver
 {
-  int probe(Dev *d) override
+  int probe(Hw::Pci::Dev *d) override
   {
     d_printf(DBG_DEBUG, "Found Intel gma500 device\n");
 
     l4_uint32_t v;
 
     // GC - Graphics Control
-    d->cfg_read(0x52, &v, Cfg_short);
+    d->cfg_read(0x52, &v, Hw::Pci::Cfg_short);
 
     unsigned gfx_mem_sz = 0;
 
@@ -39,7 +37,7 @@ struct Pci_intel_gma500_drv : Driver
       }
 
     // BSM - Base of Stolen Memory
-    d->cfg_read(0x5c, &v, Cfg_long);
+    d->cfg_read(0x5c, &v, Hw::Pci::Cfg_long);
     v &= 0xfff00000;
 
     unsigned flags =   Resource::Mmio_res | Resource::Mem_type_rw

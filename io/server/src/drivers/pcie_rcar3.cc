@@ -74,8 +74,6 @@ enum
 
 namespace {
 
-using namespace Pcie_rcar3_regs;
-
 class Rcar3_pcie_bridge
 : public Hw::Device,
   public Hw::Pci::Root_bridge
@@ -252,109 +250,118 @@ Rcar3_pcie_bridge::host_init()
     }
 
   // set PCIe inbound ranges
-  _regs[Pcie_prar0] = 0x40000000;
-  _regs[Pcie_lar0]  = 0x40000000;
-  _regs[Pcie_lamr0] = Pcie_lamr_1gb             // local address mask 1GiB
-                    | Pcie_lamr_mmio            // MMIO
-                    | Pcie_lamr_laren           // local address enable
-                    | Pcie_lamr_mmio64bit       // 64-bit addresses used
-                    | Pcie_lamr_mmiopref;       // prefetchable MMIO
+  _regs[Pcie_rcar3_regs::Pcie_prar0] = 0x40000000;
+  _regs[Pcie_rcar3_regs::Pcie_lar0]  = 0x40000000;
+  _regs[Pcie_rcar3_regs::Pcie_lamr0] =
+      Pcie_rcar3_regs::Pcie_lamr_1gb        // local address mask 1GiB
+    | Pcie_rcar3_regs::Pcie_lamr_mmio       // MMIO
+    | Pcie_rcar3_regs::Pcie_lamr_laren      // local address enable
+    | Pcie_rcar3_regs::Pcie_lamr_mmio64bit  // 64-bit addresses used
+    | Pcie_rcar3_regs::Pcie_lamr_mmiopref;  // prefetchable MMIO
 
   // clear because of Pcie_lamr0.Pcie_lamr_mmio64bit=1
-  _regs[Pcie_prar1] = 0x00000000;
-  _regs[Pcie_lar1]  = 0x00000000;
-  _regs[Pcie_lamr1] = 0x00000000;
+  _regs[Pcie_rcar3_regs::Pcie_prar1] = 0x00000000;
+  _regs[Pcie_rcar3_regs::Pcie_lar1]  = 0x00000000;
+  _regs[Pcie_rcar3_regs::Pcie_lamr1] = 0x00000000;
 
   // ====== BEGIN initialization ======
-  _regs[Pcie_tctlr] = Pcie_tctlr_initstrt;
+  _regs[Pcie_rcar3_regs::Pcie_tctlr] = Pcie_rcar3_regs::Pcie_tctlr_initstrt;
 
   // PCIe mode: Type 01 (root port)
-  _regs[Pcie_msr] = Pcie_msr_rootport;
+  _regs[Pcie_rcar3_regs::Pcie_msr] = Pcie_rcar3_regs::Pcie_msr_rootport;
 
   // wait for PHY ready
-  for (unsigned i = 0; i < 20 && !(_regs[Pcie_physr] & 1); ++i)
+  for (unsigned i = 0; i < 20 && !(_regs[Pcie_rcar3_regs::Pcie_physr] & 1); ++i)
     l4_sleep(10);
 
-  if (!(_regs[Pcie_physr] & 1))
+  if (!(_regs[Pcie_rcar3_regs::Pcie_physr] & 1))
     {
       d_printf(DBG_ERR, "error: %s: PHY not ready!\n", name());
       return -L4_ENXIO;
     }
 
   // ID setting register 1 (value reflected to Pciconf2)
-  _regs[Idsetr1] = 0x6040000;
+  _regs[Pcie_rcar3_regs::Idsetr1] = 0x6040000;
 
   // type01: secondary bus no: 1
-  _regs[Pciconf6].modify(0x0000ff00, 0x00000100);
+  _regs[Pcie_rcar3_regs::Pciconf6].modify(0x0000ff00, 0x00000100);
 
   // type01: subordinate bus no: 1
-  _regs[Pciconf6].modify(0x00ff0000, 0x00010000);
+  _regs[Pcie_rcar3_regs::Pciconf6].modify(0x00ff0000, 0x00010000);
 
   // PCIe capability list ID (0x10 fix)
-  _regs[Expcap0].modify(0x000000ff, Hw::Pci::Cap::Pcie);
+  _regs[Pcie_rcar3_regs::Expcap0].modify(0x000000ff, Hw::Pci::Cap::Pcie);
 
   // device port type: 4=root port of PCIe root complex
-  _regs[Expcap0].modify(0x00f00000, 0x00400000);
+  _regs[Pcie_rcar3_regs::Expcap0].modify(0x00f00000, 0x00400000);
 
   // root port => type01 layout
-  _regs[Pciconf3].modify(0x007f0000, 0x00010000);
+  _regs[Pcie_rcar3_regs::Pciconf3].modify(0x007f0000, 0x00010000);
 
   // bit 20: Data link layer active reporting capable
-  _regs[Expcap3].modify(0x00100000, 0x00100000);
+  _regs[Pcie_rcar3_regs::Expcap3].modify(0x00100000, 0x00100000);
 
   // physical slot number: 0 (actually "invalid" with RCar3)
-  _regs[Expcap5].modify(0xfff80000, 0x00000000);
+  _regs[Pcie_rcar3_regs::Expcap5].modify(0xfff80000, 0x00000000);
 
   // completion timer: 50ms
-  _regs[Tlctlr].modify(0x00003f00, 0x00003200);
+  _regs[Pcie_rcar3_regs::Tlctlr].modify(0x00003f00, 0x00003200);
 
   // terminate cap list
-  _regs[Vccap0].modify(0xfff00000, 0x00000000);
+  _regs[Pcie_rcar3_regs::Vccap0].modify(0xfff00000, 0x00000000);
 
   if (Enable_msi)
     {
       // MSI: enable
-      _regs[Pcie_msitxr] = Pcie_msitxr_msie
-                         | (0x1f << Pcie_msitxr_mmenum_shft);
+      _regs[Pcie_rcar3_regs::Pcie_msitxr] =
+          Pcie_rcar3_regs::Pcie_msitxr_msie
+        | (0x1f << Pcie_rcar3_regs::Pcie_msitxr_mmenum_shft);
     }
 
   // IO / mmio /prefetchable memory disabled
-  _regs[Pciconf7] = 0x000000f0; // no IO (base > limit)
-  _regs[Pciconf8] = 0x0000fff0; // no memory (base > limit)
-  _regs[Pciconf9] = 0x0000fff0; // no prefetchable memory (base > limit)
+  // no IO (base > limit)
+  _regs[Pcie_rcar3_regs::Pciconf7] = 0x000000f0;
+  // no memory (base > limit)
+  _regs[Pcie_rcar3_regs::Pciconf8] = 0x0000fff0;
+  // no prefetchable memory (base > limit)
+  _regs[Pcie_rcar3_regs::Pciconf9] = 0x0000fff0;
 
   // Finish initialization -- establish PCIe link
   // At this point the hardware sets the BARn registers based on PcielamrX.
-  _regs[Pcie_tctlr] = Pcie_tctlr_initdone;
+  _regs[Pcie_rcar3_regs::Pcie_tctlr] = Pcie_rcar3_regs::Pcie_tctlr_initdone;
   // ====== DONE initialization ======
 
   // setup resource window 0
-  _regs[Pcie_ptctlr0] = 0;
-  _regs[Pcie_pamr0]   = (_mem_size_1 - 1) & ~0x7f;
-  _regs[Pcie_paur0]   = u64_hi(_mem_base_1);
-  _regs[Pcie_palr0]   = u64_lo(_mem_base_1);
-  _regs[Pcie_ptctlr0] = Pcie_ptctlr_pare | Pcie_ptctlr_spcio;
+  _regs[Pcie_rcar3_regs::Pcie_ptctlr0] = 0;
+  _regs[Pcie_rcar3_regs::Pcie_pamr0]   = (_mem_size_1 - 1) & ~0x7f;
+  _regs[Pcie_rcar3_regs::Pcie_paur0]   = u64_hi(_mem_base_1);
+  _regs[Pcie_rcar3_regs::Pcie_palr0]   = u64_lo(_mem_base_1);
+  _regs[Pcie_rcar3_regs::Pcie_ptctlr0] = Pcie_rcar3_regs::Pcie_ptctlr_pare
+                                       | Pcie_rcar3_regs::Pcie_ptctlr_spcio;
 
   // setup resource window 1
-  _regs[Pcie_ptctlr1] = 0;
-  _regs[Pcie_pamr1]   = (_mem_size_2 - 1) & ~0x7f;
-  _regs[Pcie_paur1]   = u64_hi(_mem_base_2);
-  _regs[Pcie_palr1]   = u64_lo(_mem_base_2);
-  _regs[Pcie_ptctlr1] = Pcie_ptctlr_pare | Pcie_ptctlr_spcmmio;
+  _regs[Pcie_rcar3_regs::Pcie_ptctlr1] = 0;
+  _regs[Pcie_rcar3_regs::Pcie_pamr1]   = (_mem_size_2 - 1) & ~0x7f;
+  _regs[Pcie_rcar3_regs::Pcie_paur1]   = u64_hi(_mem_base_2);
+  _regs[Pcie_rcar3_regs::Pcie_palr1]   = u64_lo(_mem_base_2);
+  _regs[Pcie_rcar3_regs::Pcie_ptctlr1] = Pcie_rcar3_regs::Pcie_ptctlr_pare
+                                       | Pcie_rcar3_regs::Pcie_ptctlr_spcmmio;
 
   // setup resource window 2
-  _regs[Pcie_ptctlr2] = 0;
-  _regs[Pcie_pamr2]   = (_mem_size_3 - 1) & ~0x7f;
-  _regs[Pcie_paur2]   = u64_hi(_mem_base_3);
-  _regs[Pcie_palr2]   = u64_lo(_mem_base_3);
-  _regs[Pcie_ptctlr2] = Pcie_ptctlr_pare | Pcie_ptctlr_spcmmio;
+  _regs[Pcie_rcar3_regs::Pcie_ptctlr2] = 0;
+  _regs[Pcie_rcar3_regs::Pcie_pamr2]   = (_mem_size_3 - 1) & ~0x7f;
+  _regs[Pcie_rcar3_regs::Pcie_paur2]   = u64_hi(_mem_base_3);
+  _regs[Pcie_rcar3_regs::Pcie_palr2]   = u64_lo(_mem_base_3);
+  _regs[Pcie_rcar3_regs::Pcie_ptctlr2] = Pcie_rcar3_regs::Pcie_ptctlr_pare
+                                       | Pcie_rcar3_regs::Pcie_ptctlr_spcmmio;
 
   // setup resource window 3
-  _regs[Pcie_ptctlr3] = 0;
-  _regs[Pcie_pamr3]   = (_mem_size_4 - 1) & ~0x7f;
-  _regs[Pcie_paur3]   = u64_hi(_mem_base_4);
-  _regs[Pcie_palr3]   = u64_lo(_mem_base_4);
-  _regs[Pcie_ptctlr3] = Pcie_ptctlr_pare | Pcie_ptctlr_spcmmio;
+  _regs[Pcie_rcar3_regs::Pcie_ptctlr3] = 0;
+  _regs[Pcie_rcar3_regs::Pcie_pamr3]   = (_mem_size_4 - 1) & ~0x7f;
+  _regs[Pcie_rcar3_regs::Pcie_paur3]   = u64_hi(_mem_base_4);
+  _regs[Pcie_rcar3_regs::Pcie_palr3]   = u64_lo(_mem_base_4);
+  _regs[Pcie_rcar3_regs::Pcie_ptctlr3] = Pcie_rcar3_regs::Pcie_ptctlr_pare
+                                       | Pcie_rcar3_regs::Pcie_ptctlr_spcmmio;
 
   // MSI??
   //  _regs[Pciconf8] = 0x30403000;
@@ -363,20 +370,20 @@ Rcar3_pcie_bridge::host_init()
   // wait until PCIe link is up
   for (unsigned i = 0; i < 20; ++i)
     {
-      if (_regs[Pcie_tstr] & Pcie_tstr_dllact)
+      if (_regs[Pcie_rcar3_regs::Pcie_tstr] & Pcie_rcar3_regs::Pcie_tstr_dllact)
         {
           d_printf(DBG_INFO, "%s: link up.\n", name());
 
           // Remember, we are in root port mode:
 
           // INTA enable (apparently INTB/INTC/INTD are not used)
-          _regs[Pcie_intxr].modify(0x0000ff00, 0x00000100);
+          _regs[Pcie_rcar3_regs::Pcie_intxr].modify(0x0000ff00, 0x00000100);
 
           // bit 15..8: interrupt pin but cannot be written to anything != 0
           // bit  7..0: set interrupt line to 0x00: INTx interrupt reported to
           //            INTC(why INTC and not INTA?). The default value is 0xff
           //             which means that no interrupt is reported.
-          _regs[Pciconf15].modify(0x000000ff, 0x00000000);
+          _regs[Pcie_rcar3_regs::Pciconf15].modify(0x000000ff, 0x00000000);
 
           return L4_EOK;
         }
@@ -404,28 +411,30 @@ Rcar3_pcie_bridge::access_enable(Cfg_addr addr, Cfg_width width)
   if (addr.bus() == 0)
     return 0;
 
-  _regs[Pcie_errfr].modify(0, 0); // clear errors
+  _regs[Pcie_rcar3_regs::Pcie_errfr].modify(0, 0); // clear errors
 
-  _regs[Pcie_car] = ((addr.bus() & 0xff) << 24)
-                  | ((addr.dev() & 0x1f) << 19)
-                  | ((addr.fn()  &    7) << 16)
-                  | reg;
+  _regs[Pcie_rcar3_regs::Pcie_car] = ((addr.bus() & 0xff) << 24)
+                                   | ((addr.dev() & 0x1f) << 19)
+                                   | ((addr.fn()  &    7) << 16)
+                                   | reg;
 
   if (addr.dev() != 0)
     // type-1 access (bus+dev+fn+reg)
     // Actually that makes only sense if a PCIe-to-PCIe bridge is plugged into
     // the PCIe slot.
-    _regs[Pcie_cctlr] = Pcie_cctlr_ccie | Pcie_cctlr_type;
+    _regs[Pcie_rcar3_regs::Pcie_cctlr] = Pcie_rcar3_regs::Pcie_cctlr_ccie
+                                       | Pcie_rcar3_regs::Pcie_cctlr_type;
   else
     // type-0 access (only fn+reg)
-    _regs[Pcie_cctlr] = Pcie_cctlr_ccie;
+    _regs[Pcie_rcar3_regs::Pcie_cctlr] = Pcie_rcar3_regs::Pcie_cctlr_ccie;
 
   // check errors for "unsupported request"
-  if (_regs[Pcie_errfr] & Pcie_errfr_rcvurcpl)
+  if (_regs[Pcie_rcar3_regs::Pcie_errfr] & Pcie_rcar3_regs::Pcie_errfr_rcvurcpl)
     return -EIO;
 
   // check for "master/target abort"
-  if (_regs[Pciconf1] & (Pciconf1_rma|Pciconf1_rta))
+  if (_regs[Pcie_rcar3_regs::Pciconf1] & (  Pcie_rcar3_regs::Pciconf1_rma
+                                          | Pcie_rcar3_regs::Pciconf1_rta))
     return -EIO;
 
   return 0;
@@ -438,7 +447,7 @@ void
 Rcar3_pcie_bridge::access_disable(Cfg_addr addr)
 {
   if (addr.bus() != 0)
-    _regs[Pcie_cctlr] = 0;
+    _regs[Pcie_rcar3_regs::Pcie_cctlr] = 0;
 }
 
 void
@@ -488,9 +497,9 @@ Rcar3_pcie_bridge::init_msi()
   l4_addr_t phys;
   alloc_msi_page(&virt, &phys);
 
-  _regs[Pcie_msialr] = u64_lo(phys) | 1;
-  _regs[Pcie_msiaur] = u64_hi(phys);
-  _regs[Pcie_msiier] = 0xffffffff;
+  _regs[Pcie_rcar3_regs::Pcie_msialr] = u64_lo(phys) | 1;
+  _regs[Pcie_rcar3_regs::Pcie_msiaur] = u64_hi(phys);
+  _regs[Pcie_rcar3_regs::Pcie_msiier] = 0xffffffff;
 }
 
 int
@@ -507,10 +516,10 @@ Rcar3_pcie_bridge::cfg_read(Cfg_addr addr, l4_uint32_t *value, Cfg_width width)
           if (addr.dev() != 0)
             v = 0xffffffff;
           else
-            v = _regs[Pciconf0 + (addr.reg() & ~3)];
+            v = _regs[Pcie_rcar3_regs::Pciconf0 + (addr.reg() & ~3)];
         }
       else
-        v = _regs[Pcie_cdr];
+        v = _regs[Pcie_rcar3_regs::Pcie_cdr];
     }
   access_disable(addr);
 
@@ -571,9 +580,10 @@ Rcar3_pcie_bridge::cfg_write(Cfg_addr addr, l4_uint32_t value, Cfg_width width)
     }
 
   if (addr.bus() == 0)
-    _regs[Pciconf0 + (addr.reg() & ~3)].modify(mask, (value << shift) & mask);
+    _regs[Pcie_rcar3_regs::Pciconf0 + (addr.reg() & ~3)]
+      .modify(mask, (value << shift) & mask);
   else
-    _regs[Pcie_cdr].modify(mask, (value << shift) & mask);
+    _regs[Pcie_rcar3_regs::Pcie_cdr].modify(mask, (value << shift) & mask);
 
   access_disable(addr);
 

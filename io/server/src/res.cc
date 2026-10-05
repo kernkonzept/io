@@ -74,8 +74,8 @@ static L4::Cap<void> sigma0;
 
 int res_init()
 {
-  using L4Re::chkcap;
-  sigma0 = chkcap(L4Re::Env::env()->get_cap<void>("sigma0"), "getting sigma0 cap", 0);
+  sigma0 = L4Re::chkcap(L4Re::Env::env()->get_cap<void>("sigma0"),
+                        "getting sigma0 cap", 0);
 
 #if 0
   L4::Kip::Mem_desc *md = L4::Kip::Mem_desc::first(l4re_kip());

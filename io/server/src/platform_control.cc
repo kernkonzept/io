@@ -56,13 +56,11 @@ union Timeouts
 int
 Platform_control::start_operation(unsigned op)
 {
-  using L4::Ipc_svr::Timeout_queue;
-
   if (in_progress_ops())
     return -L4_EBUSY;
 
   unsigned inhibitor;
-  Timeout_queue::Timeout *timeout;
+  L4::Ipc_svr::Timeout_queue::Timeout *timeout;
   switch (op)
     {
     case Suspend_in_progress:

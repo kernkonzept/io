@@ -10,11 +10,9 @@
 
 namespace {
 
-using namespace Hw;
-
 static void pci_acpi_wake_dev(ACPI_HANDLE, l4_uint32_t event, void *context)
 {
-  Pci::Dev *pci_dev = static_cast<Pci::Dev*>(context);
+  Hw::Pci::Dev *pci_dev = static_cast<Hw::Pci::Dev*>(context);
 
   if (event != ACPI_NOTIFY_DEVICE_WAKE || !pci_dev)
     return;
@@ -23,9 +21,10 @@ static void pci_acpi_wake_dev(ACPI_HANDLE, l4_uint32_t event, void *context)
 }
 
 
-struct Acpi_pci_handler : Hw::Feature_manager<Pci::Dev, Acpi_dev>
+struct Acpi_pci_handler : Hw::Feature_manager<Hw::Pci::Dev, Hw::Acpi_dev>
 {
-  bool setup(Hw::Device *, Pci::Dev *pci, Acpi_dev *acpi_dev) const override
+  bool setup(Hw::Device *, Hw::Pci::Dev *pci,
+             Hw::Acpi_dev *acpi_dev) const override
   {
     ACPI_STATUS status;
 
@@ -219,7 +218,7 @@ Acpi_pci_irq_router_rs::find(int device, int pin, struct acpica_pci_irq **irq)
 }
 
 static
-Resource *discover_prt(Acpi_dev *adev)
+Resource *discover_prt(Hw::Acpi_dev *adev)
 {
   ACPI_STATUS status;
   ACPI_HANDLE handle;
@@ -269,9 +268,9 @@ Resource *discover_prt(Acpi_dev *adev)
   return r;
 }
 
-struct Acpi_pci_bridge_handler : Hw::Feature_manager<Acpi_dev>
+struct Acpi_pci_bridge_handler : Hw::Feature_manager<Hw::Acpi_dev>
 {
-  bool setup(Hw::Device *dev, Acpi_dev *acpi_dev) const override
+  bool setup(Hw::Device *dev, Hw::Acpi_dev *acpi_dev) const override
   {
     if (Resource *router = discover_prt(acpi_dev))
       {

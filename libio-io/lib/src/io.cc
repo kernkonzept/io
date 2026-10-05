@@ -26,17 +26,15 @@
 #include <cstdlib>
 #include <cstring>
 
-using L4::Cap;
-
 namespace {
 
 struct Internals
 {
-  Cap<void> _vbus;
-  Cap<L4::Icu> _icu;
+  L4::Cap<void> _vbus;
+  L4::Cap<L4::Icu> _icu;
 
   Internals()
-  : _vbus(Cap<void>::No_init), _icu(Cap<void>::No_init)
+  : _vbus(L4::Cap<void>::No_init), _icu(L4::Cap<void>::No_init)
   {
     _vbus = L4Re::Env::env()->get_cap<void>("vbus");
     if (!_vbus)
@@ -74,12 +72,12 @@ struct Internals
 
 static Internals _internal __attribute__((init_priority(INIT_PRIO_LIBIO_INIT)));
 
-static Cap<void> &vbus()
+static L4::Cap<void> &vbus()
 {
   return _internal._vbus;
 }
 
-static Cap<L4::Icu> &icu()
+static L4::Cap<L4::Icu> &icu()
 {
   return _internal._icu;
 }
@@ -136,7 +134,7 @@ l4io_release_irq(int irqnum, l4_cap_idx_t irq_cap)
 static long
 __map_iomem(l4_addr_t phys, l4_addr_t* virt, unsigned long size, int flags)
 {
-  Cap<L4Re::Dataspace> iomem = L4::cap_cast<L4Re::Dataspace>(vbus());
+  L4::Cap<L4Re::Dataspace> iomem = L4::cap_cast<L4Re::Dataspace>(vbus());
   unsigned char align = L4_PAGESHIFT;
   l4_addr_t offset = phys & ~L4_PAGEMASK;
 

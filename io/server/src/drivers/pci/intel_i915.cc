@@ -9,9 +9,7 @@
 
 namespace {
 
-using namespace Hw::Pci;
-
-struct Pci_intel_i915_drv : Driver
+struct Pci_intel_i915_drv : Hw::Pci::Driver
 {
   struct Opregion_header
   {
@@ -48,14 +46,14 @@ struct Pci_intel_i915_drv : Driver
     return hdr;
   }
 
-  int probe(Dev *d) override
+  int probe(Hw::Pci::Dev *d) override
   {
     d_printf(DBG_INFO, "Found Intel i915 device\n");
 
     l4_uint32_t v;
 
     // PCI_ASLS
-    d->cfg_read(0xfc, &v, Cfg_long);
+    d->cfg_read(0xfc, &v, Hw::Pci::Cfg_long);
 
     // According to the Intel IGD OpRegion specification the default value is
     // 0h which means the BIOS has not placed a memory offset into this

@@ -507,18 +507,17 @@ Vi::System_bus::op_map(L4Re::Dataspace::Rights,
 
   L4::Ipc::Snd_fpage::Cacheopt f;
 
-  using L4Re::Dataspace;
   // Map with least common flags between requested mapping and resource type.
-  switch ((flags & Dataspace::F::Caching_mask).raw)
+  switch ((flags & L4Re::Dataspace::F::Caching_mask).raw)
     {
-    case Dataspace::F::Cacheable:
+    case L4Re::Dataspace::F::Cacheable:
       if ((*r)->cached_mem())
         {
           f = L4::Ipc::Snd_fpage::Cached;
           break;
         }
       [[fallthrough]];
-    case Dataspace::F::Bufferable:
+    case L4Re::Dataspace::F::Bufferable:
       if ((*r)->prefetchable())
         {
           f = L4::Ipc::Snd_fpage::Buffered;
@@ -811,18 +810,15 @@ Vi::System_bus::dispatch(l4_umword_t, l4_uint32_t func, L4::Ipc::Iostream &ios)
 
 Vi::Vbus_event_source::Vbus_event_source()
 {
-  using L4Re::Util::Unique_cap;
-  using L4Re::chkcap;
-  using L4Re::chksys;
+  auto buffer_ds = L4Re::chkcap(L4Re::Util::make_unique_cap<L4Re::Dataspace>(),
+                                "allocate event-buffer data-space capability");
 
-  auto buffer_ds = chkcap(L4Re::Util::make_unique_cap<L4Re::Dataspace>(),
-             "allocate event-buffer data-space capability");
+  L4Re::chksys(L4Re::Env::env()->mem_alloc()->alloc(L4_PAGESIZE,
+                                                    buffer_ds.get()),
+               "allocate event-buffer data-space");
 
-  chksys(L4Re::Env::env()->mem_alloc()->alloc(L4_PAGESIZE, buffer_ds.get()),
-         "allocate event-buffer data-space");
-
-  chksys(buffer.attach(buffer_ds.get(), L4Re::Env::env()->rm()),
-         "attach event-buffer data-space");
+  L4Re::chksys(buffer.attach(buffer_ds.get(), L4Re::Env::env()->rm()),
+               "attach event-buffer data-space");
 
   _ds = buffer_ds.release();
 }

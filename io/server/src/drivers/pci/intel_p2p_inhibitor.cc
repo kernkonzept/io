@@ -36,9 +36,7 @@
 
 namespace {
 
-using namespace Hw::Pci;
-
-struct Intel_root_complex_p2p_inhibitor : Driver
+struct Intel_root_complex_p2p_inhibitor : Hw::Pci::Driver
 {
   enum Lpc_register
   {
@@ -89,12 +87,12 @@ struct Intel_root_complex_p2p_inhibitor : Driver
    * Forwarding in PCI ACS. For more information please consult the PCIe base
    * specification (revision 3).
    */
-  int probe(Dev *d) override
+  int probe(Hw::Pci::Dev *d) override
   {
     d_printf(DBG_DEBUG, "Intel PCIe: disable P2P traffic.\n");
 
     l4_uint32_t rcba;
-    d->cfg_read(Rcba, &rcba, Cfg_long);
+    d->cfg_read(Rcba, &rcba, Hw::Pci::Cfg_long);
 
     if (!(rcba & Rcba_enable))
       {
@@ -133,7 +131,7 @@ struct Intel_root_complex_p2p_inhibitor : Driver
 
 static Intel_root_complex_p2p_inhibitor _intel_root_complex_p2p_inhibitor;
 
-struct Intel_root_port_p2p_inhibitor : Driver
+struct Intel_root_port_p2p_inhibitor : Hw::Pci::Driver
 {
   enum Pci_cfg_register
   {
@@ -189,19 +187,19 @@ struct Intel_root_port_p2p_inhibitor : Driver
    * equivalent of PCI ACS source validation. For reference, please consult
    * the PCIe base specification (revision 3).
    */
-  int probe(Dev *d) override
+  int probe(Hw::Pci::Dev *d) override
   {
     d_printf(DBG_DEBUG, "Intel PCIe: disable P2P traffic.\n");
 
     l4_uint32_t mpc;
 
-    d->cfg_read(Pci_mpc_register, &mpc, Cfg_long);
+    d->cfg_read(Pci_mpc_register, &mpc, Hw::Pci::Cfg_long);
 
     if (!(mpc & Irbnce))
       {
         d_printf(DBG_DEBUG, "PCIe root port: Setting Irbnce\n");
         mpc |= Irbnce;
-        d->cfg_write(Pci_mpc_register, mpc, Cfg_long);
+        d->cfg_write(Pci_mpc_register, mpc, Hw::Pci::Cfg_long);
       }
     return 0;
   };

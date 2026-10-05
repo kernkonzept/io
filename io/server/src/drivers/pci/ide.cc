@@ -11,11 +11,9 @@
 
 namespace {
 
-using namespace Hw::Pci;
-
-struct Pci_ide_drv : Driver
+struct Pci_ide_drv : Hw::Pci::Driver
 {
-  int probe(Dev *d) override
+  int probe(Hw::Pci::Dev *d) override
   {
     d_printf(DBG_DEBUG, "Found IDE device\n");
     if (!Io_config::cfg->legacy_ide_resources(d->host()))

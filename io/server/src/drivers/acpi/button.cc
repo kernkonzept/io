@@ -12,16 +12,13 @@
 
 namespace {
 
-using namespace Hw;
-using Hw::Device;
-
 /**
  * \brief Setup device as a wake source.
  *
  * \param device This device
  * \param handle ACPI handle
  */
-static void acpi_setup_device_wake(Device *device, ACPI_HANDLE handle)
+static void acpi_setup_device_wake(Hw::Device *device, ACPI_HANDLE handle)
 {
   Acpi_auto_buffer buffer;
   buffer.Length = ACPI_ALLOCATE_BUFFER;
@@ -99,10 +96,10 @@ static void acpi_setup_device_wake(Device *device, ACPI_HANDLE handle)
 
 }
 
-class Acpi_lid : public Acpi_dev
+class Acpi_lid : public Hw::Acpi_dev
 {
 public:
-  Acpi_lid(ACPI_HANDLE hdl, Device *host);
+  Acpi_lid(ACPI_HANDLE hdl, Hw::Device *host);
 
   void enable_notifications(Hw::Device *host) override;
   void get_and_store_state(bool *closed, bool *duplicate);
@@ -118,8 +115,8 @@ private:
 };
 
 
-Acpi_lid::Acpi_lid(ACPI_HANDLE hdl, Device *host)
-: Acpi_dev(hdl), _host(host), _generate_switch_events(false)
+Acpi_lid::Acpi_lid(ACPI_HANDLE hdl, Hw::Device *host)
+: Hw::Acpi_dev(hdl), _host(host), _generate_switch_events(false)
 {
   Io::Event_source_infos   *source_info = _host->get_event_infos(true);
   L4Re::Event_stream_info  *info  = &source_info->info;
@@ -151,7 +148,7 @@ Acpi_lid::notification_handler(ACPI_HANDLE handle, UINT32 event,
   if (event != 0x80)
     {
       // not a LID changed event, pass on
-      lid->notify(Acpi_dev::Acpi_event, event, 0);
+      lid->notify(Hw::Acpi_dev::Acpi_event, event, 0);
       return;
     }
 
@@ -223,11 +220,11 @@ Acpi_lid::get_and_store_state(bool *closed, bool *duplicate)
   *duplicate = false;
 }
 
-class Acpi_lid_driver : public Acpi_device_driver
+class Acpi_lid_driver : public Hw::Acpi_device_driver
 {
 public:
-  Acpi_dev *probe(Device *device, ACPI_HANDLE handle,
-                  ACPI_DEVICE_INFO const *) override
+  Hw::Acpi_dev *probe(Hw::Device *device, ACPI_HANDLE handle,
+                      ACPI_DEVICE_INFO const *) override
   {
     Acpi_lid *dev;
     d_printf(DBG_DEBUG, "ACPI: found LID: %s\n", device->name());
@@ -242,16 +239,16 @@ public:
   }
 };
 
-class Acpi_button_driver : public Acpi_device_driver
+class Acpi_button_driver : public Hw::Acpi_device_driver
 {
 public:
-  Acpi_dev *probe(Device *device, ACPI_HANDLE handle,
-                  ACPI_DEVICE_INFO const *) override
+  Hw::Acpi_dev *probe(Hw::Device *device, ACPI_HANDLE handle,
+                      ACPI_DEVICE_INFO const *) override
   {
-    Acpi_dev *dev;
+    Hw::Acpi_dev *dev;
 
     d_printf(DBG_DEBUG, "ACPI: found ACPI button: %s\n", device->name());
-    dev = new Acpi_dev(handle);
+    dev = new Hw::Acpi_dev(handle);
 
     dev->discover_crs(device);
     device->add_feature(dev);
@@ -269,9 +266,9 @@ struct Init
 {
   Init()
   {
-    Acpi_device_driver::register_driver("PNP0C0C", &_acpi_button_drv);
-    Acpi_device_driver::register_driver("PNP0C0D", &_acpi_lid_drv);
-    Acpi_device_driver::register_driver("PNP0C0E", &_acpi_button_drv);
+    Hw::Acpi_device_driver::register_driver("PNP0C0C", &_acpi_button_drv);
+    Hw::Acpi_device_driver::register_driver("PNP0C0D", &_acpi_lid_drv);
+    Hw::Acpi_device_driver::register_driver("PNP0C0E", &_acpi_button_drv);
   }
 };
 

@@ -16,8 +16,6 @@
 #include <pci-root.h>
 #include "res.h"
 
-using L4::Kip::Mem_desc;
-
 ACPI_STATUS
 AcpiOsEnterSleep (
     UINT8                   SleepState,
@@ -141,7 +139,7 @@ AcpiOsMapMemory (
   // If the memory is in a known (reserved) RAM region it must be mapped
   // cachable. This is required by Arm architectures because of the unaligned
   // members in ACPI tables.
-  for (auto const &md: Mem_desc::all(l4re_kip()))
+  for (auto const &md: L4::Kip::Mem_desc::all(l4re_kip()))
     {
       if (md.is_virtual())
         continue;
@@ -150,17 +148,17 @@ AcpiOsMapMemory (
 
       switch (md.type())
         {
-        case Mem_desc::Conventional:
-        case Mem_desc::Reserved:
-        case Mem_desc::Dedicated:
-        case Mem_desc::Bootloader:
+        case L4::Kip::Mem_desc::Conventional:
+        case L4::Kip::Mem_desc::Reserved:
+        case L4::Kip::Mem_desc::Dedicated:
+        case L4::Kip::Mem_desc::Bootloader:
           break;
-        case Mem_desc::Info:
-          if (md.sub_type() != Mem_desc::Info_acpi_rsdp)
+        case L4::Kip::Mem_desc::Info:
+          if (md.sub_type() != L4::Kip::Mem_desc::Info_acpi_rsdp)
             continue;
           break;
-        case Mem_desc::Arch:
-          if (md.sub_type() != Mem_desc::Arch_acpi_tables)
+        case L4::Kip::Mem_desc::Arch:
+          if (md.sub_type() != L4::Kip::Mem_desc::Arch_acpi_tables)
             continue;
           break;
         default:
