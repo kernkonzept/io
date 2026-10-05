@@ -7,6 +7,7 @@
 #include <functional>
 #include <limits>
 #include <map>
+#include <memory>
 #include <set>
 #include <vector>
 
@@ -69,8 +70,9 @@ struct Iort_node
   /**
    * Recursively parse IORT nodes.
    */
-  static Iort_node *parse_mappings(ACPI_TABLE_IORT *iort, ACPI_IORT_NODE *node,
-                                   ACPI_TABLE_MADT *madt);
+  static std::unique_ptr<Iort_node>
+  parse_mappings(ACPI_TABLE_IORT *iort, ACPI_IORT_NODE *node,
+                 ACPI_TABLE_MADT *madt);
 
 private:
   ACPI_IORT_NODE const *_acpi_node;
@@ -88,11 +90,12 @@ class Translator : public Iort_node
     l4_uint32_t in_base;
     l4_uint32_t num;  // Attention: number of IDs in the range minus one
     l4_uint32_t out_base;
-    Iort_node *out_node;
+    std::unique_ptr<Iort_node> out_node;
 
     Mapping(l4_uint32_t in_base, l4_uint32_t num, l4_uint32_t out_base,
-            Iort_node *out_node)
-    : in_base(in_base), num(num), out_base(out_base), out_node(out_node)
+            std::unique_ptr<Iort_node> out_node)
+    : in_base(in_base), num(num), out_base(out_base),
+      out_node(std::move(out_node))
     {}
   };
 
@@ -158,12 +161,12 @@ public:
 
         auto *out_node = ACPI_ADD_PTR(ACPI_IORT_NODE, iort,
                                       mapping.OutputReference);
-        auto *out_mapping = Iort_node::parse_mappings(iort, out_node, madt);
+        auto out_mapping = Iort_node::parse_mappings(iort, out_node, madt);
         if (!out_mapping)
           continue;
 
         _mappings.emplace_back(mapping.InputBase, mapping.IdCount,
-                               mapping.OutputBase, out_mapping);
+                               mapping.OutputBase, std::move(out_mapping));
       }
   }
 
@@ -288,7 +291,7 @@ smmu_index(ACPI_TABLE_IORT *iort, ACPI_IORT_NODE *smmu_node)
   return -1;
 }
 
-Iort_node *
+std::unique_ptr<Iort_node>
 Iort_node::parse_mappings(ACPI_TABLE_IORT *iort, ACPI_IORT_NODE *node,
                           ACPI_TABLE_MADT *madt)
 {
@@ -309,7 +312,7 @@ Iort_node::parse_mappings(ACPI_TABLE_IORT *iort, ACPI_IORT_NODE *node,
         if (idx < 0)
           return nullptr;
 
-        return new Its(idx, node);
+        return std::make_unique<Its>(idx, node);
       }
 
     case ACPI_IORT_NODE_SMMU:
@@ -319,7 +322,7 @@ Iort_node::parse_mappings(ACPI_TABLE_IORT *iort, ACPI_IORT_NODE *node,
         if (idx < 0)
           return nullptr;
 
-        return new Smmu(idx, iort, node, madt);
+        return std::make_unique<Smmu>(idx, iort, node, madt);
       }
 
     default:
@@ -485,7 +488,7 @@ public:
             {
               auto *rc = ACPI_CAST_PTR(ACPI_IORT_ROOT_COMPLEX, &node->NodeData);
               _pci_segments[rc->PciSegmentNumber] =
-                new Root_complex(iort, node, madt);
+                std::make_unique<Root_complex>(iort, node, madt);
               break;
             }
           case ACPI_IORT_NODE_RMR:
@@ -639,10 +642,10 @@ private:
         return nullptr;
       }
 
-    return it->second;
+    return it->second.get();
   }
 
-  std::map<unsigned, Root_complex *> _pci_segments;
+  std::map<unsigned, std::unique_ptr<Root_complex>> _pci_segments;
   std::vector<Rmr> _rmrs;
 };
 
