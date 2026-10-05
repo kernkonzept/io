@@ -293,9 +293,11 @@ Dma_domain_set::set_managed_dma_space(std::shared_ptr<Managed_dma_space> space)
     if ((ret = _domains[i]->set_managed_dma_space(space)) < 0)
       break;
 
+  // Domain i failed and did not take the space. Only roll back the ones
+  // before it.
   if (ret < 0)
-    while (i >= 0)
-      _domains[i--]->clear_managed_dma_space();
+    while (--i >= 0)
+      _domains[i]->clear_managed_dma_space();
 
   return ret;
 }
