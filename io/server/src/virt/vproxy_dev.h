@@ -17,6 +17,7 @@ class Proxy_dev : public Device, public Hw::Device_client
 {
 public:
   explicit Proxy_dev(Hw::Device *d);
+  ~Proxy_dev();
 
   char const *type_name() const override
   { return "proxy device"; }

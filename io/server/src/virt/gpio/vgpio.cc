@@ -137,7 +137,7 @@ private:
 
 public:
   explicit Gpio(Hw::Device *d)
-  : _hwd(dynamic_cast<Hw::Gpio_chip*>(d))
+  : _hwd(dynamic_cast<Hw::Gpio_chip*>(d)), _hw_dev(d)
   {
     add_feature(std::make_shared<Gpio_feature>(this));
     d->add_client(this);
@@ -147,6 +147,9 @@ public:
 
     static_assert(-1 != -L4_ENODEV, "...");
   }
+
+  ~Gpio()
+  { _hw_dev->remove_client(this); }
 
   int add_filter(cxx::String const &tag, cxx::String const &) override
   {
@@ -226,6 +229,8 @@ private:
   };
 
   Hw::Gpio_chip *_hwd;
+  /// The hardware device this device is a client of.
+  Hw::Device *_hw_dev;
 
   Bitmap _pins;
   Irqs _irqs;

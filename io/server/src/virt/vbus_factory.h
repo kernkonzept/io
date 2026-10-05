@@ -128,9 +128,7 @@ public:
     if (!dynamic_cast<HW_DEV const*>(dev))
       return 0;
 
-    Device *d = new V_dev(static_cast<Hw_dev*>(dev));
-    dev->inc_ref_count();
-    return d;
+    return new V_dev(static_cast<Hw_dev*>(dev));
   }
 
   Device *vcreate() override

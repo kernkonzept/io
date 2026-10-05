@@ -108,9 +108,8 @@ public:
     DF_multi_vbus    = 1 << 1,
   };
 
+  /// Number of clients, i.e., virtual devices that use this device.
   unsigned long ref_count() const { return _ref_cnt; }
-  void inc_ref_count() { ++_ref_cnt; }
-  void dec_ref_count() { --_ref_cnt; }
 
   Device(l4_umword_t uid, l4_uint32_t adr) : _uid(uid), _adr(adr)
   { register_properties(); }
@@ -207,6 +206,7 @@ public:
   bool match_cid(cxx::String const &cid) const override;
 
   void add_client(Device_client *client);
+  void remove_client(Device_client *client);
   void check_conflicts() const;
 
   void notify(unsigned type, unsigned event, unsigned value);

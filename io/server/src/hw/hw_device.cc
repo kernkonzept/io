@@ -246,9 +246,20 @@ Hw::Device::add_client(Hw::Device_client *client)
 {
   bool first = _clients.empty();
   _clients.push_front(client);
+  ++_ref_cnt;
   if (first)
     for (auto i = _features.begin(); i != _features.end(); ++i)
       (*i)->enable_notifications(this);
+}
+
+void
+Hw::Device::remove_client(Hw::Device_client *client)
+{
+  _clients.remove(client);
+  --_ref_cnt;
+  if (_clients.empty())
+    for (auto i = _features.begin(); i != _features.end(); ++i)
+      (*i)->disable_notifications(this);
 }
 
 void

@@ -37,6 +37,11 @@ Vi::Proxy_dev::Proxy_dev(Hw::Device *d)
     }
 }
 
+Vi::Proxy_dev::~Proxy_dev()
+{
+  _hwd->remove_client(this);
+}
+
 namespace {
   static Vi::Dev_factory_t<Vi::Proxy_dev, Hw::Device> __ghwdf;
 }
