@@ -451,11 +451,11 @@ static Vi::Dev_factory_t<Gpio, Hw::Gpio_device> __gpio_factory;
 class Gpio_resource : public Resource
 {
 public:
-  explicit Gpio_resource(std::shared_ptr<::Gpio_resource> const &hr)
+  explicit Gpio_resource(std::shared_ptr<Hw::Gpio_resource> const &hr)
   : Resource(hr->flags(), hr->start(), hr->end()), _hwr(hr), _provider(nullptr)
   { set_id(hr->id()); }
 
-  ::Gpio_resource *hwr() const { return _hwr.get(); }
+  Hw::Gpio_resource *hwr() const { return _hwr.get(); }
 
   void set_provider(Gpio *provider)
   { _provider = provider; }
@@ -464,7 +464,7 @@ public:
   { return _provider->handle(); }
 
 private:
-  std::shared_ptr<::Gpio_resource> _hwr;
+  std::shared_ptr<Hw::Gpio_resource> _hwr;
   Gpio *_provider;
 };
 
@@ -574,7 +574,7 @@ private:
   Vi::System_bus *_bus;
 };
 
-static Vi::Resource_factory_t<Vi::Gpio_resource, ::Gpio_resource> __gpio_res_factory;
+static Vi::Resource_factory_t<Vi::Gpio_resource, Hw::Gpio_resource> __gpio_res_factory;
 static Vi::System_bus::Root_resource_factory_t<Resource::Gpio_res,
                                                Root_gpio_rs> __rf;
 

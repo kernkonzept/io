@@ -226,8 +226,6 @@ class Gpio_device :
 {
 };
 
-}
-
 class Gpio_resource : public Resource
 {
 public:
@@ -254,3 +252,5 @@ private:
 
   Hw::Gpio_device *_hw;
 };
+
+}

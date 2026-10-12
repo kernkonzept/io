@@ -1,7 +1,7 @@
 #include "gpio"
 
 void
-Gpio_resource::dump(int indent) const
+Hw::Gpio_resource::dump(int indent) const
 {
   l4_uint64_t s, e;
   s = start();

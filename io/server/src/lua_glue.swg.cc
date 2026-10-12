@@ -2741,9 +2741,9 @@ SWIG_Lua_dostring(lua_State *L, const char *str) {
 #define SWIGTYPE_p_Addr swig_types[0]
 #define SWIGTYPE_p_Device swig_types[1]
 #define SWIGTYPE_p_Generic_device swig_types[2]
-#define SWIGTYPE_p_Gpio_resource swig_types[3]
-#define SWIGTYPE_p_Hw__Device swig_types[4]
-#define SWIGTYPE_p_Hw__Device_factory swig_types[5]
+#define SWIGTYPE_p_Hw__Device swig_types[3]
+#define SWIGTYPE_p_Hw__Device_factory swig_types[4]
+#define SWIGTYPE_p_Hw__Gpio_resource swig_types[5]
 #define SWIGTYPE_p_Mmio_data_space swig_types[6]
 #define SWIGTYPE_p_Property swig_types[7]
 #define SWIGTYPE_p_Resource swig_types[8]
@@ -4392,18 +4392,18 @@ static int _wrap_add_vbus(lua_State* L) { { int SWIG_arg = 0; Vi::Device *arg1 =
       SWIG_fail_ptr("add_vbus",1,SWIGTYPE_p_Vi__Device); }  result = (int)add_vbus(arg1);
     lua_pushinteger(L, (lua_Integer)(result)); SWIG_arg++;   return SWIG_arg; fail: SWIGUNUSED; }  lua_error(L); return 0; }
 static int _wrap_new_Gpio_resource(lua_State* L) { { int SWIG_arg = 0; Hw::Device *arg1 = (Hw::Device *) 0 ; unsigned int arg2 ;
-    unsigned int arg3 ; Gpio_resource *result = 0 ; SWIG_check_num_args("Gpio_resource::Gpio_resource",3,3)
-    if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Gpio_resource::Gpio_resource",1,"Hw::Device *");
-    if(!lua_isinteger(L,2)) SWIG_fail_arg("Gpio_resource::Gpio_resource",2,"unsigned int");
-    if(!lua_isinteger(L,3)) SWIG_fail_arg("Gpio_resource::Gpio_resource",3,"unsigned int");
+    unsigned int arg3 ; Hw::Gpio_resource *result = 0 ; SWIG_check_num_args("Hw::Gpio_resource::Gpio_resource",3,3)
+    if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Hw::Gpio_resource::Gpio_resource",1,"Hw::Device *");
+    if(!lua_isinteger(L,2)) SWIG_fail_arg("Hw::Gpio_resource::Gpio_resource",2,"unsigned int");
+    if(!lua_isinteger(L,3)) SWIG_fail_arg("Hw::Gpio_resource::Gpio_resource",3,"unsigned int");
     if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_Hw__Device,0))){
       SWIG_fail_ptr("new_Gpio_resource",1,SWIGTYPE_p_Hw__Device); }  arg2 = (unsigned int)lua_tointeger(L, 2); 
-    arg3 = (unsigned int)lua_tointeger(L, 3);  try { result = (Gpio_resource *)new Gpio_resource(arg1,arg2,arg3);}
+    arg3 = (unsigned int)lua_tointeger(L, 3);  try { result = (Hw::Gpio_resource *)new Hw::Gpio_resource(arg1,arg2,arg3);}
      catch(char const *_e) { lua_pushstring(L,_e);SWIG_fail; } 
-    SWIG_NewPointerObj(L,result,SWIGTYPE_p_Gpio_resource,1); SWIG_arg++;  return SWIG_arg; fail: SWIGUNUSED; }  lua_error(L);
-  return 0; }
+    SWIG_NewPointerObj(L,result,SWIGTYPE_p_Hw__Gpio_resource,1); SWIG_arg++;  return SWIG_arg; fail: SWIGUNUSED; } 
+  lua_error(L); return 0; }
 static void swig_delete_Gpio_resource(void *obj) {
-Gpio_resource *arg1 = (Gpio_resource *) obj;
+Hw::Gpio_resource *arg1 = (Hw::Gpio_resource *) obj;
 delete arg1;
 }
 static int _proxy__wrap_new_Gpio_resource(lua_State *L) {
@@ -4447,7 +4447,7 @@ static swig_lua_namespace swig_Gpio_resource_Sf_SwigStatic = {
 };
 static swig_lua_class *swig_Gpio_resource_bases[] = {0,0};
 static const char *swig_Gpio_resource_base_names[] = {"Resource *",0};
-static swig_lua_class _wrap_class_Gpio_resource = { "Gpio_resource", "Gpio_resource", &SWIGTYPE_p_Gpio_resource,_proxy__wrap_new_Gpio_resource, swig_delete_Gpio_resource, swig_Gpio_resource_methods, swig_Gpio_resource_attributes, &swig_Gpio_resource_Sf_SwigStatic, swig_Gpio_resource_meta, swig_Gpio_resource_bases, swig_Gpio_resource_base_names };
+static swig_lua_class _wrap_class_Gpio_resource = { "Gpio_resource", "Gpio_resource", &SWIGTYPE_p_Hw__Gpio_resource,_proxy__wrap_new_Gpio_resource, swig_delete_Gpio_resource, swig_Gpio_resource_methods, swig_Gpio_resource_attributes, &swig_Gpio_resource_Sf_SwigStatic, swig_Gpio_resource_meta, swig_Gpio_resource_bases, swig_Gpio_resource_base_names };
 
 static swig_lua_attribute swig_SwigModule_attributes[] = {
     {0,0,0}
@@ -4553,8 +4553,8 @@ static void *_p_Hw__DeviceTo_p_Generic_device(void *x, int *SWIGUNUSEDPARM(newme
 static void *_p_Vi__DeviceTo_p_Generic_device(void *x, int *SWIGUNUSEDPARM(newmemory)) {
     return (void *)((Generic_device *)  ((Vi::Device *) x));
 }
-static void *_p_Gpio_resourceTo_p_Resource(void *x, int *SWIGUNUSEDPARM(newmemory)) {
-    return (void *)((Resource *)  ((Gpio_resource *) x));
+static void *_p_Hw__Gpio_resourceTo_p_Resource(void *x, int *SWIGUNUSEDPARM(newmemory)) {
+    return (void *)((Resource *)  ((Hw::Gpio_resource *) x));
 }
 static void *_p_Mmio_data_spaceTo_p_Resource(void *x, int *SWIGUNUSEDPARM(newmemory)) {
     return (void *)((Resource *)  ((Mmio_data_space *) x));
@@ -4565,9 +4565,9 @@ static void *_p_Root_resourceTo_p_Resource(void *x, int *SWIGUNUSEDPARM(newmemor
 static swig_type_info _swigt__p_Addr = {"_p_Addr", "Addr *", 0, 0, (void*)0, 0};
 static swig_type_info _swigt__p_Device = {"_p_Device", "Device *", 0, 0, (void*)&_wrap_class_Device, 0};
 static swig_type_info _swigt__p_Generic_device = {"_p_Generic_device", "Generic_device *", 0, 0, (void*)&_wrap_class_Generic_device, 0};
-static swig_type_info _swigt__p_Gpio_resource = {"_p_Gpio_resource", "Gpio_resource *", 0, 0, (void*)&_wrap_class_Gpio_resource, 0};
 static swig_type_info _swigt__p_Hw__Device = {"_p_Hw__Device", "Hw::Device *|Device *", 0, 0, (void*)&_wrap_class_Hw_device, 0};
 static swig_type_info _swigt__p_Hw__Device_factory = {"_p_Hw__Device_factory", "Hw::Device_factory *", 0, 0, (void*)&_wrap_class_Hw_dev_factory, 0};
+static swig_type_info _swigt__p_Hw__Gpio_resource = {"_p_Hw__Gpio_resource", "Hw::Gpio_resource *", 0, 0, (void*)&_wrap_class_Gpio_resource, 0};
 static swig_type_info _swigt__p_Mmio_data_space = {"_p_Mmio_data_space", "Mmio_data_space *", 0, 0, (void*)&_wrap_class_Mmio_data_space, 0};
 static swig_type_info _swigt__p_Property = {"_p_Property", "Property *", 0, 0, (void*)&_wrap_class_Property, 0};
 static swig_type_info _swigt__p_Resource = {"_p_Resource", "Resource *", 0, 0, (void*)&_wrap_class_Resource, 0};
@@ -4582,9 +4582,9 @@ static swig_type_info *swig_type_initial[] = {
   &_swigt__p_Addr,
   &_swigt__p_Device,
   &_swigt__p_Generic_device,
-  &_swigt__p_Gpio_resource,
   &_swigt__p_Hw__Device,
   &_swigt__p_Hw__Device_factory,
+  &_swigt__p_Hw__Gpio_resource,
   &_swigt__p_Mmio_data_space,
   &_swigt__p_Property,
   &_swigt__p_Resource,
@@ -4599,13 +4599,13 @@ static swig_type_info *swig_type_initial[] = {
 static swig_cast_info _swigc__p_Addr[] = {  {&_swigt__p_Addr, 0, 0, 0},{0, 0, 0, 0}};
 static swig_cast_info _swigc__p_Device[] = {  {&_swigt__p_Device, 0, 0, 0},  {&_swigt__p_Generic_device, _p_Generic_deviceTo_p_Device, 0, 0},  {&_swigt__p_Hw__Device, _p_Hw__DeviceTo_p_Device, 0, 0},  {&_swigt__p_Vi__Device, _p_Vi__DeviceTo_p_Device, 0, 0},{0, 0, 0, 0}};
 static swig_cast_info _swigc__p_Generic_device[] = {  {&_swigt__p_Generic_device, 0, 0, 0},  {&_swigt__p_Hw__Device, _p_Hw__DeviceTo_p_Generic_device, 0, 0},  {&_swigt__p_Vi__Device, _p_Vi__DeviceTo_p_Generic_device, 0, 0},{0, 0, 0, 0}};
-static swig_cast_info _swigc__p_Gpio_resource[] = {  {&_swigt__p_Gpio_resource, 0, 0, 0},{0, 0, 0, 0}};
 static swig_cast_info _swigc__p_Hw__Device[] = {  {&_swigt__p_Hw__Device, 0, 0, 0},{0, 0, 0, 0}};
 static swig_cast_info _swigc__p_Hw__Device_factory[] = {  {&_swigt__p_Hw__Device_factory, 0, 0, 0},{0, 0, 0, 0}};
+static swig_cast_info _swigc__p_Hw__Gpio_resource[] = {  {&_swigt__p_Hw__Gpio_resource, 0, 0, 0},{0, 0, 0, 0}};
 static swig_cast_info _swigc__p_Mmio_data_space[] = {  {&_swigt__p_Mmio_data_space, 0, 0, 0},{0, 0, 0, 0}};
 static swig_cast_info _swigc__p_Property[] = {  {&_swigt__p_Property, 0, 0, 0},{0, 0, 0, 0}};
 static swig_cast_info _swigc__p_Root_resource[] = {{&_swigt__p_Root_resource, 0, 0, 0},{0, 0, 0, 0}};
-static swig_cast_info _swigc__p_Resource[] = {  {&_swigt__p_Resource, 0, 0, 0},  {&_swigt__p_Gpio_resource, _p_Gpio_resourceTo_p_Resource, 0, 0},  {&_swigt__p_Mmio_data_space, _p_Mmio_data_spaceTo_p_Resource, 0, 0},  {&_swigt__p_Root_resource, _p_Root_resourceTo_p_Resource, 0, 0},{0, 0, 0, 0}};
+static swig_cast_info _swigc__p_Resource[] = {  {&_swigt__p_Resource, 0, 0, 0},  {&_swigt__p_Hw__Gpio_resource, _p_Hw__Gpio_resourceTo_p_Resource, 0, 0},  {&_swigt__p_Mmio_data_space, _p_Mmio_data_spaceTo_p_Resource, 0, 0},  {&_swigt__p_Root_resource, _p_Root_resourceTo_p_Resource, 0, 0},{0, 0, 0, 0}};
 static swig_cast_info _swigc__p_Resource_space[] = {  {&_swigt__p_Resource_space, 0, 0, 0},{0, 0, 0, 0}};
 static swig_cast_info _swigc__p_Size[] = {  {&_swigt__p_Size, 0, 0, 0},{0, 0, 0, 0}};
 static swig_cast_info _swigc__p_Vi__Dev_factory[] = {  {&_swigt__p_Vi__Dev_factory, 0, 0, 0},{0, 0, 0, 0}};
@@ -4616,9 +4616,9 @@ static swig_cast_info *swig_cast_initial[] = {
   _swigc__p_Addr,
   _swigc__p_Device,
   _swigc__p_Generic_device,
-  _swigc__p_Gpio_resource,
   _swigc__p_Hw__Device,
   _swigc__p_Hw__Device_factory,
+  _swigc__p_Hw__Gpio_resource,
   _swigc__p_Mmio_data_space,
   _swigc__p_Property,
   _swigc__p_Resource,

@@ -200,10 +200,12 @@ void dump_devs(Device *d);
 int add_vbus(Vi::Device *dev);
 
 
+%rename(Gpio_resource) Hw::Gpio_resource;
+namespace Hw {
 class Gpio_resource : public Resource
 {
 public:
   explicit Gpio_resource(Hw::Device *dev, unsigned start, unsigned end)
     throw(char const *);
 };
-
+}
