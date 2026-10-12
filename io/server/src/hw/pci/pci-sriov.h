@@ -34,12 +34,7 @@ public:
   explicit Sr_iov_feature(Dev *dev, l4_uint16_t cap_ofs);
 
   Resource_provider *get_vbar(unsigned i) const
-  {
-    if (_vbar[i] && _vbar[i] != (Resource_provider *)1)
-      return _vbar[i];
-
-    return nullptr;
-  }
+  { return _vbar[i]; }
 
   /// Enables SR-IOV, runs after discover and resource allocation phase.
   void setup(Hw::Device *host) override;
