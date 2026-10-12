@@ -74,7 +74,7 @@ public:
   virtual bool adjust_children(Resource *self) = 0;
 
 protected:
-  ~Resource_space() noexcept = default;
+  virtual ~Resource_space() noexcept = default;
 };
 
 class Resource
