@@ -96,7 +96,6 @@ namespace Vi {
 class Device : public Generic_device
 {
 public:
-  void add_child(Device *disown);
   void name(char const *);
   char const *name() const;
   Device *parent() const;
@@ -123,6 +122,9 @@ public:
 
 %extend Vi::Device
 {
+  void add_child(Vi::Device *disown)
+  { self->add_child(std::unique_ptr<Vi::Device>(disown)); }
+
   void set_name(char const *name) { self->name(name); }
 };
 
@@ -137,7 +139,6 @@ public:
   };
 
   Property *property(char const *name);
-  void add_child(Device *disown);
   void add_cid(char const *);
   void set_name(char const *);
   char const *name() const;
@@ -182,10 +183,13 @@ public:
     return 0;
   }
 
+  void add_child(Hw::Device *disown)
+  { self->add_child(std::unique_ptr<Hw::Device>(disown)); }
+
   void __setitem(std::string const &name, Hw::Device *dev)
   {
     dev->set_name(name);
-    self->add_child(dev);
+    self->add_child(std::unique_ptr<Hw::Device>(dev));
     if (self->parent() || self == system_bus())
       dev->plugin();
   }

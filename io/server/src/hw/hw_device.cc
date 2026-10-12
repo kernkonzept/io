@@ -142,9 +142,10 @@ Hw::Device::get_child_dev_adr(l4_uint32_t adr, bool create)
   if (!create)
     return 0;
 
-  Hw::Device *c = new Hw::Device(adr);
-  add_child(c);
-  return c;
+  auto c = std::make_unique<Hw::Device>(adr);
+  Hw::Device *dev = c.get();
+  add_child(std::move(c));
+  return dev;
 }
 
 Hw::Device *
@@ -157,9 +158,10 @@ Hw::Device::get_child_dev_uid(l4_umword_t uid, l4_uint32_t adr, bool create)
   if (!create)
     return 0;
 
-  Hw::Device *c = new Hw::Device(uid, adr);
-  add_child(c);
-  return c;
+  auto c = std::make_unique<Hw::Device>(uid, adr);
+  Hw::Device *dev = c.get();
+  add_child(std::move(c));
+  return dev;
 }
 
 bool

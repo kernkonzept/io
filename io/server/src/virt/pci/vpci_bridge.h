@@ -84,8 +84,9 @@ public:
   void secondary(unsigned char v) { _secondary = v; }
   void subordinate(unsigned char v) { _subordinate = v; }
   Pci_dev *child_dev(unsigned bus, unsigned char dev, unsigned char fn);
-  void add_child(Device *d) override;
-  void add_child_fixed(Device *d, Pci_dev *vp, unsigned dn, unsigned fn);
+  void add_child(std::unique_ptr<Device> d) override;
+  void add_child_fixed(std::unique_ptr<Device> d, Pci_dev *vp, unsigned dn,
+                       unsigned fn);
 
   Pci_bridge *find_bridge(unsigned bus);
 

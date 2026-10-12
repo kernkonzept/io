@@ -39,11 +39,19 @@ private:
   Vi::System_bus *_bus;
   Vi::Sw_icu *_icu;
 
+  /// Create the virtual ICU as child device of the bus.
+  void create_icu()
+  {
+    auto icu = std::make_unique<Vi::Sw_icu>();
+    _icu = icu.get();
+    _bus->add_child(std::move(icu));
+  }
+
 public:
   Root_irq_rs(Vi::System_bus *bus)
-    : Resource_space(), _bus(bus), _icu(new Vi::Sw_icu())
+    : Resource_space(), _bus(bus)
   {
-    _bus->add_child(_icu);
+    create_icu();
     _bus->sw_icu(_icu);
     _icu->name("L4ICU");
   }
@@ -65,8 +73,7 @@ public:
 
     if (!_icu)
       {
-        _icu = new Vi::Sw_icu();
-        _bus->add_child(_icu);
+        create_icu();
         _bus->sw_icu(_icu);
       }
 
@@ -92,10 +99,7 @@ public:
     d_printf(DBG_DEBUG2, "  Allocate Virtual MSI...\n");
 
     if (!_icu)
-      {
-        _icu = new Vi::Sw_icu();
-        _bus->add_child(_icu);
-      }
+      create_icu();
 
     int nr = _icu->alloc_irq(msi->flags(), msi->hw_msi());
     if (nr < 0)

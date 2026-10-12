@@ -5,6 +5,7 @@
  * License: see LICENSE.spdx (in this directory or the directories above)
  */
 
+#include "debug.h"
 #include "vpci.h"
 #include "vpci_pci_bridge.h"
 #include "vpci_proxy_dev.h"
@@ -71,7 +72,7 @@ public:
 class Pci_vroot_id : public Vi::Pci_vroot
 {
 public:
-  void add_child(Vi::Device *d) override;
+  void add_child(std::unique_ptr<Vi::Device> d) override;
 
 };
 
@@ -230,13 +231,18 @@ Vi::Pci_vroot::Pci_root_feature::dispatch(l4_umword_t, l4_uint32_t func,
 
 
 void
-Vi::Pci_vroot_id::add_child(Vi::Device *d)
+Vi::Pci_vroot_id::add_child(std::unique_ptr<Vi::Device> d)
 {
   Vi::Pci_dev *vp = d->find_feature<Vi::Pci_dev>();
 
   // hm, also here, drop non PCI devices
   if (!vp)
-    return;
+    {
+      d_printf(DBG_ERR, "warning: device %s is not a PCI device! Ignoring.\n",
+               d->name());
+      d.release();
+      return;
+    }
 
   if (Vi::Pci_proxy_dev *proxy = dynamic_cast<Vi::Pci_proxy_dev*>(vp))
     {
@@ -248,31 +254,31 @@ Vi::Pci_vroot_id::add_child(Vi::Device *d)
 	{
 	  // MUST be a device on the root PCI bus
 	  _bus.dev(dn)->fn(fn, vp);
-	  Vi::Device::add_child(d);
+	  Vi::Device::add_child(std::move(d));
 	  return;
 	}
 
       Vi::Pci_bridge *sw_br = find_bridge(bus_num);
       if (!sw_br)
 	{
-	  Vi::Pci_to_pci_bridge *b = new Vi::Pci_to_pci_bridge();
-	  sw_br = b;
+	  auto b = std::make_unique<Vi::Pci_to_pci_bridge>();
+	  sw_br = b.get();
 
 	  b->primary(0);
 	  b->secondary(bus_num);
 	  b->subordinate(bus_num);
 
 	  _bus.dev(31)->fn(0, b->function());
-	  Vi::Device::add_child(b);
+	  Vi::Device::add_child(std::move(b));
 	}
 
-      sw_br->add_child_fixed(d, vp, dn, fn);
+      sw_br->add_child_fixed(std::move(d), vp, dn, fn);
       return;
     }
   else
     {
       _bus.add_fn(vp);
-      Vi::Device::add_child(d);
+      Vi::Device::add_child(std::move(d));
     }
 }
 

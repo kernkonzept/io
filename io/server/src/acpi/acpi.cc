@@ -641,9 +641,10 @@ acpi_install_fixed_button_handler(char const *hid, UINT32 event, char const *nam
     {
       d_printf(DBG_INFO, "ACPI: %s button not found, create an artificial one\n",
                name);
-      button = new Hw::Device();
+      auto new_button = std::make_unique<Hw::Device>();
+      button = new_button.get();
       button->set_hid(hid);
-      system_bus()->add_child(button);
+      system_bus()->add_child(std::move(new_button));
     }
 
   d_printf(DBG_INFO, "ACPI: %s button is a fixed event on this system\n", name);

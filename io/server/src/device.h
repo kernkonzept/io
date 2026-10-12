@@ -23,6 +23,8 @@
 #include <cstring>
 #include <string>
 #include <map>
+#include <memory>
+#include <vector>
 
 template<typename D> class Device_tree_mixin;
 
@@ -31,10 +33,10 @@ template<typename D> class Device_tree_mixin;
  * sibling nodes. If there is no parent node, this node is a root node.
  * After setup, there must only be one root node.
  *
- * The parent has only one pointer to a child node.
+ * Each node owns its child nodes.
  * Sibling nodes have the same parent node and the same depth in the tree.
  * The siblings form a single-linked list via their next pointer.
- * The head of this single-linked list is the child pointer in the parent node.
+ * The head of this single-linked list is the first child of the parent node.
  *
  * The depth describes the number of parent nodes until the root node is
  * reached.
@@ -48,14 +50,15 @@ class Device_tree
 private:
   D *_n;        ///< next sibling node
   D *_p;        ///< parent node
-  D *_c;        ///< child node
+  std::vector<std::unique_ptr<D>> _children; ///< child nodes, owned
   int _depth;   ///< depth of this node
 
 public:
-  Device_tree() : _n(0), _p(0), _c(0), _depth(0) {}
+  Device_tree() : _n(0), _p(0), _depth(0) {}
 
   D *parent() const { return _p; }
-  D *children() const { return _c; }
+  D *children() const
+  { return _children.empty() ? nullptr : _children.front().get(); }
   D *next() const { return _n; }
   int depth() const { return _depth; }
 
@@ -73,32 +76,30 @@ private:
   /**
    * Add \a d as child device to \a self
    *
-   * \param d     Child device
+   * \param d     Child device, \a self takes ownership of it
    * \param self  Parent device
    */
-  void add_child(D *d, D *self)
+  void add_child(std::unique_ptr<D> d, D *self)
   {
     if (d->parent())
       {
          d_printf(DBG_ERR, "warning: device %s already has a parent. Ignoring.\n",
                   d->name());
+         // The device is owned by its parent already.
+         d.release();
          return;
       }
 
-    for (iterator i = iterator(0, d, L4VBUS_MAX_DEPTH); i != iterator(); ++i)
+    for (iterator i = iterator(0, d.get(), L4VBUS_MAX_DEPTH); i != iterator();
+         ++i)
       i->set_depth(i->depth() + depth() + 1);
 
     d->set_parent(self);
 
-    if (!_c)
-      _c = d;
-    else
-      {
-        D *p;
-        for (p = _c; p->next(); p = p->next())
-          ;
-        p->add_sibling(d);
-      }
+    if (!_children.empty())
+      _children.back()->add_sibling(d.get());
+
+    _children.push_back(std::move(d));
   }
 
   void set_depth(int d) { _depth = d; }
@@ -219,7 +220,8 @@ public:
     return 0;
   }
 
-  virtual void add_child(D *c) { _dt.add_child(c, static_cast<D*>(this)); }
+  virtual void add_child(std::unique_ptr<D> c)
+  { _dt.add_child(std::move(c), static_cast<D*>(this)); }
   virtual ~Device_tree_mixin() {}
 
 private:

@@ -3058,6 +3058,7 @@ SWIGINTERN int Generic_device_nresources(Generic_device const *self){
 SWIGINTERN Resource *Generic_device_resource(Generic_device const *self,int idx){
     return self->resources()->at(idx).get();
   }
+SWIGINTERN void Vi_Device_add_child(Vi::Device *self,Vi::Device *disown){ self->add_child(std::unique_ptr<Vi::Device>(disown)); }
 SWIGINTERN void Vi_Device_set_name(Vi::Device *self,char const *name){ self->name(name); }
 SWIGINTERN Hw::Device *Hw_Device_find_by_name(Hw::Device const *self,std::string const &name){
     for (Hw::Device::iterator c = self->begin(0);
@@ -3075,9 +3076,10 @@ SWIGINTERN Hw::Device *Hw_Device___getitem(Hw::Device const *self,std::string co
 
     return 0;
   }
+SWIGINTERN void Hw_Device_add_child(Hw::Device *self,Hw::Device *disown){ self->add_child(std::unique_ptr<Hw::Device>(disown)); }
 SWIGINTERN void Hw_Device___setitem(Hw::Device *self,std::string const &name,Hw::Device *dev){
     dev->set_name(name);
-    self->add_child(dev);
+    self->add_child(std::unique_ptr<Hw::Device>(dev));
     if (self->parent() || self == system_bus())
       dev->plugin();
   }
@@ -3896,15 +3898,6 @@ static swig_lua_class *swig_Property_bases[] = {0};
 static const char *swig_Property_base_names[] = {0};
 static swig_lua_class _wrap_class_Property = { "Property", "Property", &SWIGTYPE_p_Property,0,0, swig_Property_methods, swig_Property_attributes, &swig_Property_Sf_SwigStatic, swig_Property_meta, swig_Property_bases, swig_Property_base_names };
 
-static int _wrap_Vi_device_add_child(lua_State* L) { { int SWIG_arg = 0; Vi::Device *arg1 = (Vi::Device *) 0 ;
-    Vi::Device *arg2 = (Vi::Device *) 0 ; SWIG_check_num_args("Vi::Device::add_child",2,2)
-    if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Vi::Device::add_child",1,"Vi::Device *");
-    if(!SWIG_isptrtype(L,2)) SWIG_fail_arg("Vi::Device::add_child",2,"Vi::Device *");
-    if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_Vi__Device,0))){
-      SWIG_fail_ptr("Vi_device_add_child",1,SWIGTYPE_p_Vi__Device); } 
-    if (!SWIG_IsOK(SWIG_ConvertPtr(L,2,(void**)&arg2,SWIGTYPE_p_Vi__Device,SWIG_POINTER_DISOWN))){
-      SWIG_fail_ptr("Vi_device_add_child",2,SWIGTYPE_p_Vi__Device); }  (arg1)->add_child(arg2); return SWIG_arg;
-    fail: SWIGUNUSED; }  lua_error(L); return 0; }
 static int _wrap_Vi_device_name__SWIG_0(lua_State* L) { { int SWIG_arg = 0; Vi::Device *arg1 = (Vi::Device *) 0 ;
     char *arg2 = (char *) 0 ; SWIG_check_num_args("Vi::Device::name",2,2)
     if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Vi::Device::name",1,"Vi::Device *");
@@ -4012,6 +4005,15 @@ static int _wrap_Vi_device_dump(lua_State* L) { { int SWIG_arg = 0; Vi::Device *
     if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_Vi__Device,0))){
       SWIG_fail_ptr("Vi_device_dump",1,SWIGTYPE_p_Vi__Device); }  arg2 = (int)lua_tointeger(L, 2); 
     ((Vi::Device const *)arg1)->dump(arg2); return SWIG_arg; fail: SWIGUNUSED; }  lua_error(L); return 0; }
+static int _wrap_Vi_device_add_child(lua_State* L) { { int SWIG_arg = 0; Vi::Device *arg1 = (Vi::Device *) 0 ;
+    Vi::Device *arg2 = (Vi::Device *) 0 ; SWIG_check_num_args("Vi::Device::add_child",2,2)
+    if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Vi::Device::add_child",1,"Vi::Device *");
+    if(!SWIG_isptrtype(L,2)) SWIG_fail_arg("Vi::Device::add_child",2,"Vi::Device *");
+    if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_Vi__Device,0))){
+      SWIG_fail_ptr("Vi_device_add_child",1,SWIGTYPE_p_Vi__Device); } 
+    if (!SWIG_IsOK(SWIG_ConvertPtr(L,2,(void**)&arg2,SWIGTYPE_p_Vi__Device,SWIG_POINTER_DISOWN))){
+      SWIG_fail_ptr("Vi_device_add_child",2,SWIGTYPE_p_Vi__Device); }  Vi_Device_add_child(arg1,arg2); return SWIG_arg;
+    fail: SWIGUNUSED; }  lua_error(L); return 0; }
 static int _wrap_Vi_device_set_name(lua_State* L) { { int SWIG_arg = 0; Vi::Device *arg1 = (Vi::Device *) 0 ;
     char *arg2 = (char *) 0 ; SWIG_check_num_args("Vi::Device::set_name",2,2)
     if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Vi::Device::set_name",1,"Vi::Device *");
@@ -4027,7 +4029,6 @@ static swig_lua_attribute swig_Vi_device_attributes[] = {
     {0,0,0}
 };
 static swig_lua_method swig_Vi_device_methods[]= {
-    { "add_child", _wrap_Vi_device_add_child},
     { "name", _wrap_Vi_device_name},
     { "parent", _wrap_Vi_device_parent},
     { "children", _wrap_Vi_device_children},
@@ -4035,6 +4036,7 @@ static swig_lua_method swig_Vi_device_methods[]= {
     { "depth", _wrap_Vi_device_depth},
     { "add_filter", _wrap_Vi_device_add_filter},
     { "dump", _wrap_Vi_device_dump},
+    { "add_child", _wrap_Vi_device_add_child},
     { "set_name", _wrap_Vi_device_set_name},
     {0,0}
 };
@@ -4152,15 +4154,6 @@ static int _wrap_Hw_device_property(lua_State* L) { { int SWIG_arg = 0; Hw::Devi
       SWIG_fail_ptr("Hw_device_property",1,SWIGTYPE_p_Hw__Device); }  arg2 = (char *)lua_tostring(L, 2);
     result = (Property *)(arg1)->property((char const *)arg2); SWIG_NewPointerObj(L,result,SWIGTYPE_p_Property,0); SWIG_arg++; 
     return SWIG_arg; fail: SWIGUNUSED; }  lua_error(L); return 0; }
-static int _wrap_Hw_device_add_child(lua_State* L) { { int SWIG_arg = 0; Hw::Device *arg1 = (Hw::Device *) 0 ;
-    Hw::Device *arg2 = (Hw::Device *) 0 ; SWIG_check_num_args("Hw::Device::add_child",2,2)
-    if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Hw::Device::add_child",1,"Hw::Device *");
-    if(!SWIG_isptrtype(L,2)) SWIG_fail_arg("Hw::Device::add_child",2,"Hw::Device *");
-    if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_Hw__Device,0))){
-      SWIG_fail_ptr("Hw_device_add_child",1,SWIGTYPE_p_Hw__Device); } 
-    if (!SWIG_IsOK(SWIG_ConvertPtr(L,2,(void**)&arg2,SWIGTYPE_p_Hw__Device,SWIG_POINTER_DISOWN))){
-      SWIG_fail_ptr("Hw_device_add_child",2,SWIGTYPE_p_Hw__Device); }  (arg1)->add_child(arg2); return SWIG_arg;
-    fail: SWIGUNUSED; }  lua_error(L); return 0; }
 static int _wrap_Hw_device_add_cid(lua_State* L) { { int SWIG_arg = 0; Hw::Device *arg1 = (Hw::Device *) 0 ;
     char *arg2 = (char *) 0 ; SWIG_check_num_args("Hw::Device::add_cid",2,2)
     if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Hw::Device::add_cid",1,"Hw::Device *");
@@ -4249,6 +4242,15 @@ static int _wrap_Hw_device___getitem(lua_State* L) { { int SWIG_arg = 0; Hw::Dev
     result = (Hw::Device *)Hw_Device___getitem((Hw::Device const *)arg1,(std::string const &)*arg2);
     SWIG_NewPointerObj(L,result,SWIGTYPE_p_Hw__Device,0); SWIG_arg++;  return SWIG_arg; fail: SWIGUNUSED; }  lua_error(L);
   return 0; }
+static int _wrap_Hw_device_add_child(lua_State* L) { { int SWIG_arg = 0; Hw::Device *arg1 = (Hw::Device *) 0 ;
+    Hw::Device *arg2 = (Hw::Device *) 0 ; SWIG_check_num_args("Hw::Device::add_child",2,2)
+    if(!SWIG_isptrtype(L,1)) SWIG_fail_arg("Hw::Device::add_child",1,"Hw::Device *");
+    if(!SWIG_isptrtype(L,2)) SWIG_fail_arg("Hw::Device::add_child",2,"Hw::Device *");
+    if (!SWIG_IsOK(SWIG_ConvertPtr(L,1,(void**)&arg1,SWIGTYPE_p_Hw__Device,0))){
+      SWIG_fail_ptr("Hw_device_add_child",1,SWIGTYPE_p_Hw__Device); } 
+    if (!SWIG_IsOK(SWIG_ConvertPtr(L,2,(void**)&arg2,SWIGTYPE_p_Hw__Device,SWIG_POINTER_DISOWN))){
+      SWIG_fail_ptr("Hw_device_add_child",2,SWIGTYPE_p_Hw__Device); }  Hw_Device_add_child(arg1,arg2); return SWIG_arg;
+    fail: SWIGUNUSED; }  lua_error(L); return 0; }
 static int _wrap_Hw_device___setitem(lua_State* L) { { int SWIG_arg = 0; Hw::Device *arg1 = (Hw::Device *) 0 ;
     std::string *arg2 = 0 ; Hw::Device *arg3 = (Hw::Device *) 0 ; std::string temp2 ;
     SWIG_check_num_args("Hw::Device::__setitem",3,3)
@@ -4270,7 +4272,6 @@ static swig_lua_attribute swig_Hw_device_attributes[] = {
 };
 static swig_lua_method swig_Hw_device_methods[]= {
     { "property", _wrap_Hw_device_property},
-    { "add_child", _wrap_Hw_device_add_child},
     { "add_cid", _wrap_Hw_device_add_cid},
     { "set_name", _wrap_Hw_device_set_name},
     { "name", _wrap_Hw_device_name},
@@ -4283,6 +4284,7 @@ static swig_lua_method swig_Hw_device_methods[]= {
     { "dump", _wrap_Hw_device_dump},
     { "find_by_name", _wrap_Hw_device_find_by_name},
     { "__getitem", _wrap_Hw_device___getitem},
+    { "add_child", _wrap_Hw_device_add_child},
     { "__setitem", _wrap_Hw_device___setitem},
     {0,0}
 };

@@ -247,10 +247,11 @@ Hw::Pci::Sr_iov_feature::init_vf(unsigned vf_idx,
   // bridge as the PF. However, the MMIO resources are placed as child resources
   // of the PF VBAR resources.
 
-  Hw::Device *vf_dev = new Hw::Device(cfg.addr().devfn());
+  auto vf_dev_owner = std::make_unique<Hw::Device>(cfg.addr().devfn());
+  Hw::Device *vf_dev = vf_dev_owner.get();
   auto vf = std::make_shared<Hw::Pci::Sr_iov_vf>(vf_dev, _dev->bridge(), cfg);
   vf_dev->add_feature(vf);
-  _dev->host()->parent()->add_child(vf_dev);
+  _dev->host()->parent()->add_child(std::move(vf_dev_owner));
 
   for (unsigned bar_idx = 0; bar_idx < 6; ++bar_idx)
   {

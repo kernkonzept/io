@@ -6,6 +6,7 @@
  * License: see LICENSE.spdx (in this directory or the directories above)
  */
 
+#include "debug.h"
 #include "vpci_bridge.h"
 #include "vpci_virtual_dev.h"
 
@@ -87,25 +88,30 @@ Vi::Pci_bridge::Bus::add_fn(Vi::Pci_dev *pd, int slot)
 }
 
 void
-Vi::Pci_bridge::add_child(Vi::Device *d)
+Vi::Pci_bridge::add_child(std::unique_ptr<Vi::Device> d)
 {
   Vi::Pci_dev *vp = d->find_feature<Vi::Pci_dev>();
 
   // hm, we do currently not add non PCI devices.
   if (!vp)
-    return;
+    {
+      d_printf(DBG_ERR, "warning: device %s is not a PCI device! Ignoring.\n",
+               d->name());
+      d.release();
+      return;
+    }
 
   _bus.add_fn(vp);
-  Vi::Device::add_child(d);
+  Vi::Device::add_child(std::move(d));
 }
 
 
 void
-Vi::Pci_bridge::add_child_fixed(Vi::Device *d, Vi::Pci_dev *vp, unsigned dn,
-                                unsigned fn)
+Vi::Pci_bridge::add_child_fixed(std::unique_ptr<Vi::Device> d, Vi::Pci_dev *vp,
+                                unsigned dn, unsigned fn)
 {
   _bus.dev(dn)->fn(fn, vp);
-  Vi::Device::add_child(d);
+  Vi::Device::add_child(std::move(d));
 }
 
 

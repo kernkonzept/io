@@ -505,13 +505,15 @@ public:
         Vi::Device *vd = vbus->find_by_name(bus->name());
         if (!vd)
           {
+            std::unique_ptr<Vi::Device> new_vd;
             if (bus != gpio)
-              vd = new Vi::Device();
+              new_vd = std::make_unique<Vi::Device>();
             else
-              vd = new Gpio(gpio);
+              new_vd = std::make_unique<Gpio>(gpio);
 
+            vd = new_vd.get();
             vd->name(bus->name());
-            vbus->add_child(vd);
+            vbus->add_child(std::move(new_vd));
           }
         if (0)
           printf("VDEV=%p:%s\n", vd, vd ? vd->name() : "");
