@@ -38,7 +38,7 @@ public:
   virtual l4_uint32_t interface_type() const = 0;
 
 protected:
-  ~Dev_feature() = default;
+  virtual ~Dev_feature() = default;
 };
 
 class Msi_src_feature : public Dev_feature
