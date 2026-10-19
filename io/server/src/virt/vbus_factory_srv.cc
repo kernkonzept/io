@@ -62,8 +62,9 @@ void IO_factory::handle_irq()
       if (vbus->obj_cap() && !vbus->obj_cap().validate().label())
         {
           auto c = vbus->obj_cap();
-          // reset dma domains here
+          // reset dma domains and IRQs here, for the next client
           vbus->reset_dma_domains();
+          vbus->unbind_irqs();
           d_printf(DBG_INFO,
                    "Client on vbus %p %s has gone. Releasing cap %lx\n",
                    vbus, vbus->name(), c.cap());

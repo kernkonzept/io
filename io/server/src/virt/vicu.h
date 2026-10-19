@@ -47,6 +47,9 @@ public:
                 L4::Ipc::Snd_fpage irq_fp)
   { return unbind_irq(irqnum, irq_fp); }
 
+  /// Release the IRQs and MSIs bound by the client.
+  void unbind_all();
+
   int op_info(L4::Icu::Rights, L4::Icu::_Info &ii)
   {
     ii.features = ii.nr_msis = ii.nr_irqs = 0;

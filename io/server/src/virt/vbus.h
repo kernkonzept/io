@@ -213,6 +213,7 @@ public:
   void inhibitor_signal(l4_umword_t id) override;
 
   void reset_dma_domains();
+  void unbind_irqs();
 
 private:
   /// The vBUS interface of the system bus, provided as device feature.

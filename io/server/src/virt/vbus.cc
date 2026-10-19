@@ -485,6 +485,13 @@ Vi::System_bus::Dma_domains::domains() const
   return doms;
 }
 
+void
+Vi::System_bus::unbind_irqs()
+{
+  if (_sw_icu)
+    _sw_icu->unbind_all();
+}
+
 int
 Vi::System_bus::op_map(L4Re::Dataspace::Rights,
                        L4Re::Dataspace::Offset offset,

@@ -137,6 +137,18 @@ Vi::Sw_icu::unbind_irq(unsigned irqn, L4::Ipc::Snd_fpage const &/*irqc*/)
   return i->second->unbind();
 }
 
+void
+Vi::Sw_icu::unbind_all()
+{
+  for (auto const &i : _irqs)
+    if (i.second->bound())
+      i.second->unbind();
+
+  for (auto const &i : _msis)
+    if (i.second->bound())
+      i.second->unbind();
+}
+
 int
 Vi::Sw_icu::set_mode(unsigned irqn, l4_umword_t mode)
 {
