@@ -137,21 +137,18 @@ public:
 
 class Gpio_irq_server : public Irq_demux_t<Gpio_irq_server>
 {
-private:
-  unsigned _npins;
-
 public:
   Gpio_irq_server(unsigned irq, unsigned npins)
-  : Irq_demux_t<Gpio_irq_server>(irq, 0, npins), _npins(npins)
+  : Irq_demux_t<Gpio_irq_server>(irq, 0, npins)
   { enable(); }
 
   void handle_irq()
   {
-    for (unsigned pin = 0; pin < _npins; pin++)
+    for (auto &pin : _pins)
       {
-        if (!_pins[pin] || !_pins[pin]->enabled())
+        if (!pin || !pin->enabled())
           continue;
-        auto *p = dynamic_cast<Gpio_irq_pin*>(_pins[pin].get());
+        auto *p = dynamic_cast<Gpio_irq_pin*>(pin.get());
         if (p->handle_interrupt(true))
           p->trigger();
       }
