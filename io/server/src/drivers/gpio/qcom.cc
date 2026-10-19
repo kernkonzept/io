@@ -151,8 +151,9 @@ public:
       {
         if (!_pins[pin] || !_pins[pin]->enabled())
           continue;
-        if (dynamic_cast<Gpio_irq_pin*>(_pins[pin])->handle_interrupt(true))
-          _pins[pin]->trigger();
+        auto *p = dynamic_cast<Gpio_irq_pin*>(_pins[pin].get());
+        if (p->handle_interrupt(true))
+          p->trigger();
       }
     enable();
   }
@@ -181,7 +182,7 @@ private:
   };
 
   L4drivers::Mmio_register_block<32> _regs;
-  Gpio_irq_server *_irq_svr;
+  std::unique_ptr<Gpio_irq_server> _irq_svr;
 
   Int_property _ngpios;
   Int_property _target_proc;
@@ -356,7 +357,7 @@ Gpio_qcom_chip::init()
 
   Resource *irq = resources()->find("irq0");
   if (irq && irq->type() == Resource::Irq_res)
-    _irq_svr = new Gpio_irq_server(irq->start(), nr_pins());
+    _irq_svr = std::make_unique<Gpio_irq_server>(irq->start(), nr_pins());
   else
     d_printf(DBG_WARN, "warning: %s: Gpio_qcom_chip no irq configured\n", name());
 }

@@ -197,7 +197,7 @@ private:
   };
 
   L4drivers::Mmio_register_block<32> _regs[2];
-  Gpio_irq_server *_irq_svr[2];
+  std::unique_ptr<Gpio_irq_server> _irq_svr[2];
 
   Int_property _nr_pins;
 
@@ -539,8 +539,8 @@ Gpio_bcm2835_chip::init()
 
   Resource *irq0 = resources()->find("int0");
   if (irq0 && irq0->type() == Resource::Irq_res)
-    _irq_svr[0] = new Gpio_irq_server(irq0->start(),
-                                      cxx::min<unsigned>(32, _nr_pins), _regs[0]);
+    _irq_svr[0] = std::make_unique<Gpio_irq_server>(
+                    irq0->start(), cxx::min<unsigned>(32, _nr_pins), _regs[0]);
   else
     d_printf(DBG_WARN, "warning: %s: Gpio_bcm2835 no 'int0' configured\n"
                        "         no IRQs for pins < 32\n", name());
@@ -550,8 +550,9 @@ Gpio_bcm2835_chip::init()
 
   Resource *irq2 = resources()->find("int2");
   if (irq2 && irq2->type() == Resource::Irq_res)
-    _irq_svr[1] = new Gpio_irq_server(irq2->start(),
-                                      cxx::min<unsigned>(32, _nr_pins - 32), _regs[1]);
+    _irq_svr[1] = std::make_unique<Gpio_irq_server>(
+                    irq2->start(), cxx::min<unsigned>(32, _nr_pins - 32),
+                    _regs[1]);
   else
     d_printf(DBG_WARN, "warning: %s: Gpio_bcm2835 no 'int1' configured\n"
                        "         no IRQs for pins 32-%u\n",

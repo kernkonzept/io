@@ -114,7 +114,7 @@ public:
       {
         unsigned p = ffs(isr) - 1;
 
-        Gpio_irq_base *po = _pins[p];
+        Gpio_irq_base *po = _pins[p].get();
         if (!po)
           printf("Wrong pin %d got an interrupt\n", p);
         else
@@ -214,8 +214,8 @@ public:
 
 private:
   Chipregs _regs;
-  Irq_server *_irq_svr;
-  Irq_server_secondary *_irq_svr_secondary = nullptr;
+  std::unique_ptr<Irq_server> _irq_svr;
+  std::unique_ptr<Irq_server_secondary> _irq_svr_secondary;
 };
 
 void
@@ -440,15 +440,16 @@ void Gpio_imx_chip::init()
     d_printf(DBG_WARN, "warning: %s: no 'irq0' configured\n"
                        "         no IRQs available for pins 0-15\n", name());
 
-  _irq_svr = new Irq_server(irq->start(), irq->flags(), _regs);
+  _irq_svr = std::make_unique<Irq_server>(irq->start(), irq->flags(), _regs);
 
   irq = resources()->find("irq1");
   if (!irq || irq->type() != Resource::Irq_res)
     d_printf(DBG_WARN, "warning: %s: no 'irq1' configured\n"
                        "         no IRQs available for pins 16-31\n", name());
   else
-    _irq_svr_secondary = new Irq_server_secondary(irq->start(), irq->flags(),
-                                                _irq_svr);
+    _irq_svr_secondary =
+      std::make_unique<Irq_server_secondary>(irq->start(), irq->flags(),
+                                             _irq_svr.get());
 
   // TODO use irq-type from resource in get_irq
 

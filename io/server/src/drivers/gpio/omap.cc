@@ -384,7 +384,7 @@ public:
         if (!(status & pin))
           continue;
 
-        Gpio_irq_base *p = this->_pins[pin];
+        Gpio_irq_base *p = this->_pins[pin].get();
         if (p)
           {
             switch (p->mode())
@@ -416,7 +416,7 @@ private:
   typedef Gpio_irq_server_t<REGS> Gpio_irq_server;
   L4drivers::Mmio_register_block<32> _regs;
   unsigned _nr_pins;
-  Gpio_irq_server *_irq_svr;
+  std::unique_ptr<Gpio_irq_server> _irq_svr;
   Scm_property _scm;
 
   static l4_uint32_t _pin_bit(unsigned pin)
@@ -444,7 +444,7 @@ private:
   }
 
 public:
-  Gpio_omap_chip() : _nr_pins(32), _irq_svr(0)
+  Gpio_omap_chip() : _nr_pins(32)
   {
     add_cid("gpio");
     add_cid("gpio-omap");
@@ -676,7 +676,8 @@ public:
 
     Resource *irq = resources()->find("irq");
     if (irq && irq->type() == Resource::Irq_res)
-      _irq_svr = new Gpio_irq_server(irq->start(), _nr_pins, _regs);
+      _irq_svr = std::make_unique<Gpio_irq_server>(irq->start(), _nr_pins,
+                                                   _regs);
     else
       d_printf(DBG_WARN, "warning: %s: Gpio_omap_chip no irq configured\n",
                name());

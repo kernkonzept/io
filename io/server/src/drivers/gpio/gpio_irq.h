@@ -11,8 +11,11 @@
 #include "main.h"
 #include "server.h"
 #include <l4/sys/cxx/ipc_epiface>
-#include <l4/cxx/unique_ptr>
 #include <l4/sys/irq>
+
+#include <memory>
+#include <utility>
+#include <vector>
 
 class Gpio_irq_base : public Io_irq_pin
 {
@@ -96,14 +99,13 @@ public:
 class Irq_demux
 {
 protected:
-  cxx::unique_ptr<Gpio_irq_base*[]> _pins;
+  std::vector<std::unique_ptr<Gpio_irq_base>> _pins;
   unsigned _hw_irq_num;
 
 public:
   Irq_demux(unsigned hw_irq_num, unsigned mode, unsigned npins)
-  : _hw_irq_num(hw_irq_num)
+  : _pins(npins), _hw_irq_num(hw_irq_num)
   {
-    _pins = cxx::make_unique<Gpio_irq_base*[]>(npins);
 
     if (l4_error(system_icu()->icu->set_mode(_hw_irq_num, mode)) < 0)
       {
@@ -121,11 +123,10 @@ public:
   template<typename PIN, typename ...ARGS>
   Gpio_irq_base *get_pin(unsigned pin, ARGS &&...args)
   {
-    if (_pins[pin])
-      return _pins[pin];
+    if (!_pins[pin])
+      _pins[pin] = std::make_unique<PIN>(pin, std::forward<ARGS>(args)...);
 
-    _pins[pin] = new PIN(pin, cxx::forward<ARGS>(args)...);
-    return _pins[pin];
+    return _pins[pin].get();
   }
 };
 
