@@ -141,6 +141,21 @@ Hw::Pci::Bridge::enumerate_dma_src_ids(
   return alias.is_rewrite() ? 1 : 0;
 }
 
+bool
+Hw::Pci::Bridge::has_iommu(Hw::Pci::Dma_requester_id rid) const
+{
+  if (!bridge())
+    return false;
+
+  // Does this bridge create aliases? If yes, override the DMA requester ID of
+  // the downstream device for further reporting.
+  Hw::Pci::Dma_requester_id alias = dma_alias();
+  if (alias)
+    rid = alias;
+
+  return bridge()->has_iommu(rid);
+}
+
 int
 Hw::Pci::Bridge::enumerate_dma_reservations(Hw::Pci::Dev *,
                                             Dma_domain_if::Resv_cb) const

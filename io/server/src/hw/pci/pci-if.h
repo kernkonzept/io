@@ -173,6 +173,13 @@ struct Platform_adapter_if
   virtual int translate_dma_src(Dma_requester_id rid, l4_uint64_t *si) const = 0;
 
   /**
+   * Is the DMA requester behind an IOMMU?
+   *
+   * A requester which is not behind an IOMMU uses physical DMA addresses.
+   */
+  virtual bool has_iommu(Dma_requester_id rid) const = 0;
+
+  /**
    * Map the MSI controller for a generic PCI device.
    */
   virtual int map_msi_src(If *dev, l4_uint64_t msi_addr_phys,

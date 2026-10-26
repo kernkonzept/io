@@ -181,6 +181,8 @@ public:
       return -L4_ENODEV;
   }
 
+  bool has_iommu(Dma_requester_id rid) const override;
+
   int map_msi_src(If *dev, l4_uint64_t msi_addr_phys,
                   l4_uint64_t *msi_addr_iova) override
   {

@@ -137,7 +137,15 @@ Hw::Pci::Dev::enumerate_dma_src_ids(Hw::Dma_src_feature::Dma_src_id_cb cb) const
 
 bool
 Hw::Pci::Dev::has_iommu() const
-{ return _bridge != nullptr; }
+{
+  if (!_bridge)
+    return false;
+
+  // Don't care about phantom functions (see enumerate_dma_src_ids()). We can
+  // safely assume that either all functions are connected to the IOMMU or none.
+  return _bridge->has_iommu(
+    Hw::Pci::Dma_requester_id::source(segment_nr(), bus_nr(), devfn()));
+}
 
 int
 Hw::Pci::Dev::enumerate_dma_reservations(Hw::Pci::Dev *dev,

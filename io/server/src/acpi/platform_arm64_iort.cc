@@ -227,12 +227,8 @@ struct Its : public Iort_node
     return ((l4_uint64_t)_idx << 32) | src;
   }
 
-  l4_uint64_t translate_stream_id(l4_uint64_t src) const override
-  {
-    d_printf(DBG_ERR, "IORT: DMA translation requested for ITS (%u, 0x%llx)\n",
-             _idx, src);
-    return Translation_failed;
-  }
+  l4_uint64_t translate_stream_id(l4_uint64_t) const override
+  { return Translation_failed; }
 
   void walk_rmr_path(l4_uint64_t, Walk_rmr_cb const &) const override
   {
@@ -553,6 +549,17 @@ public:
 
     *si = src;
     return 0;
+  }
+
+  bool has_iommu(::Hw::Pci::Dma_requester_id rid) const override
+  {
+    Root_complex const *rc = find_root_complex(rid.segment());
+    if (!rc)
+      return false;
+
+    // A source whose Stream-ID translation fails is not behind an SMMU
+    l4_uint64_t src = (unsigned{rid.bus()} << 8) | rid.devfn();
+    return rc->translate_stream_id(src) != Iort_node::Translation_failed;
   }
 
   int map_msi_src(::Hw::Pci::If *dev, l4_uint64_t msi_addr_phys,

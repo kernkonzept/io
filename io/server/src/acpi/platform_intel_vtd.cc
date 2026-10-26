@@ -713,6 +713,13 @@ public:
     return 0;
   }
 
+  // A device in the scope of no DRHD is not behind an IOMMU
+  bool has_iommu(Hw::Pci::Dma_requester_id rid) const override
+  {
+    return Hw::Acpi::Vtd_iommu::get_index(rid.segment(), rid.bus(),
+                                          rid.devfn()) >= 0;
+  }
+
   int map_msi_src(::Hw::Pci::If *, l4_uint64_t msi_addr_phys,
                   l4_uint64_t *msi_addr_iova) override
   {

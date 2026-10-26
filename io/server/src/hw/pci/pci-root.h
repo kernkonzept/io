@@ -40,6 +40,15 @@ protected:
       return -L4_ENODEV;
   }
 
+  bool has_iommu(Dma_requester_id rid) const override
+  {
+    // Forward to platform provided DMA translator
+    if (_platform_adapter)
+      return _platform_adapter->has_iommu(rid);
+    else
+      return false;
+  }
+
   int map_msi_src(If *dev, l4_uint64_t msi_addr_phys,
                   l4_uint64_t *msi_addr_iova) override
   {

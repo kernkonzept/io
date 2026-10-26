@@ -100,6 +100,8 @@
  *    -- placeholder of 0 as Device ID output base.
  *    -- In case the iommu node in your Devicetree has two cells, combine the
  *    -- two 32-bit cells into one 64-bit Device ID output base.
+ *    -- Without an iommu_map the bridge is not behind an IOMMU and its
+ *    -- devices use physical DMA addresses.
  *    Property.iommu_map    = { 0x0000, iommu0, 0x4000, 0x8000,
  *                              0x8000, iommu1, 0x8000, 0x8000 }
  *    Property.iommu_map_mask = 0xfff8
@@ -245,7 +247,7 @@ public:
     register_property("int_b", &_int_map[1]);           // optional
     register_property("int_c", &_int_map[2]);           // optional
     register_property("int_d", &_int_map[3]);           // optional
-    register_property("iommu_map", &_iommu_map);        // optional, no DMA mapping if not present
+    register_property("iommu_map", &_iommu_map);        // optional, physical DMA addresses if not present
     register_property("iommu_map_mask", &_iommu_map_mask); // optional
     register_property("msi_map", &_msi_map);            // optional, no MSI mapping if not present
     register_property("msi_map_mask", &_msi_map_mask);  // optional
@@ -321,6 +323,10 @@ public:
     *si = src;
     return 0;
   }
+
+  // Without an iommu_map the bridge is not behind an IOMMU
+  bool has_iommu(Hw::Pci::Dma_requester_id) const override
+  { return _iommu_map.present(); }
 
   int map_msi_src(::Hw::Pci::If *dev, l4_uint64_t msi_addr_phys,
                   l4_uint64_t *msi_addr_iova) override
