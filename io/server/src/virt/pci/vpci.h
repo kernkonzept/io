@@ -380,7 +380,7 @@ public:
 
   virtual ~Pcie_capability() = default;
 
-  /// Set ID and version of this capability form the PCI config space value.
+  /// Set ID and version of this capability from the PCI config space value.
   void set_cap(l4_uint32_t cap)
   {
     _id = cap & 0xffff;
