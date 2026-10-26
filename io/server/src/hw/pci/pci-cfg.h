@@ -234,14 +234,10 @@ public:
   template<typename T>
   int read(unsigned offset, T *val) const
   {
-    union
-    {
-      l4_uint32_t v;
-      T t;
-    } x;
-
-    int r = read(offset, &x.v, cfg_width<T>::width);
-    *val = x.t;
+    static_assert(sizeof(T) <= sizeof(l4_uint32_t));
+    l4_uint32_t v;
+    int r = read(offset, &v, cfg_width<T>::width);
+    *val = static_cast<T>(v);
     return r;
   }
 
@@ -264,7 +260,7 @@ public:
   template<typename T>
   cxx::enable_if_t<(T::Ofs >= 0), T>
   read() const
-  { return read<T>(T::Ofs); }
+  { return T{read<decltype(T::v)>(T::Ofs)}; }
 
   int write(unsigned reg, l4_uint32_t value, Cfg_width w) const
   { return _cfg->cfg_write(_addr + reg, value, w); }
@@ -272,14 +268,8 @@ public:
   template<typename T>
   int write(unsigned offset, T const &val) const
   {
-    union
-    {
-      l4_uint32_t v;
-      T t;
-    } x;
-
-    x.t = val;
-    return write(offset, x.v, cfg_width<T>::width);
+    l4_uint32_t v = l4_uint32_t{val};
+    return write(offset, v, cfg_width<T>::width);
   }
 
   /**
@@ -293,7 +283,7 @@ public:
   template<typename T>
   cxx::enable_if_t<(T::Ofs >= 0), int>
   write(T const &val)
-  { return write(T::Ofs, val); }
+  { return write(T::Ofs, val.v); }
 
   Config operator + (unsigned offset) const
   { return Config(_addr + offset, _cfg); }
