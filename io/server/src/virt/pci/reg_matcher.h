@@ -45,7 +45,7 @@ struct Reg_matcher
     if (_invalid)
       return false;
 
-    return _offs >= from && _offs + _size < to;
+    return _offs >= from && _offs + _size <= to;
   }
 
   template<typename Reg_from, typename Reg_to>
