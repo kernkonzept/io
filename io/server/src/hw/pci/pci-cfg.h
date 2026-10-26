@@ -65,80 +65,6 @@ template<> struct Cfg_type<Cfg_short> { typedef l4_uint16_t Type; };
 template<> struct Cfg_type<Cfg_long>  { typedef l4_uint32_t Type; };
 
 /**
- * Mixin for PCI config space accessors to allow typed
- * read and write.
- */
-template<typename B>
-class Cfg_rw_mixin
-{
-private:
-  B *_this() { return static_cast<B *>(this); }
-  B const *_this() const { return static_cast<B const *>(this); }
-
-public:
-  template<typename T>
-  int read(unsigned offset, T *val) const
-  {
-    union
-    {
-      l4_uint32_t v;
-      T t;
-    } x;
-
-    int r = _this()->read(offset, &x.v, cfg_width<T>::width);
-    *val = x.t;
-    return r;
-  }
-
-  template<typename T> T read(unsigned offset) const
-  {
-    T v;
-    read(offset, &v);
-    return v;
-  }
-
-  template<typename T>
-  int write(unsigned offset, T const &val) const
-  {
-    union
-    {
-      l4_uint32_t v;
-      T t;
-    } x;
-
-    x.t = val;
-    return _this()->write(offset, x.v, cfg_width<T>::width);
-  }
-
-  /**
-   * Read for special 'config register' type data types.
-   *
-   * 'config register' data types have a constexpr member Ofs, that
-   * defines the config space offset of the given register and a single
-   * 8, 16, or 32 bit data member that stores the data of the config
-   * config space register.
-   */
-  template<typename T>
-  typename cxx::enable_if<(T::Ofs >= 0), T>::type
-  read() const
-  {  return this->read<T>(T::Ofs);  }
-
-  /**
-   * Write for special 'config register' type data types.
-   *
-   * 'config register' data types have a constexpr member Ofs, that
-   * defines the config space offset of the given register and a single
-   * 8, 16, or 32 bit data member that stores the data of the config
-   * config space register.
-   */
-  template<typename T>
-  typename cxx::enable_if<(T::Ofs >= 0), int>::type
-  write(T const &val)
-  { return this->write(T::Ofs, val); }
-};
-
-
-/**
  * Address in PCI / PCI Express config space.
  */
 class Cfg_addr
@@ -201,7 +127,7 @@ inline Config_space::~Config_space() = default;
  *
  * This class is used to access the config space of the PCI bus.
  */
-class Config : public Cfg_rw_mixin<Config>
+class Config
 {
 public:
   enum Regs
@@ -281,12 +207,69 @@ public:
   int read(unsigned reg, l4_uint32_t *value, Cfg_width w) const
   { return _cfg->cfg_read(_addr + reg, value, w); }
 
-  using Cfg_rw_mixin<Config>::read;
+  template<typename T>
+  int read(unsigned offset, T *val) const
+  {
+    union
+    {
+      l4_uint32_t v;
+      T t;
+    } x;
+
+    int r = read(offset, &x.v, cfg_width<T>::width);
+    *val = x.t;
+    return r;
+  }
+
+  template<typename T>
+  T read(unsigned offset) const
+  {
+    T v;
+    read(offset, &v);
+    return v;
+  }
+
+  /**
+   * Read for special 'config register' type data types.
+   *
+   * 'config register' data types have a constexpr member Ofs, that
+   * defines the config space offset of the given register and a single
+   * 8, 16, or 32 bit data member that stores the data of the config
+   * config space register.
+   */
+  template<typename T>
+  cxx::enable_if_t<(T::Ofs >= 0), T>
+  read() const
+  { return read<T>(T::Ofs); }
 
   int write(unsigned reg, l4_uint32_t value, Cfg_width w) const
   { return _cfg->cfg_write(_addr + reg, value, w); }
 
-  using Cfg_rw_mixin<Config>::write;
+  template<typename T>
+  int write(unsigned offset, T const &val) const
+  {
+    union
+    {
+      l4_uint32_t v;
+      T t;
+    } x;
+
+    x.t = val;
+    return write(offset, x.v, cfg_width<T>::width);
+  }
+
+  /**
+   * Write for special 'config register' type data types.
+   *
+   * 'config register' data types have a constexpr member Ofs, that
+   * defines the config space offset of the given register and a single
+   * 8, 16, or 32 bit data member that stores the data of the config
+   * config space register.
+   */
+  template<typename T>
+  cxx::enable_if_t<(T::Ofs >= 0), int>
+  write(T const &val)
+  { return write(T::Ofs, val); }
 
   Config operator + (unsigned offset) const
   { return Config(_addr + offset, _cfg); }
