@@ -114,8 +114,32 @@ private:
 class Config_space
 {
 public:
-  virtual int cfg_read(Cfg_addr addr, l4_uint32_t *value, Cfg_width) = 0;
-  virtual int cfg_write(Cfg_addr addr, l4_uint32_t value, Cfg_width) = 0;
+
+  /**
+   * Read from the PCI config space.
+   *
+   * \param      addr   Address to read from in the config space.
+   * \param[out] value  Receives the read value, zero-extended to 32 bits.
+   *                    Only the lower `8 << width` bits are significant.
+   * \param      width  Width of the config space access.
+   *
+   * \retval 0   Success, `*value` holds the value.
+   * \retval <0  L4 error code, `*value` is undefined in this case.
+   */
+  virtual int cfg_read(Cfg_addr addr, l4_uint32_t *value, Cfg_width width) = 0;
+
+  /**
+   * Write to the PCI config space.
+   *
+   * \param reg    Address to write to in the config space.
+   * \param value  Value to write. Only the lower `8 << width` bits are used.
+   * \param width  Width of the config space access.
+   *
+   * \retval 0   Success.
+   * \retval <0  L4 error code.
+   */
+  virtual int cfg_write(Cfg_addr addr, l4_uint32_t value, Cfg_width width) = 0;
+
   virtual ~Config_space() = 0;
 };
 
