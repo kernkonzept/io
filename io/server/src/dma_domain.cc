@@ -166,14 +166,13 @@ Dma_domain_if::set_dma_space(L4Re::Util::Unique_cap<L4Re::Dma_space> dma_space,
     d_printf(DBG_DEBUG2, "DMA: create kern DMA space for managed DMA\n");
   auto mds = std::make_shared<Managed_dma_space>(std::move(dma_space), phys);
 
-  // Bind the device / all devices to the Managed_dma_space. This gathers the
-  // DMA address limits.
-  if (int err = set_managed_dma_space(mds, owner); err < 0)
-    return err;
-
   // Enumerate all required identity mappings and constraints. They have to be
   // reserved in the Dma_space with the exception of
   // Resv_type::Identity_remappable.
+  //
+  // This must happen before the device(s) are bound to the kernel DMA task.
+  // Otherwise the IOMMU would block DMA to the required identity mapped
+  // regions until they are established.
 
   int err = enumerate_dma_reservations(
     [this, dma_mgr, mds](Resv_type type, l4_uint64_t first, l4_uint64_t last)
@@ -223,9 +222,14 @@ Dma_domain_if::set_dma_space(L4Re::Util::Unique_cap<L4Re::Dma_space> dma_space,
   if (err < 0)
     {
       d_printf(DBG_DEBUG2, "DMA: enumerate_dma_reservations failed: %d\n", err);
-      clear_managed_dma_space(owner);
       return err;
     }
+
+  // Bind the device / all devices to the Managed_dma_space. This gathers the
+  // DMA address limits.
+  err = set_managed_dma_space(mds, owner);
+  if (err < 0)
+    return err;
 
   l4_uint64_t min_addr, max_addr;
   err = get_dma_limits(&min_addr, &max_addr);
