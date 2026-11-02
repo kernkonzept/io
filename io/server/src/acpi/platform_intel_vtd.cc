@@ -732,25 +732,27 @@ public:
   int pci_enum_dma_reservations(Hw::Pci::If *, Hw::Pci::Dma_requester_id id,
                                 Dma_domain_if::Resv_cb cb) const override
   {
-    // report RMRRs applicable to the device
-    auto devid = Hw::Acpi::Vtd_rmrr::Devid(id.segment(), id.bus(), id.dev(),
-                                           id.fn());
+    // APIC registers are treated by the interrupt remapping tables. There must
+    // be no DMA mappings in this range.
+    if (int err = cb(Dma_domain_if::Resv_type::Msi_window,
+                     0xfee0'0000, 0xfeef'ffff);
+        err < 0)
+      return err;
+
     auto *rmrr = Hw::Acpi::Vtd_rmrr::get();
     if (rmrr == nullptr)
       return L4_EOK;
-    auto regions = rmrr->get_blocked_regions(devid);
 
-    for (auto const &region: regions)
-      {
-        int ret = cb(Dma_domain_if::Resv_type::Identity_fixed,
-                     region.start, region.end);
-        if (ret)
-          return ret;
-      }
+    // report RMRRs applicable to the device
+    auto devid = Hw::Acpi::Vtd_rmrr::Devid(id.segment(), id.bus(), id.dev(),
+                                           id.fn());
+    for (auto const &region: rmrr->get_blocked_regions(devid))
+      if (int err = cb(Dma_domain_if::Resv_type::Identity_fixed,
+                       region.start, region.end);
+          err < 0)
+        return err;
 
-    // APIC registers are treated by the interrupt remapping tables. There must
-    // be no DMA mappings in this range.
-    return cb(Dma_domain_if::Resv_type::Msi_window, 0xfee0'0000, 0xfeef'ffff);
+    return L4_EOK;
   }
 };
 
