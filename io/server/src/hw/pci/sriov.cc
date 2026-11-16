@@ -60,6 +60,7 @@ Hw::Pci::Sr_iov_feature::Sr_iov_feature(Hw::Pci::Dev *dev, l4_uint16_t cap_ofs)
     {
       d_printf(DBG_WARN, "SR-IOV: PF 0x%02x depends on other PF 0x%02x: disable\n",
                cap.addr().devfn(), fn_dep.v);
+      _total_vfs.v = 0;
       return;
     }
 
